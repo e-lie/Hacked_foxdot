@@ -1,8 +1,8 @@
-### 0.9.*
+### Branch >> killa_features
 
 - Introduced new naming convention for samples <sample position>_<type and characteristics>_<set name>.wav, while the sample positions remain the same.
 
-	e.g.: 13_kickSoft_electroV1.wav
+	e.g.: 13_KickSoft_ElectroV1.wav
 	
 
 
