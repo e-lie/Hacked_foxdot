@@ -1,11 +1,11 @@
 SynthDef.new(\bchaos, {
-    |bus = 0, pan = 0, freq = 0, amp = 1, gate = 1, atk = 0.01, rel = 1.5, curve = \lin,
+    |bus = 0, pan = 0, freq = 0, amp = 1, gate = 1, atk = 0.01, sus = 1, rel = 1.5, curve = \lin,
 	chaosUpStart = 0, chaosUpEnd = 0.5, chaosUpTime = 1,
 	chaosDownStart = 0, chaosDownEnd = 0, chaosDownTime = 1,
 	cutoff = 20000, reHashesPerCycle = 1, hashRate = 1, nyquist = 5000|
 	var env, chaosRise, chaosFall, noisefunction, noise, switcha, switchb, shapea, shapeb, osc;
 	freq = In.kr(bus, 1);
-	env = Env.perc(attackTime: atk, releaseTime: rel, level: amp, curve: curve).kr;
+	env = Env.linen(attackTime: atk, sustainTime: sus, releaseTime: rel, level: amp, curve: curve).kr;
 	chaosRise = Line.kr(start:  chaosUpStart,  end:  chaosUpEnd,  dur:  chaosUpTime );
 	chaosFall = Line.kr(start: chaosDownStart, end: chaosDownEnd, dur: chaosDownTime);
 	switcha = LFPulse.ar(freq: freq, iphase:  0 );

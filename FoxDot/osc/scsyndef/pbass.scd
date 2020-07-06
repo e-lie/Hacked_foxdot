@@ -5,11 +5,11 @@ SynthDef.new(\pbass, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	subfreq = freq / 2;
-	subenv = EnvGen.kr(Env.perc(0, 1), doneAction:0);
-	env = EnvGen.kr(Env.perc(0, 0.5));
+	subenv = Env.linen(0,sustainTime:sus/2,curve:\lin).kr(doneAction:0);
+	env = Env.linen(0,sustainTime:sus/2,curve:\lin).kr(doneAction: 0);
 	pluck = Pluck.ar(PinkNoise.ar, 1, 0.2, subfreq.reciprocal) * subenv * 2;
-	tri = VarSaw.ar(freq) * env;
-	sin = SinOsc.ar(freq) * env;
+	tri = VarSaw.ar(freq);
+	sin = SinOsc.ar(freq);
 	sub = (SinOsc.ar([subfreq, subfreq - 2, subfreq + 2]).sum * subenv).tanh;
 	click = RLPF.ar(Impulse.ar(0), [2000, 8000], 1).sum * 1000;
 	osc = pluck + tri + sub + click;
@@ -24,7 +24,8 @@ SynthDef.new(\pbass, {
 	osc = osc + RLPF.ar(osc, XLine.ar(freq * 20,freq * 10,sus).clip(0,20000)) + sin + sub;
 	osc = (osc / 2.3).tanh;
 	osc = MoogFF.ar(osc,10000,0.1);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc) * 0.4;
+	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus, osc)
 }).add;

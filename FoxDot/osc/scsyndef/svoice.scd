@@ -1,10 +1,10 @@
 SynthDef.new(\svoice, {
-	|freq = 0, amp = 1, vib = 6, vibratoDepth = 4, vowel = 0, atk = 0.01, sus = 1, rel = 0.1, lag = 1, gate = 1, pan = 0, bus = 0|
+	|freq = 0, amp = 1, vibro = 6, vibratoDepth = 4, curve = -4, vowel = 0, atk = 0.01, sus = 1, rel = 0.1, lag = 1, gate = 1, pan = 0, bus = 0|
 	var in, vibrato, env, va, ve, vi, vo, vu, osc;
 	freq = In.kr(bus, 1);
-	vibrato = SinOsc.kr(freq:vib, mul: vibratoDepth);
+	vibrato = SinOsc.kr(freq:vibro, mul: vibratoDepth);
 	in = Saw.ar(Lag.kr(freq, lag) + vibrato);
-	env = EnvGen.kr(Env.asr(atk, sus, rel), gate, doneAction: 0);
+	env = Env.linen(atk, sus, rel, curve: -4).kr(doneAction: 0);
 	va = BBandPass.ar(in: in,freq: [ 600, 1040, 2250, 2450, 2750 ],
 		bw: [ 0.1, 0.067307692307692, 0.048888888888889, 0.048979591836735, 0.047272727272727 ],
 		mul: [ 1, 0.44668359215096, 0.35481338923358, 0.35481338923358, 0.1 ]);
@@ -21,7 +21,7 @@ SynthDef.new(\svoice, {
 		bw: [ 0.11428571428571, 0.13333333333333, 0.041666666666667, 0.044859813084112, 0.040677966101695 ],
 		mul: [ 1, 0.1, 0.025118864315096, 0.03981071705535, 0.015848931924611 ]);
 	osc = SelectX.ar(Lag.kr(vowel,lag),[va,ve,vi,vo,vu]);
-	osc = Mix.new(osc);
+	osc = Mix.new(osc)*2;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)

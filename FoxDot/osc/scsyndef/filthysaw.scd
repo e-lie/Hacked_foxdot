@@ -1,4 +1,4 @@
-SynthDef.new(\filtysaw, {
+SynthDef.new(\filthysaw, {
 	|bus = 0, freq = 0, amp = 1, gate = 1, atk = 0.001, sus = 1, cf = 100, vib = 0, t_bd, t_sd, pw = 0.4, pan = 0|
 	var base, env, osc, sd, bd;
 	freq = In.kr(bus, 1);

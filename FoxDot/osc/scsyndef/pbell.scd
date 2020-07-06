@@ -1,16 +1,16 @@
 SynthDef.new(\pbell, {
-	|bus = 0, singSwitch = 0, freq = 0, amp = 1, decayScale = 0.5, lag = 9, pan = 0|
+	|bus = 0, singSwitch = 0, freq = 0, amp = 1, decayScale = 0.6, lag = 3, pan = 0|
 	var osc, input, first, freqScale, mallet, sing;
 	freq = In.kr(bus, 1);
 	freqScale = freq / 2434;
 	freqScale = Lag3.kr(freqScale, lag);
 	decayScale = Lag3.kr(decayScale, lag);
-	mallet = LPF.ar(in: Impulse.ar(0) ! 2 * amp,freq: 10000 * freqScale);
-	sing = LPF.ar(in: {PinkNoise.ar * Integrator.kr(singSwitch * 0.001, 0.999).linexp(0, 1, 0.01, 1) * amp}!2, freq:2434 * freqScale);
-	sing = sing + Dust.ar(0.2);
+	mallet = LPF.ar(in: Impulse.ar(0)!2,freq: 8000 * freqScale);
+	sing = LPF.ar(in: {PinkNoise.ar * Integrator.kr(singSwitch * 0.001, 0.999).linexp(0, 1, 0.01, 1)}!2 * amp, freq:2434 * freqScale);
+	sing = sing + Dust.ar(0.15);
 	sing = LPF.ar(sing, 10000 * freqScale);
 	sing = sing * LFNoise1.kr(0.5).range(-45, -30).dbamp;
-	input = mallet + (singSwitch.clip(0, 1) * sing);
+	input = mallet/2 + (singSwitch.clip(0, 1) * sing);
 	osc = DynKlank.ar(
 		specificationsArrayRef: `[
 			// Array of filter frequencies
@@ -64,8 +64,9 @@ SynthDef.new(\pbell, {
 		freqoffset: 0,
 		decayscale: decayScale
 	);
-	DetectSilence.ar(osc, doneAction: 0);
 	osc = Mix.ar(osc);
-	osc = Pan2.ar(osc*amp,pan);
+	DetectSilence.ar(osc,doneAction: 2);
+	//osc = osc * amp;
+	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

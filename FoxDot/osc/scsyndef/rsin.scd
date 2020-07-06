@@ -6,10 +6,10 @@ SynthDef.new(\rsin, {
     osc1 = VarSaw;
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = FreeVerb2.ar(*XFade2.ar(SinOscFB.ar([60,4],osc1.kr(rate)+1/2),SinOscFB.ar([freq*2,freq],526/2),osc1.kr(0.1)));
-	osc = Mix(osc)*1;
+	osc = Mix(osc*2);
 	osc = BLowShelf.ar(osc,40,1.0,-12);
-	osc = osc*env*amp;
-	osc = LeakDC.ar(Limiter.ar(osc,1));
-	osc = Pan2.ar(osc,pan).tanh;
+	osc = osc * env * 2;
+	osc = LeakDC.ar(Limiter.ar(osc,1),mul:amp);
+	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

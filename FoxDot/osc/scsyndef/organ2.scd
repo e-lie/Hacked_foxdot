@@ -1,4 +1,4 @@
-SynthDef.new(\organ, {
+SynthDef.new(\organ2, {
 	|bus = 0, freq = 0, pan = 0, sus = 1, amp = 1, gate = 1|
     var osc, env;
 	freq = In.kr(bus, 1);

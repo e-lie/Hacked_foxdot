@@ -1,8 +1,8 @@
 SynthDef.new(\xylo, {
-	|bus = 0,freq = 0, t60=1.8, amp=1, gate=1, pan = 0|
+	|bus = 0,freq = 0, t60=1.3, amp=1, gate=1, pan = 0|
 	var osc, exciter;
 	freq = In.kr(bus, 1);
-	exciter = WhiteNoise.ar() * EnvGen.ar(Env.perc(0.001, 0.05), gate) * 0.06;
+	exciter = WhiteNoise.ar() * Env.perc(0.001,0.07).kr(doneAction:0) * 0.05;
 	osc = DynKlank.ar(
 		`[
 			[1, 2, 2.803, 3.871, 5.074, 7.81, 10.948, 14.421],   // freqs
@@ -11,7 +11,7 @@ SynthDef.new(\xylo, {
 		],
 		exciter,freq);
 	osc = osc * amp;
-	DetectSilence.ar(osc, 0.001, 0.5, doneAction:0);
+	DetectSilence.ar(osc, 0.001, 0.65, doneAction:2);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

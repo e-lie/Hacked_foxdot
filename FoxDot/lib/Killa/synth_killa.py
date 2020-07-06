@@ -71,14 +71,14 @@ varcell.add()
 wbass = FileSynthDef("wbass")
 wbass.add()
 
-beatbass = FileSynthDef("beatbass")
-beatbass.add()
+vibass = FileSynthDef("vibass")
+vibass.add()
 
 wobble = FileSynthDef("wobble")
 wobble.add()
 
-wobblebass = FileSynthDef("wobblebass")
-wobblebass.add()
+wsaw = FileSynthDef("wsaw")
+wsaw.add()
 
 xylo = FileSynthDef("xylo")
 xylo.add()
@@ -95,11 +95,8 @@ rsaw.add()
 garfield = FileSynthDef("garfield")
 garfield.add()
 
-sos = FileSynthDef("sos")
-sos.add()
-
-voice = FileSynthDef("voice")
-voice.add()
+svoice = FileSynthDef("svoice")
+svoice.add()
 
 benoit = FileSynthDef("benoit")
 benoit.add()
@@ -113,11 +110,8 @@ rlead.add()
 pbass = FileSynthDef("pbass")
 pbass.add()
 
-sborgan = FileSynthDef("sborgan")
-sborgan.add()
-
-lborgan = FileSynthDef("lborgan")
-lborgan.add()
+borgan = FileSynthDef("borgan")
+borgan.add()
 
 bbass = FileSynthDef("bbass")
 bbass.add()

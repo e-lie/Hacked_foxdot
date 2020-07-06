@@ -1,15 +1,18 @@
 SynthDef.new(\kalimba, {
-	|bus=0, freq=0, amp=1, pan=0, mix=0.1, relMin=2.5, relMax=3.5|
-	var osc, env;
+	|bus=0, freq=0, amp=1, pan=0, atk=0.01, sus=1, rel=0.7, mix=0.3, relMin=2.5, relMax=3.5|
+	var osc, env1, env;
 	freq = In.kr(bus, 1);
+	rel = Rand(relMin, relMax);
 	osc = SinOsc.ar(freq);
-	env = EnvGen.ar(Env.perc(0.005, Rand(relMin, relMax), 1, -8), doneAction: 0);
-	osc = osc * env;
+	env1 = EnvGen.ar(Env.perc(atk, rel, 1, -8), doneAction: 0);
+	osc = osc * env1;
 	osc = (osc * (1 - mix)) + (DynKlank.ar(`[
 		[240*ExpRand(0.9, 1.1), 2020*ExpRand(0.9, 1.1), 3151*ExpRand(0.9, 1.1)],
 		[-7, 0, 3].dbamp,
 		[0.8, 0.05, 0.07]
-		], PinkNoise.ar * EnvGen.ar(Env.perc(0.001, 0.01))) * mix);
-	osc =  Pan2.ar(osc, pan, amp);
+		], PinkNoise.ar * EnvGen.ar(Env.perc(atk, 0.01))) * mix);
+	env = Env.linen(atk, sus, rel, curve:\sin).kr(doneAction:0);
+	osc = osc * env * amp;
+	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 }).add;
