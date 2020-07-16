@@ -7,7 +7,7 @@ SynthDef.new(\dorgan,{
 	freq = freq * (1.0 + (lfowidth * vibrato));
 	env = EnvGen.ar(Env.linen(atk, sus, rel), gate, doneAction: 0);
 	osc = VarSaw.ar(freq,iphase: Rand(0.0, 1.0) ! 2,width: Rand(0.3, 0.5) ! 2, mul: [0.4,0.3,0.1]);
-	osc = Mix(osc);
+	osc = Mix(osc)*amp/2;
 	filter = RLPF.ar(osc, cutoff, rq);
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
