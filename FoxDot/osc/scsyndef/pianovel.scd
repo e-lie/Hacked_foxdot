@@ -4,7 +4,7 @@ SynthDef.new(\pianovel, {
 	freq = In.kr(bus, 1);
 	osc = MdaPiano.ar([freq + fmod], gate, release: 0.9, stereo: 0.8, sustain: sus * blur, vel: velocity, hard: hard, velhard: velhard);
 	osc = TwoPole.ar(osc, 200,0.5, mul:0.5) + osc/2;
-	env = EnvGen.ar(Env(times: [sus],levels: [(amp), (amp)],curve: 'step'), doneAction: 0);
+	env = EnvGen.ar(Env(times: [sus],levels: [(amp * 0.5), (amp * 0.5)],curve: 'step'), doneAction: 0);
 	DetectSilence.ar(osc, 0.01, doneAction:2);
 	osc = Mix(osc) * env * amp;
 	osc = Pan2.ar(osc,pan);

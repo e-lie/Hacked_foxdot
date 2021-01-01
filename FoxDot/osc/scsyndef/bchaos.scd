@@ -19,9 +19,9 @@ SynthDef.new(\bchaos, {
 	noise = noise * LFTri.ar(freq: freq, iphase: 0);
 	shapea = noise * switcha * chaosRise;
 	shapeb = noise * switchb * chaosFall;
-	shapea = LFSaw.ar(freq: freq, iphase: 1, mul:    switcha,   add: shapea);
-	shapeb = LFSaw.ar(freq: freq, iphase: 1, mul: -1 * switchb, add: shapeb);
-	osc = Mix.ar(shapea + shapeb);
+	shapea = Saw.ar(freq: freq, mul:    switcha/2,   add: shapea);
+	shapeb = LFCub.ar(freq: freq, iphase: 1, mul: -1 * switchb, add: shapeb);
+	osc = Mix.ar(shapea/2 + shapeb/2)*amp;
 	osc = LeakDC.ar(osc);
 	osc = LPF.ar(in: osc, freq: cutoff, mul: env);
 	DetectSilence.ar(in: osc, doneAction: 0);

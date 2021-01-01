@@ -64,7 +64,7 @@ SynthDef.new(\pbell, {
 		freqoffset: 0,
 		decayscale: decayScale
 	);
-	osc = Mix.ar(osc);
+	osc = Mix.ar(osc) * 0.3;
 	DetectSilence.ar(osc,doneAction: 0);
 	osc = osc * amp;
 	osc = Pan2.ar(osc,pan);

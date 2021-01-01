@@ -6,6 +6,7 @@ SynthDef.new(\tremsynth, {
 	osc = LFTri.ar(freq: freq, mul: mod);
 	env = Env.linen(atk, sus, rel, curve: \lin).kr(doneAction: 0);
 	osc = osc * env * amp;
+	osc = Mix(osc) * 0.3;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

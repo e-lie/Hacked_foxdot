@@ -4,7 +4,8 @@ SynthDef.new(\wobble, {
 	freq = In.kr(bus, 1);
 	osc = SinOsc.ar(freq)!2;
 	env = EnvGen.ar(Env.perc(attackTime: atk, releaseTime:sus), doneAction: 0);
-	osc= osc * env * amp;
+	osc = osc * env * amp;
+	osc = Mix(osc) * 0.3;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

@@ -3,7 +3,7 @@ SynthDef.new(\chipsy, {
 	var osc, env;
 	freq = In.kr(bus, 1);
 	env = Env.linen(atk,sus,rel,curve:\lin).kr(doneAction: 0);
-	osc = Mix(LFPulse.ar(freq: freq * [1, up], iphase: 0.03, width: 0.5,mul:0.5)).tanh;
+	osc = Mix(LFPulse.ar(freq: freq * [1, up], iphase: 0.03, width: 0.5, mul:0.1)).tanh;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)

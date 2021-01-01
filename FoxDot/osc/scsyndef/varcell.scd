@@ -10,7 +10,7 @@ SynthDef.new(\varcell, {
 	sigC = WhiteNoise.ar() * 0.15;
 	sigC = LPF.ar(sigC,freq*12);
 	osc = SelectX.ar(LFNoise2.kr(2).range(0,2),[sigA, sigB, sigC]);
-	osc = Mix(osc);
+	osc = Mix(osc) * 0.25;
 	osc = osc * amp * env;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)

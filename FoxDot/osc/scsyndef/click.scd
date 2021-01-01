@@ -11,7 +11,7 @@ SynthDef.new(\click, {
 		-1);
 	env = Env([1,0], sus, -4).kr(2);
 	osc = osc * env;
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc) * 0.2;
 	osc = Pan2.ar(osc, pan);
 	osc = Splay.ar(osc * amp);
 	ReplaceOut.ar(bus,osc)

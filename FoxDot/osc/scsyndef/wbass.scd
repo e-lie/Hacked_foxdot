@@ -5,7 +5,7 @@ SynthDef.new(\wbass, {
 	env = Env.linen(atk,sus,rel,curve:\sin).kr(doneAction: 0);
 	freq = Lag.kr(freq,slideTime);
 	osc = VarSaw.ar(freq: [freq, freq * detune], width: width, mul: preamp);
-	osc = Mix(osc,0.7).distort;
+	osc = Mix(osc,0.7).distort * 0.2;
 	osc = LPF.ar(osc, cutoff, amp);
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc, pan);

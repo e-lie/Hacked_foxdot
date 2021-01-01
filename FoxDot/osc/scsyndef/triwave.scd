@@ -8,6 +8,7 @@ SynthDef.new(\triwave,{
 	osc2 = Mix.ar(LFTri.ar((freq.cpsmidi + [11.9, 12.1]).midicps));
 	osc = RHPF.ar(((osc1 * 0.4) + (osc2 * 0.6)));
 	osc = osc * env * amp;
+	osc = Mix(osc) * 0.3;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

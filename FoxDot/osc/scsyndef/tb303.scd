@@ -5,9 +5,9 @@ SynthDef.new(\tb303, {
 	filEnv =  EnvGen .ar( Env .new([10e-10, 1, 10e-10], [0.01, dec],  'exp' ));
 	waves = [ Saw .ar(freq, volEnv),  Pulse .ar(freq, 0.5, volEnv)];
 	osc = RLPF .ar(  Select .ar(wave, waves), ctf + (filEnv * top), res).dup * amp;
-	osc = Mix(osc) * 0.5;
 	osc = HPF.ar(osc, 20);
 	osc = LPF.ar(osc, 14000);
+	osc = Mix(osc) * 0.1;
 	osc = Splay.ar(osc * amp, pan);
 	ReplaceOut.ar(bus, osc)
 }).add;

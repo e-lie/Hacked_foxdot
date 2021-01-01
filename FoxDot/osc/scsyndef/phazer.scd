@@ -9,7 +9,7 @@ SynthDef.new(\phazer, {
 	osc = LFSaw.ar(freq: SinOsc.ar(fmfreq).range(1, fmdepth) * freq);
 	osc = BAllPass.ar(osc, [1, 2, 4, 8] * lfo, rq);
 	osc = Mix.ar(osc);
-	osc = osc + (osc * -1 * drylevel);
+	osc = osc + (osc * -1 * drylevel) * 0.3;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)

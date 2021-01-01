@@ -25,7 +25,7 @@ SynthDef.new(\harp,{
         );
 	osc = Mix.ar(root + octave);
 	osc = osc * env;
-    	DetectSilence.ar(in: osc, doneAction: 2);
+    DetectSilence.ar(in: osc, doneAction: 2);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

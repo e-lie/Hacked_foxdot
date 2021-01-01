@@ -24,7 +24,7 @@ SynthDef.new(\pbass, {
 	osc = osc + RLPF.ar(osc, XLine.ar(freq * 20,freq * 10,sus).clip(0,20000)) + sin + sub;
 	osc = (osc / 2.3).tanh;
 	osc = MoogFF.ar(osc,10000,0.1);
-	osc = Mix(osc) * 0.4;
+	osc = Mix(osc) * 0.2;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus, osc)

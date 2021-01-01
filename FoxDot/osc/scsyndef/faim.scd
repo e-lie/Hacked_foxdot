@@ -18,7 +18,7 @@ SynthDef.new(\faim, {
 	sig5 = SinOsc.ar(freq * 1 * ( sig2 * 2.5 + 1 ) * (sig4 * 2.5 + 1)) * env5;
 	sig6 = SinOsc.ar(freq * 2) * env6;
 	osc = [sig1, sig2, sig3, sig4, sig5, sig6] * DC.ar([0.0, 0.0, 0.0,  0.0, 0.5, 0.5]);
-	osc = osc /2;
+	osc = osc / 2;
 	osc = osc.flop.sum;
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = osc * env;

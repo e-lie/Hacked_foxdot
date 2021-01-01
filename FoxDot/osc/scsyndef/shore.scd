@@ -4,8 +4,9 @@ SynthDef(\shore, {
 	freq = In.kr(bus, 1);
 	env = EnvGate.new(doneAction: 0, curve: 'sin');
 	osc = OnePole.ar(WhiteNoise.ar(0.1)+Dust.ar(100, 0.5), 0.7);
-	osc = osc + Splay.ar(FreqShift.ar(osc, 1/(4..7)));
+	osc = osc + Splay.ar(FreqShift.ar(osc, 1/(4..9)));
 	osc = osc * env * amp;
+	osc = Mix(osc) * 0.3;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 }).add;

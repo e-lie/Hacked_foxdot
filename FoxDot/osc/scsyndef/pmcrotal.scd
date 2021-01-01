@@ -7,7 +7,7 @@ SynthDef.new(\pmcrotal, {
 	osc = PMOsc.ar(freq/2, mod * freq/2, pmindex: atone, mul: 0.5);
 	osc1 = PMOsc.ar(freq/4, freq, pmindex: btone, mul: 0.5);
 	osc = HPF.ar(osc,freq, mul:0.4);
-	osc = Mix.ar([osc,osc1]);
+	osc = Mix.ar([osc,osc1]) * 0.2;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)

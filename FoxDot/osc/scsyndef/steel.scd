@@ -12,7 +12,7 @@ SynthDef.new(\steel, {
 	oscb = SinOsc.ar(freq: freq * 2.015, mul: envb);
 	oscc = DynKlank.ar(specificationsArrayRef:Ref.new([resFreqArray * freq, resAmpArray, resDecArray * sus
 	]),input:LPF.ar(HPF.ar(CombN.ar(PinkNoise.ar(1), 1/freq, 1/freq, -1, envc), freq * 2), freq * filterHarmonic));
-	osc = Mix.ar([osca, oscb, oscc]) * (amp/2);
+	osc = Mix.ar([osca, oscb, oscc]) * 0.2;
 	osc = Limiter.ar(osc, amp);
 	DetectSilence.ar(in: osc, amp: 0.0001, time: 0.5, doneAction: 0);
 	osc = Pan2.ar(osc, pan);

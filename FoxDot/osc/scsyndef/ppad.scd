@@ -5,7 +5,7 @@ SynthDef.new(\ppad, {
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = SinOsc.ar(freq);
 	osc1 = SinOsc.ar(freq + LFNoise0.ar([400,160]).range(2,24).round(2));
-	osc = Mix.ar([osc,osc1]).tanh / 2;
+	osc = Mix.ar([osc,osc1]).tanh / 3;
 	osc = osc + BPF.ar(PinkNoise.ar([0.4,0.8]),freq,0.1);
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);

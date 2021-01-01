@@ -5,10 +5,10 @@ SynthDef.new(\moogpluck, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	pluck =	Pluck.ar(PinkNoise.ar,1,freq.reciprocal,freq.reciprocal,sus,pluck_coef.clip(-0.5,0.99));
-	//pluck = pluck * EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 2);
+	pluck = pluck * EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel],curve:\sin), doneAction: 0);
 	moog = MoogFF.ar(pluck, (freq*pluck_filter),2);
-	osc = SelectX.ar(pluck_mix,[LPF.ar(pluck,2500),moog]);
-	osc = Mix(osc);
+	osc = SelectX.ar(pluck_mix,[LPF.ar(pluck,4300),moog]);
+	osc = Mix(osc) * 2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 }).add;

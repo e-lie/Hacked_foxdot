@@ -12,7 +12,7 @@ SynthDef.new(\fmrhodes, {
     osc3 = SinOsc.ar(freq, osc4) * env3 * vel;
     osc2 = SinOsc.ar(freq * 15) * 2pi * 0.108819 * env2 * vel;
     osc1 = SinOsc.ar(freq, osc2) * env1 * vel;
-    osc = Mix((osc3 * (1 - mix)) + (osc1 * mix)) / 2;
+    osc = Mix((osc3 * (1 - mix)) + (osc1 * mix)) * 0.25;
     osc = osc * (SinOsc.ar(lfoSpeed) * lfoDepth + 1);
     env = EnvGen.ar(Env.asr(0, 1, 0.1), gate, doneAction: 0);
 	osc = osc * env * amp;

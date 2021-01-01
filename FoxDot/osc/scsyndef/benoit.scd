@@ -8,7 +8,7 @@ SynthDef.new(\benoit, {
 	osc4 = LFTri.ar((freq.cpsmidi - semitwo).midicps);
 	env = EnvGen.ar(Env.linen(0,sus,rel), gate, doneAction:0);
 	tracking = ((freq * 1) + freq) * trackingmul;
-	osc = osc1 + osc2 + osc3 + (osc4 * 2);
+	osc = (osc1 + osc2 + osc3 + (osc4 * 2))/2;
 	osc = RLPF.ar(osc, tracking, 1, 0.33);
 	osc = osc.tanh;
 	osc = osc * env * amp;

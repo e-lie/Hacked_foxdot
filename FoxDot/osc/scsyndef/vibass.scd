@@ -5,7 +5,7 @@ SynthDef.new(\vibass, {
 	env = Env.linen(atk,sus,rel,curve:curve).kr(doneAction: 0);
 	osc1 = SinOsc.ar(freq);
 	osc2 = SinOsc.ar(Line.kr(freq + beatFreq, freq, dur, doneAction:0));
-	osc = Mix([osc1, osc2]);
+	osc = Mix([osc1, osc2]) * 0.2;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)

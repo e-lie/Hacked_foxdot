@@ -12,6 +12,7 @@ SynthDef.new(\xylo, {
 		exciter,freq);
 	osc = osc * amp;
 	DetectSilence.ar(osc,0.001,0.65,doneAction:0);
+	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 }).add;
