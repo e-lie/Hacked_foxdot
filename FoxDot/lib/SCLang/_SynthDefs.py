@@ -407,8 +407,8 @@ sinepad.add()
 video = FileSynthDef("video") 
 video.add()
 
-video = FileSynthDef("hydra") 
-video.add()
+hydra = FileSynthDef("hydra") 
+hydra.add()
 
 # Get rid of the variable synth
 
