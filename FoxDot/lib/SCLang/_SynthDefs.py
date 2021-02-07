@@ -404,6 +404,9 @@ dbass.add()
 sinepad = FileSynthDef("sinepad") 
 sinepad.add()
 
+video = FileSynthDef("video") 
+video.add()
+
 # Get rid of the variable synth
 
 del synth
