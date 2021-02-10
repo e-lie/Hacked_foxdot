@@ -6,9 +6,16 @@ SynthDef.new(\piano, {
 	freq = [freq, freq+fmod];
 	amp=(amp * 0.7);
 	osc=MdaPiano.ar((freq[0]), vel: (40 + (amp * 60)), decay: (sus / 4));
-	env=EnvGen.ar(Env(times: [sus],levels: [(amp * 1), (amp * 1)],curve: 'step'), doneAction: 0);
+	env=EnvGen.ar(Env(times: [sus],levels: [(amp * 1), (amp * 1)],curve: \step), doneAction: 0);
 	osc=(osc * env);
 	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "unknown",
+	modified_by: "Jens Meisner",
+	category: \piano,
+	tags: [\pitched, \keyboard, \mda_piano]
+	)
+).add;

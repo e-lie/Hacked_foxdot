@@ -1,7 +1,8 @@
-SynthDef.new(\pbell, {
-	|bus = 0, singSwitch = 0, freq = 0, amp = 1, decayScale = 0.6, lag = 3, pan = 0|
+SynthDef.new(\prayerbell, {
+	|bus = 0, singSwitch = 0, freq = 0, amp = 1, fmod=0, decayScale = 0.6, lag = 3, pan = 0|
 	var osc, input, first, freqScale, mallet, sing;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	freqScale = freq / 2434;
 	freqScale = Lag3.kr(freqScale, lag);
 	decayScale = Lag3.kr(decayScale, lag);
@@ -69,4 +70,11 @@ SynthDef.new(\pbell, {
 	osc = osc * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Wondersluyter",
+	modified_by: "Bruno Ruviaro, Jens Meisner",
+	decription: "Tibetan prayer bell",
+	category: \bells,
+	tags: [\percussion, \bell, \prayer, \tibetan]
+)).add;

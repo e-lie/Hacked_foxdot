@@ -14,4 +14,11 @@ SynthDef(\sawbass, {
 	//env = EnvGen.ar(Env.adsr(0.01, 0.0, sus / 2, 0.05), 1, doneAction:3);
 	env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, sus, 0.05]), doneAction:3);
 	ReplaceOut.ar(bus,Pan2.ar((filter + filter2) * env * amp, pan))
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

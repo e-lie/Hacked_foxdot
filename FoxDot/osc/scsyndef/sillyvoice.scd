@@ -1,7 +1,8 @@
-SynthDef.new(\svoice, {
-	|freq = 0, amp = 1, vibro = 6, vibratoDepth = 4, curve = -4, vowel = 0, atk = 0.01, sus = 1, rel = 0.1, lag = 1, gate = 1, pan = 0, bus = 0|
+SynthDef.new(\sillyvoice, {
+	|freq = 0, amp = 1, vibro = 6, vibratoDepth = 4, curve = -4, vowel = 0, fmod=0, atk = 0.01, sus = 1, rel = 0.1, lag = 1, gate = 1, pan = 0, bus = 0|
 	var in, vibrato, env, va, ve, vi, vo, vu, osc;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	vibrato = SinOsc.kr(freq:vibro, mul: vibratoDepth);
 	in = Saw.ar(Lag.kr(freq, lag) + vibrato);
 	env = Env.linen(atk, sus, rel, curve: -4).kr(doneAction: 0);
@@ -25,4 +26,12 @@ SynthDef.new(\svoice, {
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Bruno Ruviaro",
+	modified_by: "Jens Meisner",
+	description: "",
+	category: \choir,
+	tags: [\voice, \bass]
+	)
+).add;

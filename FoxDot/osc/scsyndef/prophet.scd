@@ -10,4 +10,12 @@ SynthDef(\prophet, {
 	filter = BHiPass.ar(filter, 200);
 	env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, sus, sus]), doneAction:3);
 	ReplaceOut.ar(bus, Pan2.ar(Mix(filter) * env * amp * 0.5, pan))
-}).add
+},
+metadata: (
+	credit: "Mitchell Sigman",
+	modified_by: "Bruno Ruviaro, Jens Meisner",
+	description: "",
+	category: \keys,
+	tags: [\polyphonic, \analog, \Synthesizer]
+	)
+).add

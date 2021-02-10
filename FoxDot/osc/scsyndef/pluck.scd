@@ -11,4 +11,12 @@ SynthDef.new(\pluck, {
 	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)
+).add;

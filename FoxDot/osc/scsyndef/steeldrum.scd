@@ -1,7 +1,8 @@
-SynthDef.new(\steel, {
-	arg bus = 0, freq = 0, amp = 1, pan = 0, atk = 0.01, sus = 1, curve = -6, filterHarmonic = 6;
+SynthDef.new(\steeldrum, {
+	arg bus = 0, freq = 0, amp = 1, pan = 0, fmod=0, atk = 0.01, sus = 1, curve = -6, filterHarmonic = 6;
 	var osc, resFreqArray, resAmpArray, resDecArray, enva, envb, envc, osca, oscb, oscc;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	resFreqArray = [2, 2.98, 4.75, 6.21, 9, 9.15, 11.87];
 	resAmpArray = [0.35, 0.23, 0.10, 0.06, 0.07, 0.05, 0.01];
 	resDecArray = [0.86, 0.72, 0.37, 0.55, 0.32, 0.21, 0.16];
@@ -17,4 +18,11 @@ SynthDef.new(\steel, {
 	DetectSilence.ar(in: osc, amp: 0.0001, time: 0.5, doneAction: 0);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Josh Mitchell",
+	modified_by: "Jens Meisner",
+	description: "",
+	category: \percussion,
+	tags: [\pitched, \steelDrum, \steelPan]
+)).add;

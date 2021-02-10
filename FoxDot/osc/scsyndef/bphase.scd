@@ -1,7 +1,8 @@
 SynthDef.new(\bphase, {
-	|bus = 0, freq = 0, atk = 0.02, amp=1, sus = 1, rel = 0.3, pan = 0|
+	|bus = 0, freq = 0, fmod=0, atk = 0.02, amp=1, sus = 1, rel = 0.3, pan = 0|
 	var osc, env, osc1, osc2;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	osc1 = PMOsc;
 	osc2 = SinOsc;
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \lin), doneAction:0);
@@ -10,4 +11,11 @@ SynthDef.new(\bphase, {
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

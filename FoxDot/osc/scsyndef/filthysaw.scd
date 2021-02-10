@@ -1,7 +1,8 @@
 SynthDef.new(\filthysaw, {
-	|bus = 0, freq = 0, amp = 1, gate = 1, atk = 0.001, sus = 1, cf = 100, vib = 0, t_bd, t_sd, pw = 0.4, pan = 0|
+	|bus=0, freq=0, amp=1, gate=1, fmod=0, atk=0.001, sus=1, cf=100, vib=0, t_bd, t_sd, pw=0.4, pan=0|
 	var base, env, osc, sd, bd;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
     base = Splay.ar(RLPF.ar(Pulse.ar(freq * [0.99,0.5,1.01],pw),cf.lag(0.05),0.8).madd(SinOsc.ar(vib).range(0.5,4)).sin);
     env = EnvGen.ar(Env.linen(atk,sus,0.01), gate, doneAction:0);
 	osc = Mix([base/2,(LFSaw.ar(freq)/20)]);
@@ -12,4 +13,11 @@ SynthDef.new(\filthysaw, {
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

@@ -11,5 +11,12 @@ SynthDef.new(\moogpluck, {
 	osc = Mix(osc) * 2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;
 

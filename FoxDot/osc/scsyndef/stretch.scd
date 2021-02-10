@@ -3,10 +3,18 @@ SynthDef.new(\stretch, {
 	var osc, env;
 	sus = sus * blur;
 	rate = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	osc = Warp1.ar(2, buf, Line.kr(0,1,sus), rate, windowSize: 0.2, overlaps: 4, interp:2);
 	osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));
 	osc=(osc * amp);
 	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

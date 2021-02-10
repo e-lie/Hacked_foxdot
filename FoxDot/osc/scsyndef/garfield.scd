@@ -1,5 +1,5 @@
 SynthDef.new(\garfield, {
-	|bus=0, freq=0, mult=3, amp=1, pan=0, gate=1, atk=0.01, sus=1, phase=0, para1=0.5, vibrato=1, fmod=0.3|
+	|bus=0, freq=0, mult=3, amp=1, pan=0, gate=1, atk=0.01, sus=1, phase=0, para1=0.5, vibrato=1, fmod=0|
 	var env, osc, del;
 	freq = In.kr(bus,1);
 	freq = [freq,freq+fmod];
@@ -16,4 +16,11 @@ SynthDef.new(\garfield, {
 	osc = osc.tanh;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc);
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

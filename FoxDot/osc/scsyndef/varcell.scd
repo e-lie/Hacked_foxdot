@@ -3,6 +3,7 @@ SynthDef.new(\varcell, {
 	var osc, oscl, oscr, sigA, sigB, sigC, env, modul;
 	sus = sus * blur;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	modul = fmod * SinOsc.kr(rate, add:amp) * Line.kr(0, 1, 7);
 	sigA = Pulse.ar(freq + modul, LFNoise2.kr(1).range(0.2, 0.8) );
@@ -14,4 +15,11 @@ SynthDef.new(\varcell, {
 	osc = osc * amp * env;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

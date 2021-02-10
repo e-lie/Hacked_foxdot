@@ -1,7 +1,8 @@
 SynthDef.new(\fmrhodes, {
-	|bus = 0, freq = 0, gate = 1, pan = 0, amp = 1, vel = 0.8, modIndex = 0.2, mix = 0.2, lfoSpeed = 0.4, lfoDepth = 0.1|
+	|bus = 0, freq = 0, gate = 1, pan = 0, amp = 1, fmod=0, vel = 0.8, modIndex = 0.2, mix = 0.2, lfoSpeed = 0.4, lfoDepth = 0.1|
     var env1, env2, env3, env4, osc1, osc2, osc3, osc4, env, osc;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
     lfoSpeed = lfoSpeed * 12;
     freq = freq * 2;
     env1 = EnvGen.ar(Env.adsr(0.001, 1.25, 0.0, 0.04, curve: \lin));
@@ -18,4 +19,11 @@ SynthDef.new(\fmrhodes, {
 	osc = osc * env * amp;
     osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "unknown",
+	modified_by: "Josh Mitchell, Bruno Ruviaro, Jens Meisner",
+	decription: "FM Rhodes Synthesizer. Native SuperCollider port of STK's Rhodey",
+	category: \keyboards,
+	tags: [\fmSynth, \tag]
+)).add;

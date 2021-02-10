@@ -1,7 +1,8 @@
 SynthDef.new(\rhpiano, {
-    |bus = 0, freq = 0, pan = 0, amp = 1, atk = 0.001, sus = 1, vel = 0.8, modIndex = 0.2, mix = 0.2, lfoSpeed = 0.4, lfoDepth = 0.1|
+    |bus=0, freq=0, pan=0, amp=1, fmod=0, atk=0.001, sus=1, vel=0.8, modIndex=0.2, mix=0.2, lfoSpeed=0.4, lfoDepth=0.1|
     var env1, env2, env3, env4, osc1, osc2, osc3, osc4, osc, env;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
     lfoSpeed = lfoSpeed * 12;
     freq = freq * 2;
 	env = Env.linen(atk, sus, 0.04, curve: -4).kr(doneAction: 0);
@@ -18,4 +19,11 @@ SynthDef.new(\rhpiano, {
 	osc = osc * env * amp;
     osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

@@ -10,4 +10,11 @@ SynthDef.new(\soundin,{
 	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "Jens Meisner",
+	modified_by: "Modifier",
+	decription: "Replacement for audioin synth",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

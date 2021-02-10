@@ -3,8 +3,8 @@ SynthDef.new(\supersaw, {
 	var osc, env;
 	sus = sus * blur;
 	freq = In.kr(bus, 1);
-	freq = {freq * LFNoise2.kr(0.5).range(0.98, 1.02)}!3;
 	freq = [freq, freq+fmod];
+	freq = {freq * LFNoise2.kr(0.5).range(0.98, 1.02)}!3;
 	amp=(amp / 10);
 	osc=LFSaw.ar(freq,phase);
 	osc=(osc * amp);
@@ -13,4 +13,12 @@ SynthDef.new(\supersaw, {
 	osc = Mix(osc) * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "unknown",
+	modified_by: "Jens Meisner",
+	description: "",
+	category: \pads,
+	tags: [\pitched]
+	)
+).add;

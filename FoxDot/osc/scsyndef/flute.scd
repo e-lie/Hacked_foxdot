@@ -1,30 +1,44 @@
-SynthDef.new(\flute, {
-	|bus=0, pan= 0, scl = 0.6, freq = 0, press = 0.87, breath = 0.06, feedbk1 = 0.4, feedbk2 = 0.4, sus = 1, gate = 1, amp = 1|
-	var env1, env2, envibr, vibr, sr, cr, block, poly, ifqc, osc;
-	var flow1, sum1, sum2, fqc, temp1, ax, sum3, value, temp2, flute1, fdbckArray;
+SynthDef(\flute, {
+	|bus=0, scl = 0.2, freq = 440, fmod=0, atk=0.1, sus=1, ipress = 0.9, ibreath = 0.09, ifeedbk1 = 0.4, ifeedbk2 = 0.4, dur = 1, gate = 1, pan = 0, amp = 1|
+	var kenv1, kenv2, kenvibr, kvibr, sr, cr, block, poly, osc, ifqc, fdbckArray;
+	var aflow1, asum1, asum2, afqc, atemp1, ax, apoly, asum3, avalue, atemp2, aflute1;
 	sr = SampleRate.ir;
 	cr = ControlRate.ir;
 	block = cr.reciprocal;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	ifqc = freq;
-	env1 = EnvGen.kr(Env.new([ 0.0, 1.1 * press, press, press, 0.0 ], [ 0.06, 0.2, sus - 0.46, 0.2 ], curve: \lin ));
-	env2 = EnvGen.kr(Env.new([ 0.0, amp, amp, 0.0 ], [ 0.1, sus - 0.02, 0.1 ], curve: \lin ), doneAction: 0);
-	envibr = EnvGen.kr(Env.new( [ 0.0, 0.0, 1, 1, 0.0 ], [ 0.5, 0.5, sus - 1.5, 0.5 ],curve: \lin));
-	flow1 = LFClipNoise.ar( sr, env1 );
-	vibr = SinOsc.ar( 4, 0, 0.1 * envibr );
-	sum1 = ( breath * flow1 ) + env1 + vibr;
-	fqc = ifqc.reciprocal - ( sum1/20000 ) - ( 12/sr ) + ( ifqc/12000000 ) - block;
-	fdbckArray = LocalIn.ar(1);
-	flute1 = fdbckArray;
-	sum2 = sum1 + ( flute1 * feedbk1 );
-	ax = DelayC.ar( sum2, ifqc.reciprocal - block * 0.5, fqc * 0.5 - ( sum1/ifqc/cr ) + 0.001 );
-	poly = ax - ( ax.cubed );
-	sum3 = poly + (flute1 * feedbk2);
-	value = LPF.ar(sum3,2000);
-	flute1 = DelayC.ar( value, ifqc.reciprocal - block, fqc );
-	fdbckArray = flute1;
-	LocalOut.ar(fdbckArray);
-	osc = value * env2 * amp;
-	osc = Pan2.ar(osc,pan);
-	ReplaceOut.ar(bus, osc)
-}).add;
+	// noise envelope
+	kenv1 = EnvGen.kr(Env.linen(atk * sus*10, sus, sus/2, 1.0, \sine), doneAction: 0);
+	// overall envelope
+	kenv2 = EnvGen.kr(Env.linen(atk * sus*10, sus, sus/2, 1.0, \sine), doneAction: 0);
+	// vibrato envelope
+	kenvibr = EnvGen.kr(Env.linen(atk * sus*10, sus, sus/2, 1.0, \sine), doneAction:0);
+    //kenvibr = EnvGen.kr(Env.new( [ 0.0, 0.0, 1, 1, 0.0 ], [ 0.5, 0.5, dur - 1.5, sus ], 'linear') );
+	// create air flow and vibrato
+	aflow1 = LFClipNoise.ar( sr, kenv1 );
+	kvibr = SinOsc.ar( 5, 0, 0.1 * kenvibr );
+	asum1 = ( ibreath * aflow1 ) + kenv1 + kvibr;
+	afqc = ifqc.reciprocal - ( asum1/20000 ) - ( 9/sr ) + ( ifqc/12000000 ) - block;
+	fdbckArray = LocalIn.ar( 1 );
+	aflute1 = fdbckArray;
+	asum2 = asum1 + ( aflute1 * ifeedbk1 );
+	//ax = DelayL.ar( asum2, ifqc.reciprocal * 0.5, afqc * 0.5 );
+	ax = DelayC.ar( asum2, ifqc.reciprocal - block * 0.5, afqc * 0.5 - ( asum1/ifqc/cr ) + 0.001 );
+	apoly = ax - ( ax.cubed );
+	asum3 = apoly + ( aflute1 * ifeedbk2 );
+	avalue = LPF.ar( asum3, 2000 );
+	aflute1 = DelayC.ar( avalue, ifqc.reciprocal - block, afqc );
+	fdbckArray = [ aflute1 ];
+	LocalOut.ar( fdbckArray );
+	osc = avalue * 1/2;
+	osc = Pan2.ar(osc, pan);
+	ReplaceOut.ar(bus, [ osc * kenv2, osc * kenv2 ]);
+},
+metadata: (
+	credit: "John E. Bower",
+	modified_by: "Jens Meisner",
+	description: "",
+	category: \flute,
+	tags: [\slideflute, \wind, \bassflute]
+)).add;

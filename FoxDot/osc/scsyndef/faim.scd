@@ -29,4 +29,11 @@ SynthDef.new(\faim, {
 	osc = Mix(osc) * 0.1;
 	osc = Pan2.ar(osc, pan + [ 0, 0, 0, 0, 0, 0], amp).sum;
 	ReplaceOut.ar(bus, osc)
-}).add;
+},
+metadata: (
+	credit: "Credit",
+	modified_by: "Modifier",
+	decription: "Description",
+	category: \category,
+	tags: [\tag, \tag]
+)).add;

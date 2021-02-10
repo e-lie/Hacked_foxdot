@@ -1,7 +1,8 @@
-SynthDef.new(\gbell, {
-	|bus = 0, freq = 0, t60=8, pitchy=1, amp=1, pan = 0|
+SynthDef.new(\chimebell, {
+	|bus=0, freq=0, t60=8, pitchy=1, fmod=0, amp=1, pan=0|
 	var osc, env, exciter;
 	freq = In.kr(bus, 1);
+	freq = [freq, freq+fmod];
 	env = Env.perc(0.01, 0.02, curve:\sin).kr(doneAction:0);
 	exciter = WhiteNoise.ar() * env;
 	osc = DynKlank.ar(
@@ -14,4 +15,11 @@ SynthDef.new(\gbell, {
 	osc = Mix(osc) * 0.01;
 	osc = Pan2.ar(osc,pan,amp);
 	Out.ar(bus,osc);
-}).add;
+},
+metadata: (
+	credit: "http://sccode.org/1-5aD",
+	modified_by: "Jens Meisner",
+	decription: "Description",
+	category: \bells,
+	tags: [\pitched, \tag]
+)).add;
