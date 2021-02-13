@@ -31,7 +31,7 @@ SynthDef(\flute, {
 	fdbckArray = [ aflute1 ];
 	LocalOut.ar( fdbckArray );
 	osc = avalue * 1/2;
-	osc = osc * kenv2;
+	osc = osc * kenv2 * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc);
 },
