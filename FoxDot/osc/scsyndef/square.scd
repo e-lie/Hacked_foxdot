@@ -7,7 +7,7 @@ SynthDef.new(\square, {
 	osc = PulseDPW.ar(freq, phase);
 	env = EnvGen.ar(Env(times: [0.01, (sus - 0.01), 0.01],levels: [0, 1, 1, 0],curve: 'lin'), doneAction: 0);
 	osc = osc * env * (amp/8);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc) * 0.3;
 	osc = osc * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
