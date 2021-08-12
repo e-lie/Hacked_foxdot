@@ -1,4 +1,4 @@
-SynthDef.new(\varcell, {
+SynthDef.new(\varicelle, {
 	|amp=1, sus=1, pan=0, freq=0, vib=0, fmod=0, rate=1, bus=0, blur=1, beat_dur=1, atk=0.03, decay=0.03, rel=0.09, peak=1, level=0.8,
 	cutoff=4800, noisemix=0.5, noiserate=12, xvib=2|
 	var osc, oscl, oscr, sigA, sigB, sigC, env, modul;
