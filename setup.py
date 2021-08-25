@@ -30,7 +30,8 @@ setup(name='FoxDot',
                 'FoxDot.lib.SCLang',
                 'FoxDot.lib.Settings',
                 'FoxDot.lib.Utils',
-                'FoxDot.lib.Killa'
+                'FoxDot.lib.Killa',
+                'FoxDot.lib.Crashserver'
       ],
       long_description=long_description,
       long_description_content_type="text/markdown",
