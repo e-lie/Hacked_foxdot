@@ -10,6 +10,7 @@ from __future__ import absolute_import, division, print_function
 import re
 
 from .PlayString import *
+from .transform_playstring import transform_playstring
 from .Generators import PRand
 from .PGroups    import PGroupMod, PGroupOr, PGroupStar, PGroupPlus
 from .Main       import Pattern, metaPattern, PatternMethod, PGroup, GeneratorPattern
@@ -94,6 +95,8 @@ def feed(string):
             # Parse the contents of the brackets if found
             j = string.index(">", start=i+1)
             s = string[i+1:j]
+            if '{' not in s:
+                s = transform_playstring(s)
             i = j
 
             chars, _ = feed(s)
