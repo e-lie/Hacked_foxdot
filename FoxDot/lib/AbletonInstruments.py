@@ -54,20 +54,7 @@ class Instruc:
             oct=self.oct
         )
 
-    # def set_volume(self, volume, update_freq = 1.0):
-    #     if isinstance(volume, linvar):
-    #         self.param_modes[8] = 'linvar'
-    #         self.set_volume_futureloop(volume, update_freq)
-    #     else:
-    #         self.param_modes[8] = 'normal'
-    #         self.params[8].value = int(volume)
-    #
-    # def set_volume_futureloop(self, volume, update_freq = 1.0):
-    #     if self.param_modes[8] == 'linvar':
-    #         self.params[8].value = int(volume)
-    #         self.clock.future(update_freq, self.set_volume_futureloop, args=[volume])
-
-    def set_param(self, param_num, value, update_freq = 1.0):
+    def set_param(self, param_num, value, update_freq = 0.5):
         if isinstance(value, linvar):
             self.param_modes[param_num] = 'linvar'
             self.set_param_futureloop(param_num, value, update_freq)
@@ -76,7 +63,7 @@ class Instruc:
             self.params[param_num].value = int(value)
 
 
-    def set_param_futureloop(self, param_num, value, update_freq = 1.0):
+    def set_param_futureloop(self, param_num, value, update_freq = 0.5):
         if self.param_modes[param_num] == 'linvar':
             self.params[param_num].value = int(value)
             self.clock.future(update_freq, self.set_param_futureloop, args=[param_num, value], kwargs={"update_freq": update_freq})
@@ -123,15 +110,3 @@ class Instruc:
                 print("------------------------------------")
                 for k, parameter in enumerate(device.parameters):
                     print(str(k) + " - " + str(parameter))
-
-
-# class Kit808(AbletonMidiInstrument):
-#     default_midi_channel = 2
-#     default_midi_octave = 2
-#
-# class Piano(AbletonMidiInstrument):
-#     default_midi_channel = 4
-#
-# class Percu(AbletonMidiInstrument):
-#     default_midi_channel = 3
-#     default_midi_octave = 2
