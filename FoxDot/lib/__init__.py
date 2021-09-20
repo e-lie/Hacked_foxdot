@@ -17,12 +17,16 @@ from .Effects import *
 from .TimeVar import *
 from .Constants import *
 from .Midi import *
+# from .Instruments import *
+from .AbletonInstruments import *
+
 from .Settings import *
 from .SCLang._SynthDefs import *
 from .ServerManager import *
 from .SCLang import SynthDefs, Env, SynthDef, CompiledSynthDef
 from .Root import Root
 from .Scale import Scale, Tuning
+from .Chords import *
 
 # stdlib imports
 

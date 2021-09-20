@@ -76,15 +76,17 @@ def arrow_zip(pat1, pat2):
 def feed(string):
     """ Used to recursively parse nested strings, returns a list object (not Pattern),
         and a boolean denoting if the list contains a nested list """
-    
+
+    # if '<' not in string and '{' not in string and '(' not in string:
+    #     string = transform_playstring(string)
     string = PlayString(string)
     items  = [] # The actual pattern
 
     layer_pattern = False
     contains_nest = False
-    
+
     i = 0
-    
+
     while i < len(string):
 
         char = string[i]
