@@ -74,18 +74,18 @@ class Instruc:
             scale=self._scale
         )
 
-    def set_param(self, param_num, value, update_freq = 0.5):
+    def set_param(self, param_num, value, update_freq = 0.1):
         if isinstance(value, linvar):
             self.param_modes[param_num] = 'linvar'
             self.set_param_futureloop(param_num, value, update_freq)
         else:
             self.param_modes[param_num] = 'normal'
-            self.params[param_num].value = int(value)
+            self.params[param_num].value = float(value)
 
 
-    def set_param_futureloop(self, param_num, value, update_freq = 0.5):
+    def set_param_futureloop(self, param_num, value, update_freq = 0.1):
         if self.param_modes[param_num] == 'linvar':
-            self.params[param_num].value = int(value)
+            self.params[param_num].value = float(value)
             self.clock.future(update_freq, self.set_param_futureloop, args=[param_num, value], kwargs={"update_freq": update_freq})
 
     def stop(self, dur=None):
