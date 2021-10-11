@@ -126,3 +126,10 @@ class Instruc:
                 print("------------------------------------")
                 for k, parameter in enumerate(device.parameters):
                     print(str(k) + " - " + str(parameter))
+
+    def show(self):
+        for j, device in enumerate(self.setlive.tracks[self.track_number].devices):
+            print(str(j) + " - " + str(device))
+            print("------------------------------------")
+            for k, parameter in enumerate(device.parameters):
+                print(str(k) + " - " + str(parameter))
