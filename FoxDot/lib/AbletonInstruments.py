@@ -4,7 +4,7 @@ import live
 
 def run_now(f):
     f()
-            return f
+    return f
 
 # This is not realy a decorator, more a currying mechanism using the decorator syntax
 # Cf: https://www.geeksforgeeks.org/currying-function-in-python/ and https://www.saltycrane.com/blog/2010/03/simple-python-decorator-examples/
@@ -56,6 +56,18 @@ class Instruc:
             self.play()
         return self
 
+    def setup(self, pitch=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1, no_play=False):
+        self.mdevice.parameters[0] = True
+        self.oct = oct if oct != -1 else self.oct
+        self._amp = amp if amp != -1 else self._amp
+        self._dur = dur if dur != -1 else self._dur
+        self._pitch = pitch if pitch != -1 else self._pitch
+        self._sus = sus if sus != -1 else self._sus
+        self._scale = scale if scale != -1 else self._scale
+        if not no_play:
+            return self.out()
+        return self
+
     def later(self, future_dur, pitch=-1, dur=-1, sus=-1, amp=-1, oct=-1):
         self.update(pitch, dur=dur, sus=sus, amp=amp, oct=oct, no_play=True)
         self.clock.future(future_dur, self.play)
@@ -65,6 +77,17 @@ class Instruc:
 
     def play(self):
         self.player >> MidiOut(
+            self._pitch,
+            channel=self.midi_channel,
+            dur=self._dur,
+            sus=self._sus,
+            amp=self._amp,
+            oct=self.oct,
+            scale=self._scale
+        )
+
+    def out(self):
+        return MidiOut(
             self._pitch,
             channel=self.midi_channel,
             dur=self._dur,
