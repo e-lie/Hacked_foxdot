@@ -2,6 +2,22 @@ from . import Player, MidiOut, linvar
 import live
 
 
+def run_now(f):
+    f()
+            return f
+
+# This is not realy a decorator, more a currying mechanism using the decorator syntax
+# Cf: https://www.geeksforgeeks.org/currying-function-in-python/ and https://www.saltycrane.com/blog/2010/03/simple-python-decorator-examples/
+def later_clockless(clock):
+    def later_clocked(future_dur):
+        def later_decorator(f):
+            clock.future(future_dur, f)
+            return f
+        return later_decorator
+    return later_clocked
+# later = later_dry(Clock) ## to define in during the FoxDot module __init__ after Clock variable definition
+
+
 class Instruc:
     default_amplitude = 1
     default_pitch = [0]

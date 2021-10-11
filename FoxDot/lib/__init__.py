@@ -223,6 +223,9 @@ when.set_namespace(FoxDotCode) # experimental
 
 _Clock = Clock = TempoClock()
 
+# 
+run_later = later_clockless(Clock)
+
 update_foxdot_server(Server)
 update_foxdot_clock(Clock)
 instantiate_player_objects()
