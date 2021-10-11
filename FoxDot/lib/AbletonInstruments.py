@@ -1,4 +1,4 @@
-from . import Player, MidiOut, linvar
+from . import Player, MidiOut, linvar, Scale
 import live
 
 
@@ -23,6 +23,7 @@ class Instruc:
     default_pitch = [0]
     default_duration = 1
     default_sustain = default_duration - 0.01
+    default_scale = Scale.chromatic
 
     def __init__(self, channel, oct, clock):
         self.setlive = live.Set()
@@ -40,21 +41,23 @@ class Instruc:
         self._dur = self.default_duration
         self._pitch = self.default_pitch
         self._sus = self.default_sustain
+        self._scale = self.default_scale
 
 
-    def setup(self, pitch=-1, dur=-1, sus=-1, amp=-1, oct=-1, no_play=False):
+    def update(self, pitch=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1, no_play=False):
         self.mdevice.parameters[0] = True
         self.oct = oct if oct != -1 else self.oct
         self._amp = amp if amp != -1 else self._amp
         self._dur = dur if dur != -1 else self._dur
         self._pitch = pitch if pitch != -1 else self._pitch
         self._sus = sus if sus != -1 else self._sus
+        self._scale = scale if scale != -1 else self._scale
         if not no_play:
             self.play()
         return self
 
     def later(self, future_dur, pitch=-1, dur=-1, sus=-1, amp=-1, oct=-1):
-        self.setup(pitch, dur=dur, sus=sus, amp=amp, oct=oct, no_play=True)
+        self.update(pitch, dur=dur, sus=sus, amp=amp, oct=oct, no_play=True)
         self.clock.future(future_dur, self.play)
 
     def __del__(self):
@@ -67,7 +70,8 @@ class Instruc:
             dur=self._dur,
             sus=self._sus,
             amp=self._amp,
-            oct=self.oct
+            oct=self.oct,
+            scale=self._scale
         )
 
     def set_param(self, param_num, value, update_freq = 0.5):
