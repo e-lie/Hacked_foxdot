@@ -155,3 +155,5 @@ def transform_playstring(string):
         )
     # print(result)
     return result
+
+tps = transform_playstring

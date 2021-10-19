@@ -77,3 +77,5 @@ from .Generators import *
 from .PlayString import *
 from .Parse      import *
 from .Utils      import *
+
+from .transform_playstring import tps

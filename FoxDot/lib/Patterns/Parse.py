@@ -97,8 +97,6 @@ def feed(string):
             # Parse the contents of the brackets if found
             j = string.index(">", start=i+1)
             s = string[i+1:j]
-            if '{' not in s:
-                s = transform_playstring(s)
             i = j
 
             chars, _ = feed(s)
