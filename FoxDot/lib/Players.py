@@ -284,6 +284,7 @@ class Player(Repeatable):
 
         # The string representation of the degree of the player
         self.playstring = ""
+        self.midi_map = None
 
         # Information used in generating OSC messages
         self.buf_delay = []
@@ -312,11 +313,11 @@ class Player(Repeatable):
         self.current_dur = None
         self.old_pattern_dur = None
         self.old_dur = None
-        
+
         self.isplaying = False
         self.isAlive = True
 
-        # These dicts contain the attribute and modifier values that are sent to SuperCollider     
+        # These dicts contain the attribute and modifier values that are sent to SuperCollider
 
         self.attr  = {}
         self.modifier = Pattern()
@@ -802,6 +803,11 @@ class Player(Repeatable):
 
             self.filename = kwargs["filename"]
             del kwargs["filename"]
+
+        if "midi_map" in kwargs:
+
+            self.midi_map = kwargs["midi_map"]
+            del kwargs["midi_map"]
 
         if self.isplaying is False:
 
@@ -1745,8 +1751,8 @@ class Player(Repeatable):
 
             else:
 
-                freq, midinote = get_freq_and_midi(degree, octave, root, scale)
-                
+                freq, midinote = get_freq_and_midi(degree, octave, root, scale, midi_map=self.midi_map)
+
             message.update({'freq':  freq, 'midinote': midinote})
 
             # Updater player key
