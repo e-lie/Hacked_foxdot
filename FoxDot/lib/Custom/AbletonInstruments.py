@@ -17,27 +17,6 @@ def later_clockless(clock):
             return f
         return later_decorator
     return later_clocked
-# later = later_dry(Clock) ## to define in during the FoxDot module __init__ after Clock variable definition
-
-# run_later = later_clockless(Clock)
-
-# def set_param_futureloop_clockless(clock):
-#     def set_param_futureloop_clocked(param, value, update_freq = 0.1):
-#         if param.state == 'linvar':
-#             param.value = normalize_param(param, value)
-#             clock.future(update_freq, set_param_futureloop_clocked, args=[param, value], kwargs={"update_freq": update_freq})
-#     return set_param_futureloop_clocked
-
-# set_param_futureloop = set_param_futureloop_clockless(Clock)
-
-# def set_param(param, value, update_freq = 0.1):
-#     if isinstance(value, linvar):
-#         param.state = 'linvar'
-#         set_param_futureloop(param, value, update_freq)
-#     else:
-#         param.state = 'normal'
-#         param.value = normalize_param(param, value)
-
 
 def normalize_param(param, value):
     if param.maximum == 127:
@@ -64,8 +43,6 @@ def interpolate(start, end, step=5, go_back=True):
 
 
 
-
-
 class Instruc:
     default_amplitude = 1
     default_data = [0]
@@ -75,13 +52,6 @@ class Instruc:
 
     def __init__(self, channel, oct):
         self.midi_channel = channel - 1
-        # self.setlive = live.Set()
-        # self.setlive.scan(scan_clip_names = True, scan_devices = True)
-        # self.track_number = channel - 1
-        # self.param_states = [ 'normal' for i in range(20) ]
-        # self.track = self.setlive.tracks[self.track_number]
-        # self.mdevice = self.setlive.tracks[self.track_number].devices[0] if self.setlive.tracks[self.track_number].devices else None
-        # self.params = self.setlive.tracks[self.track_number].devices[0].parameters
         self.oct = oct
         self._amp = self.default_amplitude
         self._dur = self.default_duration
@@ -178,17 +148,8 @@ class Instruc:
     #             print(str(k) + " - " + str(parameter))
 
 
-# set = live.Set()
-# set.scan(scan_clip_names = True, scan_devices = True)
-# frenchkit_track = set.tracks[4]
-# frenchkit = frenchkit_track.devices[0]
-# frenchkit_reso = frenchkit_track.devices[1]
-# frenchkit_eq = frenchkit_track.devices[2]
-# frenchkit_delay = frenchkit_track.devices[3]
-# frenchkit_reverb = frenchkit_track.devices[4]
-# frenchkit_reverb_dw = frenchkit_track.devices[4].parameters[1]
-
-
+class AbletrackSynth(object):
+    pass
 
 class SmartSet(object):
 
@@ -224,7 +185,6 @@ class SmartSet(object):
     @pan.setter
     def pan(self, value):
         self.__set.set_master_pan(value)
-
 
 class SmartTrack(object):
 
@@ -382,100 +342,4 @@ class SmartDevice(object):
     #                 __repr__ = __repr__)
 
     # return type(cls_name, (object,), cls_attrs)
-
-
-# class SmartDevice:
-#     def __init__(self, device):
-#         self.device=device
-
-# class EffectChain:
-
-#     def __init__(self, set_live, track_num, offset=1):
-#         self._reso = set_live.tracks[track_num].devices[offset+0]
-#         self._eq = set_live.tracks[track_num].devices[offset+1]
-#         self._delay = set_live.tracks[track_num].devices[offset+2]
-#         self._reverb = set_live.tracks[track_num].devices[offset+3]
-
-#         self._reso_onoff_param = self._reso.parameters[0]
-#         self._reso_dw_param = self._reso.parameters[1]
-#         self._reso_color_param = self._reso.parameters[2]
-#         self._reso_gain_param = self._reso.parameters[3]
-#         self._reso_width_param = self._reso.parameters[4]
-
-#         self._eq_onoff_param = self._eq.parameters[0]
-#         self._eq_low_param = self._eq.parameters[1]
-#         self._eq_mid_param = self._eq.parameters[2]
-#         self._eq_high_param = self._eq.parameters[3]
-#         self._eq_low_thresh_param = self._eq.parameters[4]
-#         self._eq_high_thresh_param = self._eq.parameters[5]
-
-#         self._delay_onoff_param = self._delay.parameters[0]
-#         self._delay_vol_param = self._delay.parameters[1]
-#         self._delay_time_param = self._delay.parameters[2]
-#         self._delay_feedback_param = self._delay.parameters[3]
-#         self._delay_pan_param = self._delay.parameters[4]
-
-#         self._reverb_onoff_param = self._reverb.parameters[0]
-#         self._reverb_dw_param = self._reverb.parameters[1]
-#         self._reverb_high_param = self._reverb.parameters[2]
-#         self._reverb_low_param = self._reverb.parameters[3]
-#         self._reverb_decay_param = self._reverb.parameters[4]
-
-#     @property
-#     def reso(self):
-#         return normalize_param(self._reso_dw_param.value
-#     @reso.setter
-#     def reso(self, value):
-#         self._reso_dw_param.value = value
-
-#     @property
-#     def eq_low(self):
-#         return self._eq_low_param.value
-#     @eq_low.setter
-#     def eq_low(self, value):
-#         self._eq_low_param.value = value
-
-#     @property
-#     def eq_mid(self):
-#         return self._eq_mid_param.value
-#     @eq_mid.setter
-#     def eq_mid(self, value):
-#         self._eq_mid_param.value = value
-
-#     @property
-#     def eq_high(self):
-#         return self._eq_high_param.value
-#     @eq_high.setter
-#     def eq_high(self, value):
-#         self._eq_high_param.value = value
-
-#     @property
-#     def eq_lth(self):
-#         return self._eq_low_thresh_param.value
-#     @eq_lth.setter
-#     def eq_lth(self, value):
-#         self._eq_low_thresh_param.value = value
-
-#     @property
-#     def eq_hth(self):
-#         return self._eq_high_thresh_param.value
-#     @eq_lth.setter
-#     def eq_hth(self, value):
-#         self._eq_high_thresh_param.value = value
-
-#     @property
-#     def lpf(self):
-#         return self._eq_low_thresh_param.value
-#     @lpf.setter
-#     def lpf(self, value):
-#         self._eq_low_param.value = 127
-#         self._eq_low_thresh_param.value = value
-
-#     @property
-#     def hpf(self):
-#         return self._eq_high_thresh_param.value
-#     @hpf.setter
-#     def hpf(self, value):
-#         self._eq_high_param.value = 127
-#         self._eq_high_thresh_param.value = value
 
