@@ -258,10 +258,16 @@ class SmartTrack(object):
             new_state = 'timevar1' if self.__vol_state != 'timevar1' else 'timevar2'
             self.__vol_state = new_state
             self.__set_vol_futureloop(value, new_state, update_freq)
+            def schedule_futureloop_update(value, new_state, update_freq):
+                self.__vol_state = new_state
+                self.__set_vol_futureloop(value, new_state, update_freq)
+            Clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
-            self.__vol_state = 'normal'
-            self.__track.volume = value
+            def schedule_value_update(value):
+                self.__vol_state = 'normal'
+                self.__track.volume = value
+            Clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
 
     def __set_vol_futureloop(self, value, state, update_freq = 0.05):
         if self.__vol_state == state:
@@ -271,11 +277,15 @@ class SmartTrack(object):
     def __set_pan(self, value, update_freq = 0.05):
         if isinstance(value, TimeVar):
             new_state = 'timevar1' if self.__pan_state != 'timevar1' else 'timevar2'
-            self.__pan_state = new_state
-            self.__set_pan_futureloop(value, new_state, update_freq)
+            def schedule_futureloop_update(value, new_state, update_freq):
+                self.__pan_state = new_state
+                self.__set_pan_futureloop(value, new_state, update_freq)
+            Clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
-            self.__pan_state = 'normal'
-            self.__track.pan = value
+            def schedule_value_update(value):
+                self.__pan_state = 'normal'
+                self.__track.pan = value
+            Clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
 
     def __set_pan_futureloop(self, value, state, update_freq = 0.05):
         if self.__pan_state == state:
@@ -338,12 +348,16 @@ class SmartDevice(object):
                 new_state = 'timevar1'
             else:
                 new_state = 'timevar2'
-            self.__param_states[name] = new_state
-            self.__set_param_futureloop(name, value, new_state, update_freq)
+            def schedule_futureloop_update(name, value, new_state, update_freq):
+                self.__param_states[name] = new_state
+                self.__set_param_futureloop(name, value, new_state, update_freq)
+            Clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
-            self.__param_states[name] = 'normal'
-            param.value = normalize_param(param, value)
+            def schedule_value_update(param, value):
+                self.__param_states[name] = 'normal'
+                param.value = normalize_param(param, value)
+            Clock.schedule(schedule_value_update, beat=None, args=[param, value]) #beat=None means schedule for the next bar
 
     def __set_param_futureloop(self, name, value, state, update_freq = 0.05):
         param = self.__params[self.__param_ids[name]]
