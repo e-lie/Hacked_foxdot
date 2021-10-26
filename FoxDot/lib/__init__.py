@@ -17,8 +17,6 @@ from .Effects import *
 from .TimeVar import *
 from .Constants import *
 from .Midi import *
-# from .Instruments import *
-from .AbletonInstruments import *
 
 from .Settings import *
 from .SCLang._SynthDefs import *
@@ -223,24 +221,7 @@ when.set_namespace(FoxDotCode) # experimental
 
 _Clock = Clock = TempoClock()
 
-run_later = later_clockless(Clock)
 
-def set_param_futureloop_clockless(clock):
-    def set_param_futureloop_clocked(param, value, update_freq = 0.1):
-        if param.mode == 'linvar':
-            param.value = normalize_param(param, value)
-            clock.future(update_freq, set_param_futureloop_clocked, args=[param, value], kwargs={"update_freq": update_freq})
-    return set_param_futureloop_clocked
-
-set_param_futureloop = set_param_futureloop_clockless(Clock)
-
-def set_param(param, value, update_freq = 0.1):
-    if isinstance(value, linvar):
-        param.mode = 'linvar'
-        set_param_futureloop(param, value, update_freq)
-    else:
-        param.mode = 'normal'
-        param.value = normalize_param(param, value)
 
 
 
