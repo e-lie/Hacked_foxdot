@@ -43,113 +43,65 @@ def interpolate(start, end, step=5, go_back=True):
 
 
 
-class Instruc:
-    default_amplitude = 1
+class MidiFacade:
+
     default_data = [0]
-    default_duration = 1
-    default_sustain = default_duration - 0.01
     default_scale = Scale.chromatic
+    default_midi_channel = 1
+    default_oct = 3
 
-    def __init__(self, channel, oct):
-        self.midi_channel = channel - 1
-        self.oct = oct
-        self._amp = self.default_amplitude
-        self._dur = self.default_duration
-        self._data = self.default_data
-        self._sus = self.default_sustain
-        self._scale = self.default_scale
-        self._midi_map = None
+    def __init__(self, midi_channel=None, oct=None, scale=None, midi_map=None):
+        self._midi_channel = midi_channel if midi_channel else self.default_midi_channel
+        self._oct = oct if oct else self.default_oct
+        self._scale = scale if scale else self.default_scale
+        self._midi_map = midi_map if midi_map else self.default_midimap()
 
-    def init(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1, midi_map=-1):
-        # self.mdevice.parameters[0] = True
-        self.oct = oct if oct != -1 else self.oct
-        self._amp = amp if amp != -1 else self.default_amplitude
-        self._dur = dur if dur != -1 else self.default_duration
-        self.data = data if data != -1 else self.default_data
-        self._sus = sus if sus != -1 else self.default_sustain
-        self._scale = scale if scale != -1 else self.default_scale
-        self._midi_map = midi_map if midi_map != -1 else None
-        return self.out()
+    # def init(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1, midi_map=-1):
+    #     # self.mdevice.parameters[0] = True
+    #     self.oct = oct if oct != -1 else self.oct
+    #     self._amp = amp if amp != -1 else self.default_amplitude
+    #     self._dur = dur if dur != -1 else self.default_duration
+    #     self.data = data if data != -1 else self.default_data
+    #     self._sus = sus if sus != -1 else self.default_sustain
+    #     self._scale = scale if scale != -1 else self.default_scale
+    #     self._midi_map = midi_map if midi_map != -1 else None
+    #     return self.out()
 
-    def setup(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1):
-        # self.mdevice.parameters[0] = True
-        self.oct = oct if oct != -1 else self.oct
-        self._amp = amp if amp != -1 else self._amp
-        self._dur = dur if dur != -1 else self._dur
-        self._data = data if data != -1 else self._data
-        self._sus = sus if sus != -1 else self._sus
-        self._scale = scale if scale != -1 else self._scale
-        return self.out()
+    # def setup(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1):
+    #     # self.mdevice.parameters[0] = True
+    #     self.oct = oct if oct != -1 else self.oct
+    #     self._amp = amp if amp != -1 else self._amp
+    #     self._dur = dur if dur != -1 else self._dur
+    #     self._data = data if data != -1 else self._data
+    #     self._sus = sus if sus != -1 else self._sus
+    #     self._scale = scale if scale != -1 else self._scale
+    #     return self.out()
 
-    def out(self):
+    def default_midimap(self):
+        lowcase = list(range(97,123))
+        upcase = list(range(65,91))
+        base_midi_map = {'default': 2, ' ': -1}
+        for i in range(52):
+            if i % 2 == 0:
+                base_midi_map[chr(lowcase[i//2])] = i
+            else:
+                base_midi_map[chr(upcase[i//2])] = i
+        return base_midi_map
+
+    def out(self, *args, midi_channel=None, oct=None, scale=None, midi_map=None, **kwargs):
+        midi_map = midi_map if midi_map else self._midi_map
+        midi_channel = midi_channel if midi_channel else self._midi_channel
+        oct = oct if oct else self._oct
+        scale = scale if scale else self._scale
         return MidiOut(
-            self._data,
-            channel=self.midi_channel,
-            dur=self._dur,
-            sus=self._sus,
-            amp=self._amp,
-            oct=self.oct,
-            scale=self._scale,
-            midi_map=self._midi_map,
+            midi_map = midi_map,
+            midi_channel = midi_channel,
+            oct = oct,
+            scale = scale,
+            *args,
+            **kwargs,
         )
 
-    @property
-    def amp(self):
-        return self._amp
-    @amp.setter
-    def amp(self, amplitude):
-        self._amp=amplitude
-        self.play()
-
-    @property
-    def data(self):
-        return self._amp
-    @data.setter
-    def data(self, data):
-        # if type(data) is str:
-        #     print("striiing")
-        self._data=data
-        # self.play()
-
-    @property
-    def dur(self):
-        return self._dur
-    @dur.setter
-    def dur(self, duration):
-        self._dur=duration
-        if not self.sus or self.sus > self.dur-0.03:
-            self._sus=duration - 0.01
-        self.play()
-
-    @property
-    def sus(self):
-        return self._dur
-    @sus.setter
-    def sus(self, sustain):
-        self._sus=min(sustain, self.dur-0.01)
-        self.play()
-
-
-    # def display_set(self):
-    #     for i, track in enumerate(self.setlive.tracks):
-    #         print("\n" + str(i) + " - " + str(track))
-    #         print("===========================")
-    #         for j, device in enumerate(track.devices):
-    #             print(str(j) + " - " + str(device))
-    #             print("------------------------------------")
-    #             for k, parameter in enumerate(device.parameters):
-    #                 print(str(k) + " - " + str(parameter))
-    #
-    # def show(self):
-    #     for j, device in enumerate(self.setlive.tracks[self.track_number].devices):
-    #         print(str(j) + " - " + str(device))
-    #         print("------------------------------------")
-    #         for k, parameter in enumerate(device.parameters):
-    #             print(str(k) + " - " + str(parameter))
-
-
-class AbletrackSynth(object):
-    pass
 
 class SmartSet(object):
 
