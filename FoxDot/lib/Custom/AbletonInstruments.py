@@ -1,4 +1,6 @@
-from .. import Player, MidiOut, linvar, Scale
+from FoxDot.lib.TimeVar import TimeVar
+from .. import Player, MidiOut, linvar, Scale, Clock
+from time import sleep
 import live
 
 
@@ -21,7 +23,7 @@ def later_clockless(clock):
 
 # def set_param_futureloop_clockless(clock):
 #     def set_param_futureloop_clocked(param, value, update_freq = 0.1):
-#         if param.mode == 'linvar':
+#         if param.state == 'linvar':
 #             param.value = normalize_param(param, value)
 #             clock.future(update_freq, set_param_futureloop_clocked, args=[param, value], kwargs={"update_freq": update_freq})
 #     return set_param_futureloop_clocked
@@ -30,10 +32,10 @@ def later_clockless(clock):
 
 # def set_param(param, value, update_freq = 0.1):
 #     if isinstance(value, linvar):
-#         param.mode = 'linvar'
+#         param.state = 'linvar'
 #         set_param_futureloop(param, value, update_freq)
 #     else:
-#         param.mode = 'normal'
+#         param.state = 'normal'
 #         param.value = normalize_param(param, value)
 
 
@@ -71,13 +73,12 @@ class Instruc:
     default_sustain = default_duration - 0.01
     default_scale = Scale.chromatic
 
-    def __init__(self, channel, oct, clock):
+    def __init__(self, channel, oct):
         self.midi_channel = channel - 1
-        self.clock = clock
         # self.setlive = live.Set()
         # self.setlive.scan(scan_clip_names = True, scan_devices = True)
         # self.track_number = channel - 1
-        # self.param_modes = [ 'normal' for i in range(20) ]
+        # self.param_states = [ 'normal' for i in range(20) ]
         # self.track = self.setlive.tracks[self.track_number]
         # self.mdevice = self.setlive.tracks[self.track_number].devices[0] if self.setlive.tracks[self.track_number].devices else None
         # self.params = self.setlive.tracks[self.track_number].devices[0].parameters
@@ -210,6 +211,21 @@ class SmartSet(object):
         else:
             return self.__smart_tracks[name]
 
+    @property
+    def vol(self):
+        return self.__set.get_master_volume()
+    @vol.setter
+    def vol(self, value):
+        self.__set.set_master_volume(value)
+
+    @property
+    def pan(self):
+        return self.__set.get_master_pan()
+    @pan.setter
+    def pan(self, value):
+        self.__set.set_master_pan(value)
+
+
 class SmartTrack(object):
 
     def __init__(self, track):
@@ -218,6 +234,8 @@ class SmartTrack(object):
         self.__smart_devices = {}
         self.__device_names = {}
         self.__device_ids = {}
+        self.__vol_state = 'normal'
+        self.__pan_state = 'normal'
         for id, device in enumerate(self.__devices):
             simple_name = device.name.lower().replace(' ','_').replace('/','_')
             self.__device_names[id] = simple_name
@@ -233,14 +251,51 @@ class SmartTrack(object):
         else:
             return self.__smart_devices[name]
 
-    # def __setattr__(self, name, value):
-    #     if name in ['_SmartTrack__track', '_SmartTrack__devices', '_SmartTrack__device_ids', '_SmartTrack__device_names', '_SmartTrack__smart_devices']:
-    #         super().__setattr__(name, value)
-    #     elif value <= 1.0 and value >= 0:
-    #         param = self.__params[self.__param_ids[name]]
-    #         param.value = normalize_param(param, value)
-    #     else:
-    #         raise AttributeError("Param value not between 0.0 and 1.0.")
+    def __set_vol(self, value, update_freq = 0.05):
+        if isinstance(value, TimeVar):
+            # to update a time varying param and tell the preceding recursion loop to stop
+            # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
+            new_state = 'timevar1' if self.__vol_state != 'timevar1' else 'timevar2'
+            self.__vol_state = new_state
+            self.__set_vol_futureloop(value, new_state, update_freq)
+        else:
+            # to switch back to non varying value use the state normal to make the recursion loop stop
+            self.__vol_state = 'normal'
+            self.__track.volume = value
+
+    def __set_vol_futureloop(self, value, state, update_freq = 0.05):
+        if self.__vol_state == state:
+            self.__track.volume = float(value)
+            Clock.future(update_freq, self.__set_vol_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+
+    def __set_pan(self, value, update_freq = 0.05):
+        if isinstance(value, TimeVar):
+            new_state = 'timevar1' if self.__pan_state != 'timevar1' else 'timevar2'
+            self.__pan_state = new_state
+            self.__set_pan_futureloop(value, new_state, update_freq)
+        else:
+            self.__pan_state = 'normal'
+            self.__track.pan = value
+
+    def __set_pan_futureloop(self, value, state, update_freq = 0.05):
+        if self.__pan_state == state:
+            self.__track.pan = float(value)
+            Clock.future(update_freq, self.__set_pan_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+
+    @property
+    def vol(self):
+        return self.__track.volume
+    @vol.setter
+    def vol(self, value):
+        self.__set_vol(value)
+
+    @property
+    def pan(self):
+        return self.__track.pan
+    @pan.setter
+    def pan(self, value):
+        self.__set_pan(value)
+
 class SmartDevice(object):
     
     def __init__(self, device):
@@ -248,6 +303,7 @@ class SmartDevice(object):
         self.__params = device.parameters
         self.__param_names = {}
         self.__param_ids = {}
+        self.__param_states = {}
         for id, param in enumerate(self.__params):
             simple_name = param.name.lower().replace(' ','_').replace('/','_')
             if 'macro' not in simple_name:
@@ -264,27 +320,36 @@ class SmartDevice(object):
             return self.__params[self.__param_ids[name]].value
 
     def __setattr__(self, name, value):
-        if name in ['_SmartDevice__device', '_SmartDevice__params', '_SmartDevice__param_names', '_SmartDevice__param_ids']:
+        if name in ['_SmartDevice__device', '_SmartDevice__params', '_SmartDevice__param_names', '_SmartDevice__param_ids', '_SmartDevice__param_states']:
             super().__setattr__(name, value)
-        elif value <= 1.0 and value >= 0:
-            param = self.__params[self.__param_ids[name]]
+        else:
+            # param = self.__params[self.__param_ids[name]]
+            # param.value = normalize_param(param, value)
+            self.__set_param(name, value)
+        # else:
+        #     raise AttributeError("Param value not between 0.0 and 1.0.")
+
+    def __set_param(self, name, value, update_freq = 0.05):
+        param = self.__params[self.__param_ids[name]]
+        if isinstance(value, TimeVar):
+            # to update a time varying param and tell the preceding recursion loop to stop
+            # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
+            if name not in self.__param_states.keys() or self.__param_states[name] != 'timevar1':
+                new_state = 'timevar1'
+            else:
+                new_state = 'timevar2'
+            self.__param_states[name] = new_state
+            self.__set_param_futureloop(name, value, new_state, update_freq)
+        else:
+            # to switch back to non varying value use the state normal to make the recursion loop stop
+            self.__param_states[name] = 'normal'
             param.value = normalize_param(param, value)
-        else:
-            raise AttributeError("Param value not between 0.0 and 1.0.")
 
-    def __set_param(self, param_num, value, update_freq = 0.1):
-        if isinstance(value, linvar):
-            self.param_modes[param_num] = 'linvar'
-            self.set_param_futureloop(param_num, value, update_freq)
-        else:
-            self.param_modes[param_num] = 'normal'
-            self.params[param_num].value = normalize_param(self.params[param_num], value)
-
-
-    def __set_param_futureloop(self, param_num, value, update_freq = 0.1):
-        if self.param_modes[param_num] == 'linvar':
-            self.params[param_num].value = normalize_param(self.params[param_num], value)
-            self.clock.future(update_freq, self.set_param_futureloop, args=[param_num, value], kwargs={"update_freq": update_freq})
+    def __set_param_futureloop(self, name, value, state, update_freq = 0.05):
+        param = self.__params[self.__param_ids[name]]
+        if self.__param_states[name] == state:
+            param.value = normalize_param(param, float(value))
+            Clock.future(update_freq, self.__set_param_futureloop, args=[name, value, state], kwargs={"update_freq": update_freq})
 
 
 
