@@ -1,7 +1,12 @@
+from typing import Mapping
 from FoxDot.lib.TimeVar import TimeVar
-from .. import Player, MidiOut, linvar, Scale, Clock
+from FoxDot.lib.Scale import Scale
+from FoxDot.lib.Midi import MidiOut
+from FoxDot.lib.Patterns import Pattern
 from time import sleep
 import live
+
+
 
 
 def run_now(f):
@@ -24,60 +29,48 @@ def normalize_param(param, value):
     else:
         return value * 1.0
 
-def interpolate(start, end, step=5, go_back=True):
-    assert len(start) == len(end)
-    diffs = []
-    result = []
-    for i in range(len(start)):
-        diffs += [start[i] - end[i]]
-    base_pattern = start
-    for j in range(step):
-        new_pattern = [ e - diffs[k]/(step+1) for k, e in enumerate(base_pattern)]
-        result.append(new_pattern)
-        base_pattern = new_pattern
-    if not go_back:
-        result = [start] + result + [end]
-    else:
-        result = [start] + result + [end] + result[::-1] # result except last elem + end + reversed result
+def normalize_volume(value):
+    """function make volume 1.0 corresponds to gain 0 in ableton (max volume without gain)
+    so 1.1 gives the volume some gain"""
+    return value * 0.85 if value <= 1.17 else 1.0
+
+
     return result
 
+class InstrucFactory:
+    def __init__(self, clock):
+        self._clock = clock
+
+    def buildInstruc(self, **kwargs):
+        return InstrumentFacadeClockless(self._clock, **kwargs)
 
 
-class MidiFacade:
+class InstrumentFacadeClockless:
 
     default_data = [0]
-    default_scale = Scale.chromatic
+    default_scale = Scale.default
     default_midi_channel = 1
     default_oct = 3
 
-    def __init__(self, midi_channel=None, oct=None, scale=None, midi_map=None):
+    def __init__(self, clock, smart_track=None, midi_channel=None, oct=None, midi_map=None, scale=None):
+        self._clock = clock
+        self._smart_track = smart_track
         self._midi_channel = midi_channel if midi_channel else self.default_midi_channel
         self._oct = oct if oct else self.default_oct
-        self._scale = scale if scale else self.default_scale
-        self._midi_map = midi_map if midi_map else self.default_midimap()
+        self._scale = scale if scale is not None else self.default_scale
+        if midi_map and isinstance(midi_map, str):
+            if midi_map == 'stdrum':
+                self._midi_map = self.stdrum_midimap()
+            if midi_map == 'threesquare':
+                self._midi_map = self.threesquare_midimap()
+            if midi_map == 'linear':
+                self._midi_map = self.linear_midimap()
+        elif midi_map and isinstance(midi_map, Mapping):
+            self._midi_map = midi_map
+        else:
+            self._midi_map = self.linear_midimap()
 
-    # def init(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1, midi_map=-1):
-    #     # self.mdevice.parameters[0] = True
-    #     self.oct = oct if oct != -1 else self.oct
-    #     self._amp = amp if amp != -1 else self.default_amplitude
-    #     self._dur = dur if dur != -1 else self.default_duration
-    #     self.data = data if data != -1 else self.default_data
-    #     self._sus = sus if sus != -1 else self.default_sustain
-    #     self._scale = scale if scale != -1 else self.default_scale
-    #     self._midi_map = midi_map if midi_map != -1 else None
-    #     return self.out()
-
-    # def setup(self, data=-1, dur=-1, sus=-1, amp=-1, oct=-1, scale=-1):
-    #     # self.mdevice.parameters[0] = True
-    #     self.oct = oct if oct != -1 else self.oct
-    #     self._amp = amp if amp != -1 else self._amp
-    #     self._dur = dur if dur != -1 else self._dur
-    #     self._data = data if data != -1 else self._data
-    #     self._sus = sus if sus != -1 else self._sus
-    #     self._scale = scale if scale != -1 else self._scale
-    #     return self.out()
-
-    def default_midimap(self):
+    def linear_midimap(self):
         lowcase = list(range(97,123))
         upcase = list(range(65,91))
         base_midi_map = {'default': 2, ' ': -1}
@@ -88,24 +81,107 @@ class MidiFacade:
                 base_midi_map[chr(upcase[i//2])] = i
         return base_midi_map
 
-    def out(self, *args, midi_channel=None, oct=None, scale=None, midi_map=None, **kwargs):
+    def threesquare_midimap(self):
+        lowcase = list(range(97,123))
+        upcase = list(range(65,91))
+        base_midi_map = {'default': 2, ' ': -1}
+        for i in range(16):
+            base_midi_map[chr(lowcase[i])] = i
+        for i in range(16):
+            base_midi_map[chr(upcase[i])] = i+16
+        for i in range(10):
+            k = i + 16
+            j = i + 32
+            base_midi_map[chr(lowcase[k])] = j
+            base_midi_map[chr(upcase[k])] = j+10
+        return base_midi_map
+
+    def stdrum_midimap(self):
+        lowcase = list(range(97,123))
+        upcase = list(range(65,91))
+        base_midi_map = {
+            'default': 2,
+            ' ': -1,
+            'x': 0,
+            'r': 1,
+            'o': 2,
+            'c': 3,
+            'w': 4,
+            'T': 5,
+            'H': 6,
+            't': 7,
+            's': 8,
+            'm': 9,
+            '=': 10,
+            '-': 11,
+            'p': 12,
+            '*': 13,
+            'h': 14,
+            'b': 14,
+        }
+
+        return base_midi_map
+
+
+    def _split_param_name(self, name):
+        if "_" in name:
+            splitted = name.split('_')
+            device_name = splitted[0]
+            param_name = '_'.join(splitted[1:])
+            return device_name, param_name
+        else:
+            raise KeyError("Parameter name not splittable by '_': " + name)
+
+
+    def param_exists_in_live(self, full_name):
+        device_name, param_name = self._split_param_name(full_name)
+        smart_track = self._smart_track
+        if device_name in smart_track.smart_devices.keys():
+            smart_device = smart_track.smart_devices[device_name]
+            if param_name in smart_device.param_ids.keys():
+                return True
+        raise KeyError("Parameter doesn't exist: " + full_name)
+        return False
+
+
+    def out(self, *args, midi_channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
         midi_map = midi_map if midi_map else self._midi_map
         midi_channel = midi_channel if midi_channel else self._midi_channel
         oct = oct if oct else self._oct
-        scale = scale if scale else self._scale
+        scale = scale if scale is not None else self._scale
+        remaining_kwargs = {}
+        sus = Pattern(sus) if sus else Pattern(dur)-0.03 # to avoid midi event collision between start and end note (which prevent the instrument from playing)
+
+        for kwarg, value in kwargs.items():
+            if kwarg == "pan":
+                self._smart_track.pan = value
+            elif kwarg == "vol":
+                self._smart_track.vol = value
+            elif "_" in kwarg and self.param_exists_in_live(kwarg):
+                device_name, param_name = self._split_param_name(kwarg)
+                device = getattr(self._smart_track, device_name)
+                setattr(device, param_name, value)
+            else:
+                remaining_kwargs[kwarg] = value
+
+        
+                
         return MidiOut(
             midi_map = midi_map,
-            midi_channel = midi_channel,
+            channel = midi_channel-1,
             oct = oct,
             scale = scale,
+            dur = dur,
+            sus = sus,
             *args,
-            **kwargs,
+            **remaining_kwargs,
         )
 
 
 class SmartSet(object):
 
-    def __init__(self, set):
+    def __init__(self, clock, set):
+        self._clock = clock
         self.__set = set
         self.__tracks = set.tracks
         self.__smart_tracks = {}
@@ -115,7 +191,7 @@ class SmartSet(object):
             simple_name = track.name.lower().replace(' ','_').replace('/','_')
             self.__track_names[id] = simple_name
             self.__track_ids[simple_name] = id
-            self.__smart_tracks[simple_name] = SmartTrack(self.__tracks[self.__track_ids[simple_name]])
+            self.__smart_tracks[simple_name] = SmartTrack(self._clock, self.__tracks[self.__track_ids[simple_name]])
 
     def __getattr__(self, name):
         dict_name = '_SmartSet' + name
@@ -129,7 +205,8 @@ class SmartSet(object):
         return self.__set.get_master_volume()
     @vol.setter
     def vol(self, value):
-        self.__set.set_master_volume(value)
+        # TODO make this setter TimeVar ready like for smart tracks
+        self.__set.set_master_volume(normalize_volume(value))
 
     @property
     def pan(self):
@@ -140,7 +217,8 @@ class SmartSet(object):
 
 class SmartTrack(object):
 
-    def __init__(self, track):
+    def __init__(self, clock, track):
+        self._clock = clock
         self.__track = track
         self.__devices = track.devices
         self.__smart_devices = {}
@@ -152,16 +230,26 @@ class SmartTrack(object):
             simple_name = device.name.lower().replace(' ','_').replace('/','_')
             self.__device_names[id] = simple_name
             self.__device_ids[simple_name] = id
-            self.__smart_devices[simple_name] = SmartDevice(self.__devices[self.__device_ids[simple_name]])
+            self.__smart_devices[simple_name] = SmartDevice(self._clock, self.__devices[self.__device_ids[simple_name]])
 
     def __getattr__(self, name):
         dict_name = '_SmartTrack' + name
         if dict_name in self.__dict__.keys():
             return self.__dict__[dict_name]
-        elif name == 'devices':
-            return [name for name in self.__device_ids.keys()]
         else:
             return self.__smart_devices[name]
+
+    @property
+    def device_ids(self):
+        return self.__device_ids
+
+    @property
+    def devices(self):
+        return self.__devices
+
+    @property
+    def smart_devices(self):
+        return self.__smart_devices
 
     def __set_vol(self, value, update_freq = 0.05):
         if isinstance(value, TimeVar):
@@ -173,18 +261,18 @@ class SmartTrack(object):
             def schedule_futureloop_update(value, new_state, update_freq):
                 self.__vol_state = new_state
                 self.__set_vol_futureloop(value, new_state, update_freq)
-            Clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
             def schedule_value_update(value):
                 self.__vol_state = 'normal'
-                self.__track.volume = value
-            Clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
+                self.__track.volume = normalize_volume(value)
+            self._clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
 
     def __set_vol_futureloop(self, value, state, update_freq = 0.05):
         if self.__vol_state == state:
-            self.__track.volume = float(value)
-            Clock.future(update_freq, self.__set_vol_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+            self.__track.volume = normalize_volume(float(value))
+            self._clock.future(update_freq, self.__set_vol_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
 
     def __set_pan(self, value, update_freq = 0.05):
         if isinstance(value, TimeVar):
@@ -192,17 +280,17 @@ class SmartTrack(object):
             def schedule_futureloop_update(value, new_state, update_freq):
                 self.__pan_state = new_state
                 self.__set_pan_futureloop(value, new_state, update_freq)
-            Clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
             def schedule_value_update(value):
                 self.__pan_state = 'normal'
                 self.__track.pan = value
-            Clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
 
     def __set_pan_futureloop(self, value, state, update_freq = 0.05):
         if self.__pan_state == state:
             self.__track.pan = float(value)
-            Clock.future(update_freq, self.__set_pan_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+            self._clock.future(update_freq, self.__set_pan_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
 
     @property
     def vol(self):
@@ -220,7 +308,8 @@ class SmartTrack(object):
 
 class SmartDevice(object):
     
-    def __init__(self, device):
+    def __init__(self, clock, device):
+        self._clock = clock
         self.__device = device
         self.__params = device.parameters
         self.__param_names = {}
@@ -241,8 +330,17 @@ class SmartDevice(object):
         else:
             return self.__params[self.__param_ids[name]].value
 
+    @property
+    def param_ids(self):
+        return self.__param_ids
+
+    @property
+    def params(self):
+        return self.__params
+
     def __setattr__(self, name, value):
-        if name in ['_SmartDevice__device', '_SmartDevice__params', '_SmartDevice__param_names', '_SmartDevice__param_ids', '_SmartDevice__param_states']:
+        if name in ['_SmartDevice__device', '_SmartDevice__params', '_SmartDevice__param_names',
+                    '_SmartDevice__param_ids', '_SmartDevice__param_states', '_clock']:
             super().__setattr__(name, value)
         else:
             # param = self.__params[self.__param_ids[name]]
@@ -263,19 +361,19 @@ class SmartDevice(object):
             def schedule_futureloop_update(name, value, new_state, update_freq):
                 self.__param_states[name] = new_state
                 self.__set_param_futureloop(name, value, new_state, update_freq)
-            Clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq]) #beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
             def schedule_value_update(param, value):
                 self.__param_states[name] = 'normal'
                 param.value = normalize_param(param, value)
-            Clock.schedule(schedule_value_update, beat=None, args=[param, value]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_value_update, beat=None, args=[param, value]) #beat=None means schedule for the next bar
 
     def __set_param_futureloop(self, name, value, state, update_freq = 0.05):
         param = self.__params[self.__param_ids[name]]
         if self.__param_states[name] == state:
             param.value = normalize_param(param, float(value))
-            Clock.future(update_freq, self.__set_param_futureloop, args=[name, value, state], kwargs={"update_freq": update_freq})
+            self._clock.future(update_freq, self.__set_param_futureloop, args=[name, value, state], kwargs={"update_freq": update_freq})
 
 
 

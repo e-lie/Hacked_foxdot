@@ -1,6 +1,9 @@
 from __future__ import absolute_import, division, print_function
+from functools import partial
 
 import os.path
+
+from FoxDot.lib.AbletonInstruments import InstrumentFacadeClockless
 with open((os.path.join(os.path.dirname(__file__), ".version")), "r") as f:
     __version__ = f.readline().strip()
 
@@ -29,6 +32,12 @@ from .Chords import *
 # stdlib imports
 
 from random import choice as choose
+
+# extensions
+
+from .AbletonInstruments import *
+from .MusicStateMachine import *
+from .UtilityFunctions import *
 
 # Define any custom functions
 
@@ -221,9 +230,13 @@ when.set_namespace(FoxDotCode) # experimental
 
 _Clock = Clock = TempoClock()
 
+factory  = InstrucFactory(Clock)
+Instruc = factory.buildInstruc
+
+msm = MusicStateMachine
 
 
-
+delay = partial(delay_clockless, Clock)
 
 update_foxdot_server(Server)
 update_foxdot_clock(Clock)
@@ -240,3 +253,7 @@ PatternTypes = functions(Patterns.Sequences)
 # Start
 
 Clock.start()
+
+# Boostrap set
+
+from .BootstrapSet import *
