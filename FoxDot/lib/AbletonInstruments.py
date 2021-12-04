@@ -45,12 +45,47 @@ class InstrucFactory:
     def buildInstruc(self, **kwargs):
         return InstrumentFacadeClockless(self._clock, self._smart_set, **kwargs)
 
+reverb_default = {
+    "reverb_dw": 0,
+    "reverb_hifreq": .89,
+    "reverb_lowfreq": .11,
+    "reverb_decay": .41,
+}
+
+resob_default = {
+    "resob_dw": 0,
+    "resob_color": .85,
+    "resob_gain": .66,
+    "resob_width": 1,
+}
+
+eq_default = {
+    "eq_gainlo": .85,
+    "eq_gainmid": .85,
+    "eq_gainhi": .85,
+    "eq_freqlo": .3,
+    "eq_freqhi": .57,
+}
+
+delay_default = {
+    "delay_vol": 0,
+    "delay_time": 0,
+    "delay_feedback": .5,
+    "delay_pan": .9,
+    "delay_dry": 1,
+}
+
+config_default = {} | reverb_default | eq_default | resob_default | delay_default
+
+
+
 
 class InstrumentFacadeClockless:
 
     default_data = [0]
     default_scale = Scale.default
     default_oct = 3
+    config_default = config_default
 
     def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, midi_map=None, config={}, scale=None):
         self._clock = clock
@@ -59,7 +94,7 @@ class InstrumentFacadeClockless:
         self._channel = channel
         self._grouping = grouping
         self._oct = oct if oct else self.default_oct
-        self._config = config
+        self._config = self.config_default | config
         self._scale = scale if scale is not None else self.default_scale
         if midi_map and isinstance(midi_map, str):
             if midi_map == 'stdrum':
