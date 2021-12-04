@@ -185,6 +185,7 @@ class InstrumentFacadeClockless:
     def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
         midi_map = midi_map if midi_map else self._midi_map
         channel = channel if channel else self._channel
+        channel_suffix = "_" + str(channel)
         oct = oct if oct else self._oct
         scale = scale if scale is not None else self._scale
         remaining_kwargs = {}
@@ -192,14 +193,35 @@ class InstrumentFacadeClockless:
 
         kwargs = self._config | kwargs # overwrite base config with runtime arguments
 
+        if self._grouping: # handle per instrument parameters
+            group_track = getattr(self._smart_set, channel_suffix).get_pylive_track()
+            group_subtracks = group_track.tracks
+            group_track_names = [track.name for track in group_subtracks]
+            group_smart_tracks = [getattr(self._smart_set, track_name) for track_name in group_track_names]
+            group_track_names_without_chan = [ track_name[:-len(channel_suffix)] for track_name in group_track_names]
+            for track_name in group_track_names_without_chan:
+                print(track_name)
+                track_params = {key:value for (key,value) in kwargs.items() if track_name in key.split("_")}
+                print(track_params)
+                for kwarg, value in track_params.items():
+                    if "pan" in kwarg:
+                        track = getattr(self._smart_set, track_name+channel_suffix)
+                        setattr(track, "pan", value)
+                    elif "vol" in kwarg:
+                        track = getattr(self._smart_set, track_name+channel_suffix)
+                        setattr(track, "vol", value)
+                for key in track_params.keys(): # remove per instrument params
+                    del kwargs[key]
+
+
         for kwarg, value in kwargs.items():
             if kwarg == "pan":
                 self._smart_track.pan = value
             elif kwarg == "vol":
                 self._smart_track.vol = value
-            elif "vol_" in kwarg:
-                track = getattr(self._smart_set, kwarg[4:])
-                setattr(track, "vol", value)
+            # elif "_vol" in kwarg:
+            #     track = getattr(self._smart_set, kwarg[:-4] + "_" + str(self._channel))
+            #     setattr(track, "vol", value)
             elif "_" in kwarg and self.param_exists_in_live(kwarg):
                 device_name, param_name = self._split_param_name(kwarg)
                 device = getattr(self._smart_track, device_name)
@@ -281,6 +303,9 @@ class SmartTrack(object):
             return self.__dict__[dict_name]
         else:
             return self.__smart_devices[name]
+
+    def get_pylive_track(self):
+        return self.__track
 
     @property
     def device_ids(self):
