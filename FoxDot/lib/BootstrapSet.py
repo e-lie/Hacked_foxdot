@@ -39,4 +39,29 @@ msm = MusicStateMachine
 
 # kora = Instruc(smart_track=ab.bells, midi_channel=13, oct=6, scale=Scale.minor).out
 
-balafon = Instruc(track_name="balafon", midi_channel=11, oct=5, scale=Scale.minor).out
+balafon = Instruc(track_name="balafon", channel=11, oct=5, scale=Scale.minor).out
+
+cr_ubass =  Instruc(track_name="channel_6",
+                    channel=6,
+                    grouping=True,
+                    oct=4,
+                    config={
+                        "vol_ubass_6": 1,
+                        "vol_crubass_6": .8,
+                        "vol_tb303_6": 0,
+                        "reverb_dw": .4,
+                    },
+                    scale=Scale.minor).out
+
+tb303 =  Instruc(track_name="channel_6",
+                 channel=6,
+                 grouping=True,
+                 oct=4,
+                 config={
+                     "vol_ubass_6": .5,
+                     "vol_crubass_6": 0,
+                     "vol_tb303_6": 1,
+                     "eq_freqlo": .3,
+                     "eq_gainlo": 0,
+                 },
+                 scale=Scale.minor).out

@@ -52,11 +52,14 @@ class InstrumentFacadeClockless:
     default_scale = Scale.default
     default_oct = 3
 
-    def __init__(self, clock, smart_set, track_name, midi_channel, oct=None, midi_map=None, scale=None):
+    def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, midi_map=None, config={}, scale=None):
         self._clock = clock
+        self._smart_set = smart_set
         self._smart_track = getattr(smart_set, track_name)
-        self._midi_channel = midi_channel if midi_channel else self.default_midi_channel
+        self._channel = channel
+        self._grouping = grouping
         self._oct = oct if oct else self.default_oct
+        self._config = config
         self._scale = scale if scale is not None else self.default_scale
         if midi_map and isinstance(midi_map, str):
             if midi_map == 'stdrum':
@@ -144,19 +147,24 @@ class InstrumentFacadeClockless:
         return False
 
 
-    def out(self, *args, midi_channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
+    def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
         midi_map = midi_map if midi_map else self._midi_map
-        midi_channel = midi_channel if midi_channel else self._midi_channel
+        channel = channel if channel else self._channel
         oct = oct if oct else self._oct
         scale = scale if scale is not None else self._scale
         remaining_kwargs = {}
         sus = Pattern(sus) if sus else Pattern(dur)-0.03 # to avoid midi event collision between start and end note (which prevent the instrument from playing)
+
+        kwargs = self._config | kwargs # overwrite base config with runtime arguments
 
         for kwarg, value in kwargs.items():
             if kwarg == "pan":
                 self._smart_track.pan = value
             elif kwarg == "vol":
                 self._smart_track.vol = value
+            elif "vol_" in kwarg:
+                track = getattr(self._smart_set, kwarg[4:])
+                setattr(track, "vol", value)
             elif "_" in kwarg and self.param_exists_in_live(kwarg):
                 device_name, param_name = self._split_param_name(kwarg)
                 device = getattr(self._smart_track, device_name)
@@ -168,7 +176,7 @@ class InstrumentFacadeClockless:
                 
         return MidiOut(
             midi_map = midi_map,
-            channel = midi_channel-1,
+            channel = self._channel-1,
             oct = oct,
             scale = scale,
             dur = dur,
