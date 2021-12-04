@@ -1,6 +1,9 @@
 from __future__ import absolute_import, division, print_function
+from functools import partial
 
 import os.path
+
+from FoxDot.lib.AbletonInstruments import InstrumentFacadeClockless
 with open((os.path.join(os.path.dirname(__file__), ".version")), "r") as f:
     __version__ = f.readline().strip()
 
@@ -17,8 +20,6 @@ from .Effects import *
 from .TimeVar import *
 from .Constants import *
 from .Midi import *
-# from .Instruments import *
-from .AbletonInstruments import *
 
 from .Settings import *
 from .SCLang._SynthDefs import *
@@ -31,6 +32,12 @@ from .Chords import *
 # stdlib imports
 
 from random import choice as choose
+
+# extensions
+
+from .AbletonInstruments import *
+from .MusicStateMachine import *
+from .UtilityFunctions import *
 
 # Define any custom functions
 
@@ -223,26 +230,13 @@ when.set_namespace(FoxDotCode) # experimental
 
 _Clock = Clock = TempoClock()
 
-run_later = later_clockless(Clock)
+factory  = InstrucFactory(Clock)
+Instruc = factory.buildInstruc
 
-def set_param_futureloop_clockless(clock):
-    def set_param_futureloop_clocked(param, value, update_freq = 0.1):
-        if param.mode == 'linvar':
-            param.value = normalize_param(param, value)
-            clock.future(update_freq, set_param_futureloop_clocked, args=[param, value], kwargs={"update_freq": update_freq})
-    return set_param_futureloop_clocked
-
-set_param_futureloop = set_param_futureloop_clockless(Clock)
-
-def set_param(param, value, update_freq = 0.1):
-    if isinstance(value, linvar):
-        param.mode = 'linvar'
-        set_param_futureloop(param, value, update_freq)
-    else:
-        param.mode = 'normal'
-        param.value = normalize_param(param, value)
+msm = MusicStateMachine
 
 
+delay = partial(delay_clockless, Clock)
 
 update_foxdot_server(Server)
 update_foxdot_clock(Clock)
@@ -259,3 +253,7 @@ PatternTypes = functions(Patterns.Sequences)
 # Start
 
 Clock.start()
+
+# Boostrap set
+
+from .BootstrapSet import *
