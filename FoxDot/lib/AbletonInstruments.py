@@ -38,23 +38,23 @@ def normalize_volume(value):
     return result
 
 class InstrucFactory:
-    def __init__(self, clock):
+    def __init__(self, clock, smart_set):
         self._clock = clock
+        self._smart_set = smart_set
 
     def buildInstruc(self, **kwargs):
-        return InstrumentFacadeClockless(self._clock, **kwargs)
+        return InstrumentFacadeClockless(self._clock, self._smart_set, **kwargs)
 
 
 class InstrumentFacadeClockless:
 
     default_data = [0]
     default_scale = Scale.default
-    default_midi_channel = 1
     default_oct = 3
 
-    def __init__(self, clock, smart_track=None, midi_channel=None, oct=None, midi_map=None, scale=None):
+    def __init__(self, clock, smart_set, track_name, midi_channel, oct=None, midi_map=None, scale=None):
         self._clock = clock
-        self._smart_track = smart_track
+        self._smart_track = getattr(smart_set, track_name)
         self._midi_channel = midi_channel if midi_channel else self.default_midi_channel
         self._oct = oct if oct else self.default_oct
         self._scale = scale if scale is not None else self.default_scale
@@ -66,7 +66,7 @@ class InstrumentFacadeClockless:
             if midi_map == 'linear':
                 self._midi_map = self.linear_midimap()
         elif midi_map and isinstance(midi_map, Mapping):
-            self._midi_map = midi_map
+            self._midi_map = self.threesquare_midimap() | midi_map # overwrite default midi_map with provided map
         else:
             self._midi_map = self.linear_midimap()
 

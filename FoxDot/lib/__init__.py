@@ -230,13 +230,7 @@ when.set_namespace(FoxDotCode) # experimental
 
 _Clock = Clock = TempoClock()
 
-factory  = InstrucFactory(Clock)
-Instruc = factory.buildInstruc
 
-msm = MusicStateMachine
-
-
-delay = partial(delay_clockless, Clock)
 
 update_foxdot_server(Server)
 update_foxdot_clock(Clock)
