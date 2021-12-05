@@ -171,15 +171,28 @@ class InstrumentFacadeClockless:
             raise KeyError("Parameter name not splittable by '_': " + name)
 
 
-    def param_exists_in_live(self, full_name):
+    def param_exists_in_live(self, smart_track, full_name):
         device_name, param_name = self._split_param_name(full_name)
-        smart_track = self._smart_track
         if device_name in smart_track.smart_devices.keys():
             smart_device = smart_track.smart_devices[device_name]
             if param_name in smart_device.param_ids.keys():
                 return True
         raise KeyError("Parameter doesn't exist: " + full_name)
         return False
+
+    def apply_live_params(self, smart_track, param_dict, remaining_param_dict={}):
+        for param, value in param_dict.items():
+            if param == "pan":
+                smart_track.pan = value
+            elif param == "vol":
+                smart_track.vol = value
+            elif "_" in param and self.param_exists_in_live(smart_track, param):
+                device_name, param_name = self._split_param_name(param)
+                device = getattr(smart_track, device_name)
+                setattr(device, param_name, value)
+            else:
+                remaining_param_dict[param] = value
+        
 
 
     def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
@@ -191,44 +204,21 @@ class InstrumentFacadeClockless:
         remaining_kwargs = {}
         sus = Pattern(sus) if sus else Pattern(dur)-0.03 # to avoid midi event collision between start and end note (which prevent the instrument from playing)
 
-        kwargs = self._config | kwargs # overwrite base config with runtime arguments
+        params = self._config | kwargs # overwrite base config with runtime arguments
 
         if self._grouping: # handle per instrument parameters
-            group_track = getattr(self._smart_set, channel_suffix).get_pylive_track()
-            group_subtracks = group_track.tracks
-            group_track_names = [track.name for track in group_subtracks]
-            group_smart_tracks = [getattr(self._smart_set, track_name) for track_name in group_track_names]
-            group_track_names_without_chan = [ track_name[:-len(channel_suffix)] for track_name in group_track_names]
-            for track_name in group_track_names_without_chan:
-                print(track_name)
-                track_params = {key:value for (key,value) in kwargs.items() if track_name in key.split("_")}
+            group_subtracks = getattr(self._smart_set, channel_suffix).get_pylive_track().tracks # get the group named like "_6" for the channel then its subtracks
+            group_track_names = [track.name[:-len(channel_suffix)] for track in group_subtracks] # get the names and remove the _6 like channel suffix from the names
+            for track_name in group_track_names:
+                track_params = {key.replace(track_name+"_", ""):value for (key,value) in params.items() if track_name in key.split("_")}
                 print(track_params)
-                for kwarg, value in track_params.items():
-                    if "pan" in kwarg:
-                        track = getattr(self._smart_set, track_name+channel_suffix)
-                        setattr(track, "pan", value)
-                    elif "vol" in kwarg:
-                        track = getattr(self._smart_set, track_name+channel_suffix)
-                        setattr(track, "vol", value)
+                subtrack = getattr(self._smart_set, track_name+channel_suffix) # get the corresponding smart track
+                self.apply_live_params(subtrack, track_params)
                 for key in track_params.keys(): # remove per instrument params
-                    del kwargs[key]
+                    del params[track_name+"_"+key]
 
-
-        for kwarg, value in kwargs.items():
-            if kwarg == "pan":
-                self._smart_track.pan = value
-            elif kwarg == "vol":
-                self._smart_track.vol = value
-            # elif "_vol" in kwarg:
-            #     track = getattr(self._smart_set, kwarg[:-4] + "_" + str(self._channel))
-            #     setattr(track, "vol", value)
-            elif "_" in kwarg and self.param_exists_in_live(kwarg):
-                device_name, param_name = self._split_param_name(kwarg)
-                device = getattr(self._smart_track, device_name)
-                setattr(device, param_name, value)
-            else:
-                remaining_kwargs[kwarg] = value
-
+        remaining_param_dict = {}
+        self.apply_live_params(self._smart_track, params, remaining_param_dict)
         
                 
         return MidiOut(
@@ -239,7 +229,7 @@ class InstrumentFacadeClockless:
             dur = dur,
             sus = sus,
             *args,
-            **remaining_kwargs,
+            **remaining_param_dict,
         )
 
 

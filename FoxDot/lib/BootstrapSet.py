@@ -41,27 +41,104 @@ msm = MusicStateMachine
 
 balafon = Instruc(track_name="balafon", channel=11, oct=5, scale=Scale.minor).out
 
-cr_ubass =  Instruc(track_name="channel_6",
+# Channel 2
+
+kitcuba =  Instruc(track_name="channel_2",
+                    channel=2,
+                    grouping=True,
+                    oct=3,
+                    midi_map="stdrum",
+                    config={
+                        "kitcuba_vol": 1,
+                        "jazzkit_vol": 0,
+                        "reaktorkit_vol": 0,
+                        "harshkit_vol": 0,
+                    },
+                    scale=Scale.chromatic).out
+
+jazzkit =  Instruc(track_name="channel_2",
+                    channel=2,
+                    grouping=True,
+                    oct=3,
+                    midi_map="stdrum",
+                    config={
+                        "kitcuba_vol": 0,
+                        "jazzkit_vol": 1,
+                        "reaktorkit_vol": 0,
+                        "harshkit_vol": 0,
+                    },
+                    scale=Scale.chromatic).out
+
+reaktorkit =  Instruc(track_name="channel_2",
+                    channel=2,
+                    grouping=True,
+                    oct=3,
+                    midi_map="stdrum",
+                    config={
+                        "kitcuba_vol": 0,
+                        "jazzkit_vol": 0,
+                        "reaktorkit_vol": 1,
+                        "harshkit_vol": 0,
+                    },
+                    scale=Scale.chromatic).out
+
+harshkit =  Instruc(track_name="channel_2",
+                    channel=2,
+                    grouping=True,
+                    oct=3,
+                    midi_map="stdrum",
+                    config={
+                        "kitcuba_vol": 0,
+                        "jazzkit_vol": 0,
+                        "reaktorkit_vol": 0,
+                        "harshkit_vol": 1,
+                    },
+                    scale=Scale.chromatic).out
+
+# Channel 6
+
+crubass =  Instruc(track_name="channel_6",
                     channel=6,
                     grouping=True,
                     oct=4,
                     config={
-                        "ubass_vol": 1,
+                        "ubass_vol": .9,
                         "crubass_vol": .8,
                         "tb303_vol": 0,
-                        "reverb_dw": .4,
                     },
                     scale=Scale.minor).out
 
-tb303 =  Instruc(track_name="channel_6",
+sub303 =  Instruc(track_name="channel_6",
                  channel=6,
                  grouping=True,
                  oct=4,
                  config={
-                     "ubass_vol": .5,
+                     "ubass_vol": .6,
                      "crubass_vol": 0,
-                     "tb303_vol": 1,
-                     "eq_freqlo": .3,
-                     "eq_gainlo": 0,
+                     "tb303_vol": .9,
+                 },
+                 scale=Scale.minor).out
+
+# Channel 7
+
+crubass_2 =  Instruc(track_name="channel_7",
+                    channel=7,
+                    grouping=True,
+                    oct=4,
+                    config={
+                        "ubass_vol": .9,
+                        "crubass_vol": .8,
+                        "tb303_vol": 0,
+                    },
+                    scale=Scale.minor).out
+
+sub303_2 =  Instruc(track_name="channel_7",
+                 channel=7,
+                 grouping=True,
+                 oct=4,
+                 config={
+                     "ubass_vol": .6,
+                     "crubass_vol": 0,
+                     "tb303_vol": .9,
                  },
                  scale=Scale.minor).out
