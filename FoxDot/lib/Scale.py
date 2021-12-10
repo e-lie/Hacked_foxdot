@@ -444,7 +444,6 @@ class __scale__:
     altered      = ScalePattern([ 0, 1, 3, 4, 6, 8, 10 ], name= "altered")
     
 
-
     freq            = FreqScalePattern()
 
     def __init__(self):

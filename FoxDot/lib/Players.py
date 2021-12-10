@@ -221,7 +221,7 @@ class Player(Repeatable):
     # Really need to tidy this up
 
     keywords   = ('degree', 'oct', 'freq', 'dur', 'delay', 'buf',
-                  'blur', 'amplify', 'scale', 'bpm', 'sample', "env")
+                  'blur', 'amplify', 'scale', 'bpm', 'sample', 'sdb', "env")
 
     envelope_keywords = ("atk", "decay", "rel", "legato", "curve", "gain")
 
@@ -473,7 +473,7 @@ class Player(Repeatable):
 
                 # keep track of what values we change with +-
 
-                if (self.synthdef == SamplePlayer and name == "sample") or (self.synthdef != SamplePlayer and name == "degree"):
+                if (self.synthdef == SamplePlayer and name == "sample") or (self.synthdef != SamplePlayer and name == "degree") or (self.synthdef == SamplePlayer and name == "sdb"):
 
                     self.modifier = value
 
@@ -1668,6 +1668,7 @@ class Player(Repeatable):
 
             degree = kwargs.get("degree", event['degree'])
             sample = kwargs.get("sample", event["sample"])
+            sdb = kwargs.get("sdb", event["sdb"])
             rate   = kwargs.get("rate", event["rate"])
 
             if rate < 0:
@@ -1680,7 +1681,7 @@ class Player(Repeatable):
 
                 pos = 0 
  
-            buf  = self.samples.getBufferFromSymbol(str(degree), sample).bufnum
+            buf  = self.samples.getBufferFromSymbol(str(degree), sdb, sample).bufnum
             
             message.update( {'buf': buf,'pos': pos} )
 
@@ -1891,7 +1892,8 @@ class Player(Repeatable):
 
         if self.synthdef == LoopPlayer:
 
-            Samples.reload(self.filename)
+            Sample
+            s.reload(self.filename)
 
         return self
 
