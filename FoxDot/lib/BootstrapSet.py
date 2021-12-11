@@ -23,8 +23,9 @@ msm = MusicStateMachine
 
 # kitcuba = Instruc(smart_track=ab.kitcuba, midi_channel=1, scale=Scale.chromatic, oct=3, midi_map="stdrum").out
 # kitdnb = Instruc(smart_track=ab.kitcuba, midi_channel=2, scale=Scale.chromatic, oct=3, midi_map="stdrum").out
-# kit808 = Instruc(smart_track=ab.kitdatai, midi_channel=3, scale=Scale.chromatic, oct=3, midi_map="stdrum").out
-# kicker = Instruc(smart_track=ab.kicker, midi_channel=4, scale=Scale.chromatic, oct=3).out
+kit808 = Instruc(track_name="kit808", channel=1, scale=Scale.chromatic, oct=3, midi_map="stdrum").out
+kicker = Instruc(track_name="kicker", channel=1, scale=Scale.chromatic, oct=1.6, midi_map="threesquare").out
+kitdatai = Instruc(track_name="kitdatai", channel=1, scale=Scale.chromatic, oct=4.4, midi_map="stdrum").out
 # kitdatai = Instruc(smart_track=ab.kitdatai, midi_channel=5, scale=Scale.chromatic, oct=3, midi_map="stdrum").out
 
 # ubass = Instruc(smart_track=ab.ubass, midi_channel=6, oct=4, scale=Scale.minor).out
@@ -37,7 +38,7 @@ msm = MusicStateMachine
 # balafon = Instruc(smart_track=ab.balafon, midi_channel=11, oct=6, scale=Scale.minor).out
 # bells = Instruc(smart_track=ab.bells, midi_channel=12, oct=6, scale=Scale.minor).out
 
-# kora = Instruc(smart_track=ab.bells, midi_channel=13, oct=6, scale=Scale.minor).out
+kora = Instruc(track_name="kora", channel=13, oct=6, scale=Scale.minor).out
 
 balafon = Instruc(track_name="balafon", channel=11, oct=5, scale=Scale.minor).out
 

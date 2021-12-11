@@ -139,7 +139,7 @@ class InstrumentFacadeClockless:
         upcase = list(range(65,91))
         base_midi_map = {
             'default': 2,
-            ' ': -1,
+            ' ': -100,
             'x': 0,
             'r': 1,
             'o': 2,
@@ -211,7 +211,6 @@ class InstrumentFacadeClockless:
             group_track_names = [track.name[:-len(channel_suffix)] for track in group_subtracks] # get the names and remove the _6 like channel suffix from the names
             for track_name in group_track_names:
                 track_params = {key.replace(track_name+"_", ""):value for (key,value) in params.items() if track_name in key.split("_")}
-                print(track_params)
                 subtrack = getattr(self._smart_set, track_name+channel_suffix) # get the corresponding smart track
                 self.apply_live_params(subtrack, track_params)
                 for key in track_params.keys(): # remove per instrument params
