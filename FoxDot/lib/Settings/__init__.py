@@ -103,6 +103,7 @@ PORT2                     = conf.PORT2
 FONT                      = conf.FONT
 SC3_PLUGINS               = conf.SC3_PLUGINS
 MAX_CHANNELS              = conf.MAX_CHANNELS
+SDB			  			  = conf.SDB
 GET_SC_INFO               = conf.GET_SC_INFO
 USE_ALPHA                 = conf.USE_ALPHA
 ALPHA_VALUE               = conf.ALPHA_VALUE
@@ -151,7 +152,6 @@ class _MidiPlayer:
 SamplePlayer = _SamplePlayer()
 LoopPlayer   = _LoopPlayer()
 MidiPlayer   = _MidiPlayer()
-
 
 # OSC Information
 

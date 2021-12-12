@@ -30,6 +30,7 @@ except FileNotFoundError:
     CHECK_FOR_UPDATE=True
     SC3_PLUGINS=False
     MAX_CHANNELS=2
+    SDB=0
     SAMPLES_DIR=""
     GET_SC_INFO=True
     USE_ALPHA=True

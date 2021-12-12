@@ -131,7 +131,7 @@ from os.path import dirname
 from random import shuffle, choice
 from copy import copy, deepcopy
 
-from .Settings import SamplePlayer, LoopPlayer
+from .Settings import SamplePlayer, LoopPlayer, SDB
 from .Code import WarningMsg, debug_stdout
 from .SCLang.SynthDef import SynthDefProxy, SynthDef, SynthDefs
 from .Effects import FxList
@@ -531,7 +531,7 @@ class Player(Repeatable):
                 self.accessed_keys.append(name)
         return item
 
-    def __getitem__(self, name):
+    def __getitem__(self, name, sdb):
         if self.__init:
             if name not in self.__vars:
                 return self.attr[name]
@@ -1670,7 +1670,7 @@ class Player(Repeatable):
             sample = kwargs.get("sample", event["sample"])
             sdb = kwargs.get("sdb", event["sdb"])
             rate   = kwargs.get("rate", event["rate"])
-
+			
             if rate < 0:
 
                 sus = kwargs.get("sus", event["sus"])
@@ -1680,8 +1680,10 @@ class Player(Repeatable):
             else:
 
                 pos = 0 
+
  
-            buf  = self.samples.getBufferFromSymbol(str(degree), sdb, sample).bufnum
+            buf  = self.samples.getBufferFromSymbol(str(degree), sdb
+            , sample).bufnum
             
             message.update( {'buf': buf,'pos': pos} )
 

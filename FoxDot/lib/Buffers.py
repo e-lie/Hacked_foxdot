@@ -25,7 +25,7 @@ from .Code import WarningMsg
 from .Logging import Timing
 from .SCLang import SampleSynthDef
 from .ServerManager import Server
-from .Settings import FOXDOT_SND, FOXDOT_LOOP
+from .Settings import FOXDOT_SND, FOXDOT_LOOP, SDB
 
 
 alpha    = "abcdefghijklmnopqrstuvwxyz"
@@ -113,14 +113,14 @@ class _symbolToDir:
         if symbol.isalpha() and os.path.isdir(os.path.join(self.root, str(sdb))) == 1:
             return join(self.root, str(sdb), symbol.lower(), 'upper' if symbol.isupper() else 'lower')
         elif symbol.isalpha() and os.path.isdir(os.path.join(self.root, str(sdb))) == 0:
-            return join(self.root, "0", symbol.lower(), 'upper' if symbol.isupper() else 'lower')
+            return join(self.root, str(sdb), symbol.lower(), 'upper' if symbol.isupper() else 'lower')
         elif symbol in nonalpha:
             longname = nonalpha[symbol]
             return join(self.root, str(sdb), '_', longname)
         else:
             return None
 
-symbolToDir = _symbolToDir(FOXDOT_SND, 0) # singleton
+symbolToDir = _symbolToDir(FOXDOT_SND, SDB) # singleton
 
 class Buffer(object):
     def __init__(self, fn, number, channels=1):
@@ -148,17 +148,18 @@ nil = Buffer('', 0)
 
 
 class BufferManager(object):
-    def __init__(self, server=Server, paths=()):
+    def __init__(self, server=Server, paths=(), sdb=SDB):
         self._server = server
         self._max_buffers = server.max_buffers
+        self.sdb = sdb
         # Keep buffer 0 unallocated because we use it as the "nil" buffer
         self._nextbuf = 1
         self._buffers = [None for _ in range(self._max_buffers)]
         self._fn_to_buf = {}
-        self._paths = [join(FOXDOT_SND, "0", FOXDOT_LOOP)] + list(paths)
+        self._paths = [join(FOXDOT_SND, str(sdb), FOXDOT_LOOP)] + list(paths)
         self._ext = ['wav', 'wave', 'aif', 'aiff', 'flac']
 
-        self.loops = [fn.rsplit(".",1)[0] for fn in os.listdir(join(FOXDOT_SND, "0", FOXDOT_LOOP))]
+        self.loops = [fn.rsplit(".",1)[0] for fn in os.listdir(join(FOXDOT_SND, str(sdb), FOXDOT_LOOP))]
 
     def __str__(self):
         return "\n".join(["%r: %s" % (k, v) for k, v in sorted(DESCRIPTIONS.items())])
@@ -166,11 +167,11 @@ class BufferManager(object):
     def __repr__(self):
         return '<BufferManager>'
 
-    def __getitem__(self, key):
+    def __getitem__(self, key, sdb=SDB):
         """ Short-hand access for getBufferFromSymbol() i.e. Samples['x'] """
         if isinstance(key, tuple):
-            return self.getBufferFromSymbol(*key)
-        return self.getBufferFromSymbol(key)
+            return self.getBufferFromSymbol(*key, sdb)
+        return self.getBufferFromSymbol(key, sdb)
 
     def _reset_buffers(self):
         """ Clears the cache of loaded buffers """
@@ -439,15 +440,15 @@ class LoopSynthDef(SampleSynthDef):
         self.beat_stretch = self.new_attr_instance("beat_stretch")
         self.defaults['pos']   = 0
         self.defaults['sample']   = 0
-        self.defaults['sdb'] = 0
+        self.defaults['sdb'] = SDB
         self.defaults['beat_stretch'] = 0
         self.base.append("rate = (rate * (1-(beat_stretch>0))) + ((BufDur.kr(buf) / sus) * (beat_stretch>0));")
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos, loop: 1.0);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp
         self.add()
-    def __call__(self, filename, pos=0, sample=0, sdb=0, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(filename, sample, sdb)
+    def __call__(self, filename, pos=0, sample=0, **kwargs):
+        kwargs["buf"] = Samples.loadBuffer(filename, sample)
         proxy = SampleSynthDef.__call__(self, pos, **kwargs)
         proxy.kwargs["filename"] = filename
         return proxy
@@ -473,13 +474,13 @@ class GranularSynthDef(SampleSynthDef):
         self.sdb = self.new_attr_instance("sdb")
         self.defaults['pos']   = 0
         self.defaults['sample']   = 0
-        self.defaults['sdb']   = 0
+        self.defaults['sdb']   = SDB
         self.base.append("osc = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, startPos: BufSampleRate.kr(buf) * pos);")
         self.base.append("osc = osc * EnvGen.ar(Env([0,1,1,0],[0.05, sus-0.05, 0.05]));")
         self.osc = self.osc * self.amp
         self.add()
-    def __call__(self, filename, pos=0, sample=0, sdb=0, **kwargs):
-        kwargs["buf"] = Samples.loadBuffer(filename, sample, sdb)
+    def __call__(self, filename, pos=0, sample=0, **kwargs):
+        kwargs["buf"] = Samples.loadBuffer(filename, sample)
         return SampleSynthDef.__call__(self, pos, **kwargs)
 
 loop = LoopSynthDef()
