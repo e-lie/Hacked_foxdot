@@ -14,9 +14,11 @@ print(Samples)
 # 'play' Synth and using a string of characters instead of list of notes.
 bd >> play("x")
 
+Clock.bpm=120
+
 # A character refers to a sound and whitespace is used for silence, so
 # you can spread sounds out in time:
-bd >> play("x  x  x  ")
+bd >> play("o  o  x  ")
 
 hh >> play(" -")
 
@@ -39,6 +41,7 @@ d1 >> play("x-o[--------------]")
 
 # and can be put in round brackets as if they were one character themselves.
 d1 >> play("x[--]o(=[-o])")
+d1 >> play("x([--]x)o(=[-o])", dur=P[4/10, 3/10, 3/10]*2).stop()
 
 # You can combine the brackets however you like: the following patterns are identical
 d1 >> play("x-o(-[-o])")

@@ -6,6 +6,7 @@ from FoxDot.lib.Patterns import Pattern
 from time import sleep
 import live
 
+from FoxDot.lib.EffectsPreset import *
 
 
 
@@ -44,40 +45,6 @@ class InstrucFactory:
 
     def buildInstruc(self, **kwargs):
         return InstrumentFacadeClockless(self._clock, self._smart_set, **kwargs)
-
-reverb_default = {
-    "reverb_dw": 0,
-    "reverb_hifreq": .89,
-    "reverb_lowfreq": .11,
-    "reverb_decay": .41,
-}
-
-resob_default = {
-    "resob_dw": 0,
-    "resob_color": .85,
-    "resob_gain": .66,
-    "resob_width": 1,
-}
-
-eq_default = {
-    "eq_gainlo": .85,
-    "eq_gainmid": .85,
-    "eq_gainhi": .85,
-    "eq_freqlo": .3,
-    "eq_freqhi": .57,
-}
-
-delay_default = {
-    "delay_vol": 0,
-    "delay_time": 0,
-    "delay_feedback": .5,
-    "delay_pan": .9,
-    "delay_dry": 1,
-}
-
-config_default = {} | reverb_default | eq_default | resob_default | delay_default
-
-
 
 
 class InstrumentFacadeClockless:
@@ -192,7 +159,7 @@ class InstrumentFacadeClockless:
                 setattr(device, param_name, value)
             else:
                 remaining_param_dict[param] = value
-        
+
 
 
     def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
@@ -218,8 +185,8 @@ class InstrumentFacadeClockless:
 
         remaining_param_dict = {}
         self.apply_live_params(self._smart_track, params, remaining_param_dict)
-        
-                
+
+
         return MidiOut(
             midi_map = midi_map,
             channel = self._channel-1,
@@ -364,7 +331,7 @@ class SmartTrack(object):
         self.__set_pan(value)
 
 class SmartDevice(object):
-    
+
     def __init__(self, clock, device):
         self._clock = clock
         self.__device = device
@@ -449,4 +416,3 @@ class SmartDevice(object):
     #                 __repr__ = __repr__)
 
     # return type(cls_name, (object,), cls_attrs)
-
