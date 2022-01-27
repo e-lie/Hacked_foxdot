@@ -1,3 +1,9 @@
+from .Patterns import PWhite
+
+track_default = {
+    "vol": 1,
+    "pan": 0,
+}
 
 reverb_default = {
     "reverb_dw": 0,
@@ -51,4 +57,134 @@ phaser_default = {
     "phaser_lfo3": .5,
 }
 
-config_default = {} | reverb_default | eq_default | resob_default | delay_default | hamp_default | phaser_default
+config_default = {} | track_default | reverb_default | eq_default | resob_default | delay_default | hamp_default | phaser_default
+
+###########################################################
+###########################################################
+###########################################################
+
+def randomize_params(param_dict, seed=0):
+    params_values = PWhite(seed=seed)[:len(param_dict.keys())]
+    for i, key in enumerate(param_dict.keys()):
+        param_dict[key] = params_values[i]
+    return param_dict
+rndp = randomize_params
+
+
+reverbp = {
+    "reverb_dw": 0,
+    "reverb_hifreq": 0,
+    "reverb_lowfreq": 0,
+    "reverb_decay": 0,
+}
+
+resobp = {
+    "resob_dw": 0,
+    "resob_color": 0,
+    "resob_gain": 0,
+    "resob_width": 0,
+}
+
+phaserp = {
+    "phaser_lfo1": 0,
+    "phaser_lfo2": 0,
+    "phaser_lfo3": 0,
+    "phaser_phase": 0,
+    "phaser_reso": 0,
+    "phaser_drive": 0,
+    "phaser_width": 0,
+    "phaser_dw": 0,
+}
+
+hampp = {
+    "hamp_gain": 0,
+    "hamp_low": 0,
+    "hamp_mid": 0,
+    "hamp_high": 0,
+    "hamp_cabinet": 0,
+    "hamp_vol": 0,
+    "hamp_dw": 0,
+    "hamp_rack_vol": 0,
+}
+
+################################################################
+################################################################
+##################    Instruments params     ###################
+################################################################
+################################################################
+
+
+crubassp = {
+    "crubass_i_wt_pos":.2,
+    "crubass_i_glide":3,
+    "crubass_i_intensity":.8,
+    "crubass_i_cutoff":.1,
+    "crubass_i_crush":.2,
+    "crubass_i_delay":.4,
+    "crubass_i_reso":.3,
+    "crubass_i_filter":.3,
+}
+
+tb303p = {
+    "tb303_i_decay":.2,
+    "tb303_i_freq":3,
+    "tb303_i_reso":.8,
+    "tb303_i_drive":.1,
+    "tb303_i_delay":.2,
+    "tb303_i_dfreq":.4,
+}
+
+ubassp = {
+    "ubass_i_wt_pos":.2,
+    "ubass_i_drive":3,
+    "ubass_i_intensity":.8,
+    "ubass_i_chorus":.1,
+    "ubass_i_cutoff":.2,
+    "ubass_i_flt_dec":.4,
+    "ubass_i_reso":.3,
+    "ubass_i_dec_time":.3,
+}
+
+bellsp = {
+    "bells_i_bright":.2,
+    "bells_i_detune":.2,
+    "bells_i_material":.2,
+    "bells_i_mod_amount":.2,
+    "bells_i_attack":.2,
+    "bells_i_decay":.2,
+    "bells_i_mod_freq":.2,
+    # "bells_i_volume":.2, # keep it 0dB
+}
+
+pianop = {
+    "piano_i_bright":.2,
+    "piano_i_hardness":.2,
+    "piano_i_glue":.2,
+    "piano_i_reverb":.2,
+    "piano_i_attack":.2,
+    "piano_i_release":.2,
+    "piano_i_tone":.2,
+    # "piano_i_volume":.2,
+}
+
+danceorgp = {
+    "danceorg_i_bright":.2,
+    "danceorg_i_spike":.2,
+    "danceorg_i_tone":.2,
+    "danceorg_i_space":.2,
+    "danceorg_i_attack":.2,
+    "danceorg_i_release":.2,
+    "danceorg_i_tremolo":.2,
+    # "danceorg_i_volume":.2,
+}
+
+danceorg_amb1 = {
+    "danceorg_i_bright":0,
+    "danceorg_i_spike":0,
+    "danceorg_i_tone":.9,
+    "danceorg_i_space":.7,
+    "danceorg_i_attack":.7,
+    "danceorg_i_release":.8,
+    "danceorg_i_tremolo":0,
+    # "danceorg_i_volume":.2,
+}

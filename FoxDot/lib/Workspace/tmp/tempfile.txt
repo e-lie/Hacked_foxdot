@@ -1,0 +1,6 @@
+p1 >> piano([0,2,4,6], scale=Scale.minor, dur=1, sus=4)
+b1 >> pluck([0,2,4,6], oct=[2,3,4,5])
+
+Clock.midi_nudge = -0.4
+
+Clock.bpm = 360

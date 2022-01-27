@@ -9,13 +9,14 @@ import live
 from FoxDot.lib.EffectsPreset import *
 
 
-
 def run_now(f):
     f()
     return f
 
 # This is not realy a decorator, more a currying mechanism using the decorator syntax
 # Cf: https://www.geeksforgeeks.org/currying-function-in-python/ and https://www.saltycrane.com/blog/2010/03/simple-python-decorator-examples/
+
+
 def later_clockless(clock):
     def later_clocked(future_dur):
         def later_decorator(f):
@@ -24,19 +25,21 @@ def later_clockless(clock):
         return later_decorator
     return later_clocked
 
+
 def normalize_param(param, value):
     if param.maximum == 127:
         return value * 127.0
     else:
         return value * 1.0
 
+
 def normalize_volume(value):
     """function make volume 1.0 corresponds to gain 0 in ableton (max volume without gain)
     so 1.1 gives the volume some gain"""
     return value * 0.85 if value <= 1.17 else 1.0
 
-
     return result
+
 
 class InstrucFactory:
     def __init__(self, clock, smart_set):
@@ -52,16 +55,23 @@ class InstrumentFacadeClockless:
     default_data = [0]
     default_scale = Scale.default
     default_oct = 3
+    default_amp = .8
     config_default = config_default
 
-    def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, midi_map=None, config={}, scale=None):
+    def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, amp=None, midi_map=None, config={}, scale=None, set_defaults=True, dur=1, sus=None):
         self._clock = clock
         self._smart_set = smart_set
         self._smart_track = getattr(smart_set, track_name)
         self._channel = channel
         self._grouping = grouping
         self._oct = oct if oct else self.default_oct
-        self._config = self.config_default | config
+        self._dur = dur
+        self._sus = sus
+        self._amp = amp if amp else self.default_amp
+        if set_defaults:
+            self._config = self.config_default | config
+        else:
+            self._config = config
         self._scale = scale if scale is not None else self.default_scale
         if midi_map and isinstance(midi_map, str):
             if midi_map == 'stdrum':
@@ -71,13 +81,14 @@ class InstrumentFacadeClockless:
             if midi_map == 'linear':
                 self._midi_map = self.linear_midimap()
         elif midi_map and isinstance(midi_map, Mapping):
-            self._midi_map = self.threesquare_midimap() | midi_map # overwrite default midi_map with provided map
+            # overwrite default midi_map with provided map
+            self._midi_map = self.threesquare_midimap() | midi_map
         else:
             self._midi_map = self.linear_midimap()
 
     def linear_midimap(self):
-        lowcase = list(range(97,123))
-        upcase = list(range(65,91))
+        lowcase = list(range(97, 123))
+        upcase = list(range(65, 91))
         base_midi_map = {'default': 2, ' ': -1}
         for i in range(52):
             if i % 2 == 0:
@@ -87,8 +98,8 @@ class InstrumentFacadeClockless:
         return base_midi_map
 
     def threesquare_midimap(self):
-        lowcase = list(range(97,123))
-        upcase = list(range(65,91))
+        lowcase = list(range(97, 123))
+        upcase = list(range(65, 91))
         base_midi_map = {'default': 2, ' ': -1}
         for i in range(16):
             base_midi_map[chr(lowcase[i])] = i
@@ -102,8 +113,8 @@ class InstrumentFacadeClockless:
         return base_midi_map
 
     def stdrum_midimap(self):
-        lowcase = list(range(97,123))
-        upcase = list(range(65,91))
+        lowcase = list(range(97, 123))
+        upcase = list(range(65, 91))
         base_midi_map = {
             'default': 2,
             ' ': -100,
@@ -127,7 +138,6 @@ class InstrumentFacadeClockless:
 
         return base_midi_map
 
-
     def _split_param_name(self, name):
         if "_" in name:
             splitted = name.split('_')
@@ -136,7 +146,6 @@ class InstrumentFacadeClockless:
             return device_name, param_name
         else:
             raise KeyError("Parameter name not splittable by '_': " + name)
-
 
     def param_exists_in_live(self, smart_track, full_name):
         device_name, param_name = self._split_param_name(full_name)
@@ -160,40 +169,47 @@ class InstrumentFacadeClockless:
             else:
                 remaining_param_dict[param] = value
 
-
-
-    def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=1, sus=None, **kwargs):
+    def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=None, sus=None, amp=None, **kwargs):
         midi_map = midi_map if midi_map else self._midi_map
         channel = channel if channel else self._channel
         channel_suffix = "_" + str(channel)
         oct = oct if oct else self._oct
+        dur = dur if dur else self._dur
+        amp = amp if amp is not None else self._amp
         scale = scale if scale is not None else self._scale
         remaining_kwargs = {}
-        sus = Pattern(sus) if sus else Pattern(dur)-0.03 # to avoid midi event collision between start and end note (which prevent the instrument from playing)
+        sus = sus if sus else self._sus
+        # to avoid midi event collision between start and end note (which prevent the instrument from playing)
+        sus = Pattern(sus) if sus is not None else Pattern(dur)-0.03
 
-        params = self._config | kwargs # overwrite base config with runtime arguments
+        params = self._config | kwargs  # overwrite base config with runtime arguments
 
-        if self._grouping: # handle per instrument parameters
-            group_subtracks = getattr(self._smart_set, channel_suffix).get_pylive_track().tracks # get the group named like "_6" for the channel then its subtracks
-            group_track_names = [track.name[:-len(channel_suffix)] for track in group_subtracks] # get the names and remove the _6 like channel suffix from the names
+        if self._grouping:  # handle per instrument parameters
+            group_subtracks = getattr(self._smart_set, channel_suffix).get_pylive_track(
+            ).tracks  # get the group named like "_6" for the channel then its subtracks
+            # get the names and remove the _6 like channel suffix from the names
+            group_track_names = [
+                track.name[:-len(channel_suffix)] for track in group_subtracks]
             for track_name in group_track_names:
-                track_params = {key.replace(track_name+"_", ""):value for (key,value) in params.items() if track_name in key.split("_")}
-                subtrack = getattr(self._smart_set, track_name+channel_suffix) # get the corresponding smart track
+                track_params = {key.replace(track_name+"_", ""): value for (
+                    key, value) in params.items() if track_name in key.split("_")}
+                # get the corresponding smart track
+                subtrack = getattr(self._smart_set, track_name+channel_suffix)
                 self.apply_live_params(subtrack, track_params)
-                for key in track_params.keys(): # remove per instrument params
+                for key in track_params.keys():  # remove per instrument params
                     del params[track_name+"_"+key]
 
         remaining_param_dict = {}
         self.apply_live_params(self._smart_track, params, remaining_param_dict)
 
-
         return MidiOut(
-            midi_map = midi_map,
-            channel = self._channel-1,
-            oct = oct,
-            scale = scale,
-            dur = dur,
-            sus = sus,
+            midi_map=midi_map,
+            channel=self._channel-1,
+            oct=oct,
+            scale=scale,
+            dur=dur,
+            sus=sus,
+            amp=amp,
             *args,
             **remaining_param_dict,
         )
@@ -209,10 +225,11 @@ class SmartSet(object):
         self.__track_names = {}
         self.__track_ids = {}
         for id, track in enumerate(self.__tracks):
-            simple_name = track.name.lower().replace(' ','_').replace('/','_')
+            simple_name = track.name.lower().replace(' ', '_').replace('/', '_')
             self.__track_names[id] = simple_name
             self.__track_ids[simple_name] = id
-            self.__smart_tracks[simple_name] = SmartTrack(self._clock, self.__tracks[self.__track_ids[simple_name]])
+            self.__smart_tracks[simple_name] = SmartTrack(
+                self._clock, self.__tracks[self.__track_ids[simple_name]])
 
     def __getattr__(self, name):
         dict_name = '_SmartSet' + name
@@ -224,6 +241,7 @@ class SmartSet(object):
     @property
     def vol(self):
         return self.__set.get_master_volume()
+
     @vol.setter
     def vol(self, value):
         # TODO make this setter TimeVar ready like for smart tracks
@@ -232,9 +250,11 @@ class SmartSet(object):
     @property
     def pan(self):
         return self.__set.get_master_pan()
+
     @pan.setter
     def pan(self, value):
         self.__set.set_master_pan(value)
+
 
 class SmartTrack(object):
 
@@ -248,10 +268,11 @@ class SmartTrack(object):
         self.__vol_state = 'normal'
         self.__pan_state = 'normal'
         for id, device in enumerate(self.__devices):
-            simple_name = device.name.lower().replace(' ','_').replace('/','_')
+            simple_name = device.name.lower().replace(' ', '_').replace('/', '_')
             self.__device_names[id] = simple_name
             self.__device_ids[simple_name] = id
-            self.__smart_devices[simple_name] = SmartDevice(self._clock, self.__devices[self.__device_ids[simple_name]])
+            self.__smart_devices[simple_name] = SmartDevice(
+                self._clock, self.__devices[self.__device_ids[simple_name]])
 
     def __getattr__(self, name):
         dict_name = '_SmartTrack' + name
@@ -275,50 +296,61 @@ class SmartTrack(object):
     def smart_devices(self):
         return self.__smart_devices
 
-    def __set_vol(self, value, update_freq = 0.05):
+    def __set_vol(self, value, update_freq=0.05):
         if isinstance(value, TimeVar):
             # to update a time varying param and tell the preceding recursion loop to stop
             # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
             new_state = 'timevar1' if self.__vol_state != 'timevar1' else 'timevar2'
             self.__vol_state = new_state
             self.__set_vol_futureloop(value, new_state, update_freq)
+
             def schedule_futureloop_update(value, new_state, update_freq):
                 self.__vol_state = new_state
                 self.__set_vol_futureloop(value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+                                 value, new_state, update_freq])  # beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
             def schedule_value_update(value):
                 self.__vol_state = 'normal'
                 self.__track.volume = normalize_volume(value)
-            self._clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
+            # beat=None means schedule for the next bar
+            self._clock.schedule(schedule_value_update,
+                                 beat=None, args=[value])
 
-    def __set_vol_futureloop(self, value, state, update_freq = 0.05):
+    def __set_vol_futureloop(self, value, state, update_freq=0.05):
         if self.__vol_state == state:
             self.__track.volume = normalize_volume(float(value))
-            self._clock.future(update_freq, self.__set_vol_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+            self._clock.future(update_freq, self.__set_vol_futureloop, args=[
+                               value, state], kwargs={"update_freq": update_freq})
 
-    def __set_pan(self, value, update_freq = 0.05):
+    def __set_pan(self, value, update_freq=0.05):
         if isinstance(value, TimeVar):
             new_state = 'timevar1' if self.__pan_state != 'timevar1' else 'timevar2'
+
             def schedule_futureloop_update(value, new_state, update_freq):
                 self.__pan_state = new_state
                 self.__set_pan_futureloop(value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[value, new_state, update_freq]) #beat=None means schedule for the next bar
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+                                 value, new_state, update_freq])  # beat=None means schedule for the next bar
         else:
             def schedule_value_update(value):
                 self.__pan_state = 'normal'
                 self.__track.pan = value
-            self._clock.schedule(schedule_value_update, beat=None, args=[value]) #beat=None means schedule for the next bar
+            # beat=None means schedule for the next bar
+            self._clock.schedule(schedule_value_update,
+                                 beat=None, args=[value])
 
-    def __set_pan_futureloop(self, value, state, update_freq = 0.05):
+    def __set_pan_futureloop(self, value, state, update_freq=0.05):
         if self.__pan_state == state:
             self.__track.pan = float(value)
-            self._clock.future(update_freq, self.__set_pan_futureloop, args=[value, state], kwargs={"update_freq": update_freq})
+            self._clock.future(update_freq, self.__set_pan_futureloop, args=[
+                               value, state], kwargs={"update_freq": update_freq})
 
     @property
     def vol(self):
         return self.__track.volume
+
     @vol.setter
     def vol(self, value):
         self.__set_vol(value)
@@ -326,9 +358,11 @@ class SmartTrack(object):
     @property
     def pan(self):
         return self.__track.pan
+
     @pan.setter
     def pan(self, value):
         self.__set_pan(value)
+
 
 class SmartDevice(object):
 
@@ -340,7 +374,7 @@ class SmartDevice(object):
         self.__param_ids = {}
         self.__param_states = {}
         for id, param in enumerate(self.__params):
-            simple_name = param.name.lower().replace(' ','_').replace('/','_')
+            simple_name = param.name.lower().replace(' ', '_').replace('/', '_')
             if 'macro' not in simple_name:
                 self.__param_names[id] = simple_name
                 self.__param_ids[simple_name] = id
@@ -373,7 +407,7 @@ class SmartDevice(object):
         # else:
         #     raise AttributeError("Param value not between 0.0 and 1.0.")
 
-    def __set_param(self, name, value, update_freq = 0.05):
+    def __set_param(self, name, value, update_freq=0.05):
         param = self.__params[self.__param_ids[name]]
         if isinstance(value, TimeVar):
             # to update a time varying param and tell the preceding recursion loop to stop
@@ -382,24 +416,28 @@ class SmartDevice(object):
                 new_state = 'timevar1'
             else:
                 new_state = 'timevar2'
+
             def schedule_futureloop_update(name, value, new_state, update_freq):
                 self.__param_states[name] = new_state
-                self.__set_param_futureloop(name, value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq]) #beat=None means schedule for the next bar
+                self.__set_param_futureloop(
+                    name, value, new_state, update_freq)
+            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+                                 name, value, new_state, update_freq])  # beat=None means schedule for the next bar
         else:
             # to switch back to non varying value use the state normal to make the recursion loop stop
             def schedule_value_update(param, value):
                 self.__param_states[name] = 'normal'
                 param.value = normalize_param(param, value)
-            self._clock.schedule(schedule_value_update, beat=None, args=[param, value]) #beat=None means schedule for the next bar
+            # beat=None means schedule for the next bar
+            self._clock.schedule(schedule_value_update,
+                                 beat=None, args=[param, value])
 
-    def __set_param_futureloop(self, name, value, state, update_freq = 0.05):
+    def __set_param_futureloop(self, name, value, state, update_freq=0.05):
         param = self.__params[self.__param_ids[name]]
         if self.__param_states[name] == state:
             param.value = normalize_param(param, float(value))
-            self._clock.future(update_freq, self.__set_param_futureloop, args=[name, value, state], kwargs={"update_freq": update_freq})
-
-
+            self._clock.future(update_freq, self.__set_param_futureloop, args=[
+                               name, value, state], kwargs={"update_freq": update_freq})
 
     # def __iter__(self):
     #     for name in self.__slots__:

@@ -37,7 +37,6 @@ from random import choice as choose
 
 from .AbletonInstruments import *
 from .MusicStateMachine import *
-from .UtilityFunctions import *
 
 # Define any custom functions
 
