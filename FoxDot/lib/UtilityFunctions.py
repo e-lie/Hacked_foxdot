@@ -6,6 +6,10 @@ from .InstrumentPreset import liveset
 
 
 def interpolate(start, end, step=6, go_back=True):
+    if len(start) == 1 and len(end) > 1:
+        start = [start[0]] * len(end)
+    if len(end) == 1 and len(start) > 1:
+        end = [end[0]] * len(start)
     assert len(start) == len(end)
     diffs = []
     result = []
