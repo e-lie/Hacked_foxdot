@@ -1,7 +1,7 @@
 # Pattern function
 from copy import Error
 from .TimeVar import linvar, sinvar, Pvar, PWhite, Pattern, inf
-from . import Clock, nextBar
+from . import Clock, nextBar, player_method
 from .InstrumentPreset import liveset
 
 
@@ -66,6 +66,19 @@ def Pzr(root_pattern_list):
     return {"degree": Pvar(patterns, durations), "root": Pvar(roots, durations)}
 
 # Param shortcut functions to use with dict unpack : **lpf(linvar([0,.3],8))
+
+@player_method
+def human(self, velocity=20, humanize=5, swing=0):
+    """ Humanize the velocity, delay and add swing in % (less to more)"""
+    humanize += 0.1
+    if velocity!=0:
+        self.delay=[0,PWhite((-1*humanize/100)*self.dur, (humanize/100)*self.dur) + (self.dur*swing/100)]
+        self.amplify=[1,PWhite((100-velocity)/100,1)]
+    else:
+        self.delay=0
+        self.amplify=1
+    return self
+
 
 # def delay(config=None, vol=None, time=None, feedback=None, pan=None, dry=None):
 #     delay_base = { "delay_vol": 0, "delay_time": .5, "delay_feedback": .5, "delay_pan": .5, "delay_dry": 1 }
