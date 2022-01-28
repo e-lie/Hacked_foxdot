@@ -11,9 +11,6 @@ liveset.scan(scan_clip_names=True, scan_devices=True)
 ab = SmartSet(Clock, liveset)
 Instruc = InstrucFactory(Clock, ab).buildInstruc
 
-mixer = Instruc(track_name="mixer", channel=-1,
-                scale=Scale.chromatic, oct=3, midi_map="stdrum").out
-
 
 def arm_all():
     for track in liveset.tracks:
@@ -24,7 +21,23 @@ arm_all()
 
 Clock.midi_nudge = 0
 
-metronome = Instruc(
+
+def create_instruc(*args, **kwargs):
+    """handle exception gracefully especially if track does not exist in Live"""
+    try:
+        result = Instruc(*args, **kwargs)
+        return result.out
+    except Exception as err:
+        output = err.message if hasattr(err, 'message') else err
+        print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
+        return None
+
+
+mixer = create_instruc(track_name="mixer", channel=-1,
+                scale=Scale.chromatic, oct=3, midi_map="stdrum")
+
+
+metronome = create_instruc(
     track_name="metronome",
     channel=16,
     set_defaults=False,
@@ -32,11 +45,13 @@ metronome = Instruc(
     oct=3,
     config={"root": 0},
     midi_map="stdrum",
-).out
+)
 
 # Channel 2
 
-kit808 = Instruc(
+# Channel 1
+
+kit808 = create_instruc(
     track_name="kit808",
     channel=1,
     scale=Scale.chromatic,
@@ -44,9 +59,9 @@ kit808 = Instruc(
     config={"root": 0},
     midi_map="stdrum",
     dur=1 / 2,
-).out
+)
 
-kicker = Instruc(
+kicker = create_instruc(
     track_name="kicker",
     channel=1,
     config={"root": 0},
@@ -54,9 +69,9 @@ kicker = Instruc(
     oct=1.6,
     midi_map="threesquare",
     dur=1,
-).out
+)
 
-kitdatai = Instruc(
+kitdatai = create_instruc(
     track_name="kitdatai",
     channel=1,
     config={"root": 0},
@@ -64,11 +79,11 @@ kitdatai = Instruc(
     oct=4.4,
     midi_map="stdrum",
     dur=1 / 2,
-).out
+)
 
 # Channel 2
 
-kitcuba = Instruc(
+kitcuba = create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -83,9 +98,9 @@ kitcuba = Instruc(
         "harshkit_vol": 0,
     },
     scale=Scale.chromatic,
-).out
+)
 
-jazzkit = Instruc(
+jazzkit = create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -100,9 +115,9 @@ jazzkit = Instruc(
         "harshkit_vol": 0,
     },
     scale=Scale.chromatic,
-).out
+)
 
-reaktorkit = Instruc(
+reaktorkit = create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -117,9 +132,9 @@ reaktorkit = Instruc(
         "harshkit_vol": 0,
     },
     scale=Scale.chromatic,
-).out
+)
 
-harshkit = Instruc(
+harshkit = create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -134,11 +149,11 @@ harshkit = Instruc(
         "harshkit_vol": 1,
     },
     scale=Scale.chromatic,
-).out
+)
 
 # Channel 6
 
-crubass = Instruc(
+crubass = create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -151,9 +166,9 @@ crubass = Instruc(
     }
     | rndp(crubassp, 12),
     # scale=Scale.minor,
-).out
+)
 
-tb303 = Instruc(
+tb303 = create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -165,9 +180,9 @@ tb303 = Instruc(
         "tb303_vol": 0.9,
     },
     # scale=Scale.minor,
-).out
+)
 
-ubass = Instruc(
+ubass = create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -178,11 +193,11 @@ ubass = Instruc(
         "tb303_vol": 0,
     },
     # scale=Scale.minor,
-).out
+)
 
 # Channel 7
 
-crubass_2 = Instruc(
+crubass_2 = create_instruc(
     track_name="channel_7",
     channel=7,
     grouping=True,
@@ -194,9 +209,9 @@ crubass_2 = Instruc(
     }
     | rndp(crubassp, 12),
     # scale=Scale.minor,
-).out
+)
 
-tb303_2 = Instruc(
+tb303_2 = create_instruc(
     track_name="channel_7",
     channel=7,
     grouping=True,
@@ -207,11 +222,11 @@ tb303_2 = Instruc(
         "tb303_vol": 0.9,
     },
     # scale=Scale.minor,
-).out
+)
 
 # Channel 8
 
-piano = Instruc(
+piano = create_instruc(
     track_name="channel_8",
     channel=8,
     grouping=True,
@@ -221,9 +236,9 @@ piano = Instruc(
         "danceorg_vol": 0,
     },
     # scale=Scale.minor,
-).out
+)
 
-danceorg = Instruc(
+danceorg = create_instruc(
     track_name="channel_8",
     channel=8,
     grouping=True,
@@ -233,9 +248,9 @@ danceorg = Instruc(
         "danceorg_vol": 1,
     },
     # scale=Scale.minor,
-).out
+)
 
-kora = Instruc(
+kora = create_instruc(
     track_name="channel_4",
     channel=4,
     grouping=True,
@@ -244,9 +259,9 @@ kora = Instruc(
         "kora_vol": 1,
     },
     # scale=Scale.major,
-).out
+)
 
-strings = Instruc(
+strings = create_instruc(
     track_name="channel_9",
     channel=9,
     grouping=True,
@@ -256,9 +271,9 @@ strings = Instruc(
         "owstr_vol": 0,
     },
     # scale=Scale.major,
-).out
+)
 
-owstr = Instruc(
+owstr = create_instruc(
     track_name="channel_9",
     channel=9,
     grouping=True,
@@ -268,9 +283,9 @@ owstr = Instruc(
         "owstr_vol": 1,
     },
     # scale=Scale.major,
-).out
+)
 
-balafon = Instruc(
+balafon = create_instruc(
     track_name="channel_10",
     channel=10,
     grouping=True,
@@ -280,9 +295,9 @@ balafon = Instruc(
         "bells_vol": 0,
     },
     # scale=Scale.major,
-).out
+)
 
-bells = Instruc(
+bells = create_instruc(
     track_name="channel_10",
     channel=10,
     grouping=True,
@@ -292,4 +307,4 @@ bells = Instruc(
         "bells_vol": 1,
     },
     # scale=Scale.major,
-).out
+)

@@ -153,7 +153,7 @@ class InstrumentFacadeClockless:
             smart_device = smart_track.smart_devices[device_name]
             if param_name in smart_device.param_ids.keys():
                 return True
-        raise KeyError("Parameter doesn't exist: " + full_name)
+        print("Parameter doesn't exist: " + full_name)
         return False
 
     def apply_live_params(self, smart_track, param_dict, remaining_param_dict={}):
