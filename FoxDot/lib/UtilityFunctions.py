@@ -5,7 +5,7 @@ from . import Clock, nextBar
 from .InstrumentPreset import liveset
 
 
-def interpolate(start, end, step=6, go_back=True):
+def interpolate(start, end, step=7, go_back=True):
     if len(start) == 1 and len(end) > 1:
         start = [start[0]] * len(end)
     if len(end) == 1 and len(start) > 1:
@@ -17,8 +17,9 @@ def interpolate(start, end, step=6, go_back=True):
         diffs += [start[i] - end[i]]
     base_pattern = start
     for j in range(step):
-        new_pattern = [e - diffs[k] / (step + 1)
-                       for k, e in enumerate(base_pattern)]
+        new_pattern = [
+            e - diffs[k]/(step + 1) for k, e in enumerate(base_pattern)
+        ]
         result.append(new_pattern)
         base_pattern = new_pattern
     if not go_back:
@@ -29,6 +30,40 @@ def interpolate(start, end, step=6, go_back=True):
         )  # result except last elem + end + reversed result
     return result
 
+
+interp = interpolate
+
+def interpvar(start, end, total_dur=None, step=6, dur=1, go_back=True):
+    if total_dur is not None:
+        step = (total_dur - 2) // 2
+        dur = 1
+    return Pvar(interpolate(start, end, step, go_back), dur)
+
+
+Pvi = interpvar
+
+
+def zipvar(duration_pattern_list):
+    if len(duration_pattern_list) == 1:
+        return duration_pattern_list[0][0]
+    patterns = [item[0] for item in duration_pattern_list]
+    durations = [item[1] for item in duration_pattern_list]
+    return Pvar(patterns, durations)
+
+
+Pvz = zipvar
+
+
+def Pzr(root_pattern_list):
+    if len(root_pattern_list) == 1:
+        return {
+            "degree": root_pattern_list[0][0],
+            "root": root_pattern_list[0][1]
+        }
+    patterns = [item[0] for item in root_pattern_list]
+    roots = [item[1] for item in root_pattern_list]
+    durations = [item[2] for item in root_pattern_list]
+    return {"degree": Pvar(patterns, durations), "root": Pvar(roots, durations)}
 
 # Param shortcut functions to use with dict unpack : **lpf(linvar([0,.3],8))
 
@@ -78,14 +113,6 @@ def tb3(config=None, decay=None, freq=None, reso=None, drive=None, delay=None):
 
 def set_bpm_clockless(clock, liveset, bpm=120):
     pass
-
-
-def zipvar(duration_pattern_list):
-    if len(duration_pattern_list) == 1:
-        return duration_pattern_list[0][0]
-    patterns = [item[0] for item in duration_pattern_list]
-    durations = [item[1] for item in duration_pattern_list]
-    return Pvar(patterns, durations)
 
 
 # def pattern_tweak(pattern, tweak_len=None, config="random", random_amount=.1, compensation=True):
