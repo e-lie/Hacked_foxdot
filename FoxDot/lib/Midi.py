@@ -104,6 +104,15 @@ class MidiOut(SynthDefProxy):
 
 midi = MidiOut # experimental alias
 
+class AbletonOut(MidiOut):
+    """SynthDef proxy to handle MIDI + PyLive/LiveOSC integration"""
+    def __init__(self, degree=0, live_params={}, **kwargs):
+        MidiOut.__init__(self, degree, **kwargs)
+        self._live_params = live_params
+
+
+
+
 # Midi information exceptions
 
 class MIDIDeviceNotFound(Exception):

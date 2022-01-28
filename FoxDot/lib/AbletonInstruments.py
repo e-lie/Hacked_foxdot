@@ -1,10 +1,8 @@
 from typing import Mapping
 from FoxDot.lib.TimeVar import TimeVar
 from FoxDot.lib.Scale import Scale
-from FoxDot.lib.Midi import MidiOut
+from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
-from time import sleep
-import live
 
 from FoxDot.lib.EffectsPreset import *
 
@@ -202,7 +200,8 @@ class InstrumentFacadeClockless:
         remaining_param_dict = {}
         self.apply_live_params(self._smart_track, params, remaining_param_dict)
 
-        return MidiOut(
+        return AbletonOut(
+            live_params=live_params,
             midi_map=midi_map,
             channel=self._channel-1,
             oct=oct,
