@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import os.path
 
-from FoxDot.lib.Extensions.Ableton.AbletonInstruments import InstrumentFacadeClockless
-
 with open((os.path.join(os.path.dirname(__file__), ".version")), "r") as f:
     __version__ = f.readline().strip()
 
@@ -31,10 +29,6 @@ from .Chords import *
 
 # stdlib imports
 
-# extensions
-
-from FoxDot.lib.Extensions.Ableton.AbletonInstruments import *
-from .MusicStateMachine import *
 
 # Define any custom functions
 
@@ -245,6 +239,3 @@ PatternTypes = functions(Patterns.Sequences)
 
 Clock.start()
 
-# Boostrap set
-
-from .BootstrapSet import *

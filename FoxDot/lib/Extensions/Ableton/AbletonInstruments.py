@@ -3,24 +3,13 @@ from FoxDot.lib.Scale import Scale
 from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
 
-from FoxDot.lib.EffectsPreset import *
 
-class InstrucFactory:
-    def __init__(self, clock, smart_set):
-        self._clock = clock
-        self._smart_set = smart_set
-
-    def buildInstruc(self, **kwargs):
-        return InstrumentFacadeClockless(self._clock, self._smart_set, **kwargs)
-
-
-class InstrumentFacadeClockless:
+class AbletonInstrumentFacade:
 
     default_degree = [0]
     default_scale = Scale.default
     default_oct = 3
     default_amp = .8
-    config_default = config_default
 
     def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, amp=None, midi_map=None, config={}, scale=None, set_defaults=True, dur=1, sus=None):
         self._clock = clock
@@ -32,10 +21,7 @@ class InstrumentFacadeClockless:
         self._dur = dur
         self._sus = sus
         self._amp = amp if amp else self.default_amp
-        if set_defaults:
-            self._config = self.config_default | config
-        else:
-            self._config = config
+        self._config = config
         self._scale = scale if scale is not None else self.default_scale
         if midi_map and isinstance(midi_map, str):
             if midi_map == 'stdrum':

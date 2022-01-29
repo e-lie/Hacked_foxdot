@@ -1,4 +1,3 @@
-from .Patterns import PWhite
 
 track_default = {
     "vol": 1,
@@ -63,12 +62,7 @@ config_default = {} | track_default | reverb_default | eq_default | resob_defaul
 ###########################################################
 ###########################################################
 
-def randomize_params(param_dict, seed=0):
-    params_values = PWhite(seed=seed)[:len(param_dict.keys())]
-    for i, key in enumerate(param_dict.keys()):
-        param_dict[key] = params_values[i]
-    return param_dict
-rndp = randomize_params
+
 
 
 reverbp = {

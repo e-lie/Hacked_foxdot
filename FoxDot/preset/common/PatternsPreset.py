@@ -1,4 +1,4 @@
-from .Patterns import P
+from FoxDot import P
 
 dynvars = {}
 

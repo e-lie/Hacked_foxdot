@@ -1,38 +1,13 @@
-import live
 
-from .Scale import Scale
-from . import Clock
+from FoxDot.lib.Extensions.Ableton import arm_all, create_instruc
+from .UtilityFunctions import rndp
 
 from .EffectsPreset import *
-from FoxDot.lib.Extensions.Ableton.SmartSetParams import SmartSet
-from FoxDot.lib.Extensions.Ableton.AbletonInstruments import InstrucFactory
-
-liveset = live.Set()
-liveset.scan(scan_clip_names=True, scan_devices=True)
-ab = SmartSet(Clock, liveset)
-Instruc = InstrucFactory(Clock, ab).buildInstruc
-
-
-def arm_all():
-    for track in liveset.tracks:
-        track.arm = 1
-
+from FoxDot import Clock, Scale
 
 arm_all()
 
 Clock.midi_nudge = 0
-
-
-def create_instruc(*args, **kwargs):
-    """handle exception gracefully especially if track does not exist in Live"""
-    try:
-        result = Instruc(*args, **kwargs)
-        return result.out
-    except Exception as err:
-        output = err.message if hasattr(err, 'message') else err
-        print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
-        return None
-
 
 mixer = create_instruc(track_name="mixer", channel=-1,
                 scale=Scale.chromatic, oct=3, midi_map="stdrum")
@@ -47,8 +22,6 @@ metronome = create_instruc(
     config={"root": 0},
     midi_map="stdrum",
 )
-
-# Channel 2
 
 # Channel 1
 
