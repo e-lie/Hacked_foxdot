@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
-from functools import partial
 
 import os.path
 
-from FoxDot.lib.AbletonInstruments import InstrumentFacadeClockless
+from FoxDot.lib.Extensions.Ableton.AbletonInstruments import InstrumentFacadeClockless
+
 with open((os.path.join(os.path.dirname(__file__), ".version")), "r") as f:
     __version__ = f.readline().strip()
 
@@ -31,11 +31,9 @@ from .Chords import *
 
 # stdlib imports
 
-from random import choice as choose
-
 # extensions
 
-from .AbletonInstruments import *
+from FoxDot.lib.Extensions.Ableton.AbletonInstruments import *
 from .MusicStateMachine import *
 
 # Define any custom functions

@@ -227,3 +227,20 @@ def change_bpm(bpm, midi_nudge=True, nudge_base=0.22):
     def nudging():
         if midi_nudge:
             Clock.midi_nudge = 60 / bpm - nudge_base
+
+
+def run_now(f):
+    f()
+    return f
+
+# This is not really a decorator, more a currying mechanism using the decorator syntax
+# Cf: https://www.geeksforgeeks.org/currying-function-in-python/ and https://www.saltycrane.com/blog/2010/03/simple-python-decorator-examples/
+
+
+def later_clockless(clock):
+    def later_clocked(future_dur):
+        def later_decorator(f):
+            clock.future(future_dur, f)
+            return f
+        return later_decorator
+    return later_clocked

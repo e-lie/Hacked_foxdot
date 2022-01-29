@@ -4,7 +4,8 @@ from .Scale import Scale
 from . import Clock
 
 from .EffectsPreset import *
-from . import SmartSet, InstrucFactory
+from FoxDot.lib.Extensions.Ableton.SmartSetParams import SmartSet
+from FoxDot.lib.Extensions.Ableton.AbletonInstruments import InstrucFactory
 
 liveset = live.Set()
 liveset.scan(scan_clip_names=True, scan_devices=True)
