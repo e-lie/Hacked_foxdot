@@ -15,6 +15,72 @@ def normalize_volume(value):
     return result
 
 
+def split_param_name(name):
+    if "_" in name:
+        splitted = name.split('_')
+        device_name = splitted[0]
+        param_name = '_'.join(splitted[1:])
+        return device_name, param_name
+    else:
+        raise KeyError("Parameter name not splittable by '_': " + name)
+
+
+# def param_exists_in_live(smart_track, full_name):
+#     device_name, param_name = split_param_name(full_name)
+#     if device_name in smart_track.smart_devices.keys():
+#         smart_device = smart_track.smart_devices[device_name]
+#         if param_name in smart_device.param_ids.keys():
+#             return True
+#     print("Parameter doesn't exist: " + full_name)
+#     return False
+
+def get_device_and_param_name(smart_track, full_name):
+    # device can point to a smart_device or a smart_track (when param is vol or pan)
+    if full_name in ['vol', 'pan']:
+        device = smart_track
+        name = full_name
+    else:
+        device_name, param_name = split_param_name(full_name)
+        if (device_name in smart_track.smart_devices.keys()
+            and param_name in smart_track.smart_devices[device_name].param_ids.keys()):
+            device = smart_track.smart_devices[device_name]
+            name = param_name
+        else:
+            print("Parameter doesn't exist: " + full_name)
+            device, name = None, None
+    return device, name
+
+
+def set_smart_param(clock, smart_track, full_name, value, update_freq=0.05):
+    # device can point to a smart_device or a smart_track (when param is vol or pan)
+    device, name = get_device_and_param_name(smart_track, full_name)
+    if isinstance(value, TimeVar):
+        # to update a time varying param and tell the preceding recursion loop to stop
+        # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
+        if name not in device.__param_states.keys() or device.__param_states[name] != 'timevar1':
+            new_state = 'timevar1'
+        else:
+            new_state = 'timevar2'
+
+        def schedule_futureloop_update(name, value, new_state, update_freq):
+            device.__param_states[name] = new_state
+            set_param_futureloop(clock, device, name, value, new_state, update_freq)
+        # beat=None means schedule for the next bar
+        clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq])
+    else:
+        # to switch back to non varying value use the state normal to make the recursion loop stop
+        def schedule_value_update(device, name, value):
+            device.__param_states[name] = 'normal'
+            setattr(device, name, float(value))
+        # beat=None means schedule for the next bar
+        clock.schedule(schedule_value_update, beat=None, args=[device, name, value])
+
+def set_param_futureloop(clock, device, name, value, state, update_freq):
+    if device.__param_states[name] == state:
+        setattr(device, name, float(value))
+        clock.future(update_freq, set_param_futureloop, args=[clock, device, name, value, state, update_freq])
+
+
 class SmartSet(object):
 
     def __init__(self, clock, set):
@@ -65,8 +131,9 @@ class SmartTrack(object):
         self.__smart_devices = {}
         self.__device_names = {}
         self.__device_ids = {}
-        self.__vol_state = 'normal'
-        self.__pan_state = 'normal'
+        # self.__vol_state = 'normal'
+        # self.__pan_state = 'normal'
+        self.__param_states = {}
         for id, device in enumerate(self.__devices):
             simple_name = device.name.lower().replace(' ', '_').replace('/', '_')
             self.__device_names[id] = simple_name
@@ -96,56 +163,57 @@ class SmartTrack(object):
     def smart_devices(self):
         return self.__smart_devices
 
-    def __set_vol(self, value, update_freq=0.05):
-        if isinstance(value, TimeVar):
-            # to update a time varying param and tell the preceding recursion loop to stop
-            # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
-            new_state = 'timevar1' if self.__vol_state != 'timevar1' else 'timevar2'
-            self.__vol_state = new_state
-            self.__set_vol_futureloop(value, new_state, update_freq)
-
-            def schedule_futureloop_update(value, new_state, update_freq):
-                self.__vol_state = new_state
-                self.__set_vol_futureloop(value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
-                                 value, new_state, update_freq])  # beat=None means schedule for the next bar
-        else:
-            # to switch back to non varying value use the state normal to make the recursion loop stop
-            def schedule_value_update(value):
-                self.__vol_state = 'normal'
-                self.__track.volume = normalize_volume(value)
-            # beat=None means schedule for the next bar
-            self._clock.schedule(schedule_value_update,
-                                 beat=None, args=[value])
-
-    def __set_vol_futureloop(self, value, state, update_freq=0.05):
-        if self.__vol_state == state:
-            self.__track.volume = normalize_volume(float(value))
-            self._clock.future(update_freq, self.__set_vol_futureloop, args=[
-                               value, state], kwargs={"update_freq": update_freq})
-
-    def __set_pan(self, value, update_freq=0.05):
-        if isinstance(value, TimeVar):
-            new_state = 'timevar1' if self.__pan_state != 'timevar1' else 'timevar2'
-
-            def schedule_futureloop_update(value, new_state, update_freq):
-                self.__pan_state = new_state
-                self.__set_pan_futureloop(value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
-                                 value, new_state, update_freq])  # beat=None means schedule for the next bar
-        else:
-            def schedule_value_update(value):
-                self.__pan_state = 'normal'
-                self.__track.pan = value
-            # beat=None means schedule for the next bar
-            self._clock.schedule(schedule_value_update,
-                                 beat=None, args=[value])
-
-    def __set_pan_futureloop(self, value, state, update_freq=0.05):
-        if self.__pan_state == state:
-            self.__track.pan = float(value)
-            self._clock.future(update_freq, self.__set_pan_futureloop, args=[
-                               value, state], kwargs={"update_freq": update_freq})
+    #
+    # def __set_vol(self, value, update_freq=0.05):
+    #     if isinstance(value, TimeVar):
+    #         # to update a time varying param and tell the preceding recursion loop to stop
+    #         # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
+    #         new_state = 'timevar1' if self.__vol_state != 'timevar1' else 'timevar2'
+    #         self.__vol_state = new_state
+    #         self.__set_vol_futureloop(value, new_state, update_freq)
+    #
+    #         def schedule_futureloop_update(value, new_state, update_freq):
+    #             self.__vol_state = new_state
+    #             self.__set_vol_futureloop(value, new_state, update_freq)
+    #         self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+    #                              value, new_state, update_freq])  # beat=None means schedule for the next bar
+    #     else:
+    #         # to switch back to non varying value use the state normal to make the recursion loop stop
+    #         def schedule_value_update(value):
+    #             self.__vol_state = 'normal'
+    #             self.__track.volume = normalize_volume(value)
+    #         # beat=None means schedule for the next bar
+    #         self._clock.schedule(schedule_value_update,
+    #                              beat=None, args=[value])
+    #
+    # def __set_vol_futureloop(self, value, state, update_freq=0.05):
+    #     if self.__vol_state == state:
+    #         self.__track.volume = normalize_volume(float(value))
+    #         self._clock.future(update_freq, self.__set_vol_futureloop, args=[
+    #                            value, state], kwargs={"update_freq": update_freq})
+    #
+    # def __set_pan(self, value, update_freq=0.05):
+    #     if isinstance(value, TimeVar):
+    #         new_state = 'timevar1' if self.__pan_state != 'timevar1' else 'timevar2'
+    #
+    #         def schedule_futureloop_update(value, new_state, update_freq):
+    #             self.__pan_state = new_state
+    #             self.__set_pan_futureloop(value, new_state, update_freq)
+    #         self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+    #                              value, new_state, update_freq])  # beat=None means schedule for the next bar
+    #     else:
+    #         def schedule_value_update(value):
+    #             self.__pan_state = 'normal'
+    #             self.__track.pan = value
+    #         # beat=None means schedule for the next bar
+    #         self._clock.schedule(schedule_value_update,
+    #                              beat=None, args=[value])
+    #
+    # def __set_pan_futureloop(self, value, state, update_freq=0.05):
+    #     if self.__pan_state == state:
+    #         self.__track.pan = float(value)
+    #         self._clock.future(update_freq, self.__set_pan_futureloop, args=[
+    #                            value, state], kwargs={"update_freq": update_freq})
 
     @property
     def vol(self):
@@ -153,7 +221,8 @@ class SmartTrack(object):
 
     @vol.setter
     def vol(self, value):
-        self.__set_vol(value)
+        self.__track.volume = normalize_volume(value)
+        # self.__set_vol(value)
 
     @property
     def pan(self):
@@ -161,7 +230,8 @@ class SmartTrack(object):
 
     @pan.setter
     def pan(self, value):
-        self.__set_pan(value)
+        self.__track.pan = value
+        # self.__set_pan(value)
 
 
 class SmartDevice(object):
@@ -207,37 +277,42 @@ class SmartDevice(object):
         # else:
         #     raise AttributeError("Param value not between 0.0 and 1.0.")
 
-    def __set_param(self, name, value, update_freq=0.05):
+    def __set_param(self, name, value):
         param = self.__params[self.__param_ids[name]]
-        if isinstance(value, TimeVar):
-            # to update a time varying param and tell the preceding recursion loop to stop
-            # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
-            if name not in self.__param_states.keys() or self.__param_states[name] != 'timevar1':
-                new_state = 'timevar1'
-            else:
-                new_state = 'timevar2'
+        param.value = normalize_param(param, value)
 
-            def schedule_futureloop_update(name, value, new_state, update_freq):
-                self.__param_states[name] = new_state
-                self.__set_param_futureloop(
-                    name, value, new_state, update_freq)
-            self._clock.schedule(schedule_futureloop_update, beat=None, args=[
-                                 name, value, new_state, update_freq])  # beat=None means schedule for the next bar
-        else:
-            # to switch back to non varying value use the state normal to make the recursion loop stop
-            def schedule_value_update(param, value):
-                self.__param_states[name] = 'normal'
-                param.value = normalize_param(param, value)
-            # beat=None means schedule for the next bar
-            self._clock.schedule(schedule_value_update,
-                                 beat=None, args=[param, value])
 
-    def __set_param_futureloop(self, name, value, state, update_freq=0.05):
-        param = self.__params[self.__param_ids[name]]
-        if self.__param_states[name] == state:
-            param.value = normalize_param(param, float(value))
-            self._clock.future(update_freq, self.__set_param_futureloop, args=[
-                               name, value, state], kwargs={"update_freq": update_freq})
+    # def __set_param(self, name, value, update_freq=0.05):
+    #     param = self.__params[self.__param_ids[name]]
+    #     if isinstance(value, TimeVar):
+    #         # to update a time varying param and tell the preceding recursion loop to stop
+    #         # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
+    #         if name not in self.__param_states.keys() or self.__param_states[name] != 'timevar1':
+    #             new_state = 'timevar1'
+    #         else:
+    #             new_state = 'timevar2'
+    #
+    #         def schedule_futureloop_update(name, value, new_state, update_freq):
+    #             self.__param_states[name] = new_state
+    #             self.__set_param_futureloop(
+    #                 name, value, new_state, update_freq)
+    #         self._clock.schedule(schedule_futureloop_update, beat=None, args=[
+    #                              name, value, new_state, update_freq])  # beat=None means schedule for the next bar
+    #     else:
+    #         # to switch back to non varying value use the state normal to make the recursion loop stop
+    #         def schedule_value_update(param, value):
+    #             self.__param_states[name] = 'normal'
+    #             param.value = normalize_param(param, value)
+    #         # beat=None means schedule for the next bar
+    #         self._clock.schedule(schedule_value_update,
+    #                              beat=None, args=[param, value])
+    #
+    # def __set_param_futureloop(self, name, value, state, update_freq=0.05):
+    #     param = self.__params[self.__param_ids[name]]
+    #     if self.__param_states[name] == state:
+    #         param.value = normalize_param(param, float(value))
+    #         self._clock.future(update_freq, self.__set_param_futureloop, args=[
+    #                            name, value, state], kwargs={"update_freq": update_freq})
 
     # def __iter__(self):
     #     for name in self.__slots__:

@@ -1,4 +1,6 @@
 from typing import Mapping
+
+from FoxDot.lib.Extensions.Ableton.SmartSetParams import get_device_and_param_name, set_smart_param
 from FoxDot.lib.Scale import Scale
 from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
@@ -88,36 +90,39 @@ class AbletonInstrumentFacade:
 
         return base_midi_map
 
-    def _split_param_name(self, name):
-        if "_" in name:
-            splitted = name.split('_')
-            device_name = splitted[0]
-            param_name = '_'.join(splitted[1:])
-            return device_name, param_name
-        else:
-            raise KeyError("Parameter name not splittable by '_': " + name)
+    # def _split_param_name(self, name):
+    #     if "_" in name:
+    #         splitted = name.split('_')
+    #         device_name = splitted[0]
+    #         param_name = '_'.join(splitted[1:])
+    #         return device_name, param_name
+    #     else:
+    #         raise KeyError("Parameter name not splittable by '_': " + name)
+    #
+    # def param_exists_in_live(self, smart_track, full_name):
+    #     device_name, param_name = self._split_param_name(full_name)
+    #     if device_name in smart_track.smart_devices.keys():
+    #         smart_device = smart_track.smart_devices[device_name]
+    #         if param_name in smart_device.param_ids.keys():
+    #             return True
+    #     print("Parameter doesn't exist: " + full_name)
+    #     return False
 
-    def param_exists_in_live(self, smart_track, full_name):
-        device_name, param_name = self._split_param_name(full_name)
-        if device_name in smart_track.smart_devices.keys():
-            smart_device = smart_track.smart_devices[device_name]
-            if param_name in smart_device.param_ids.keys():
-                return True
-        print("Parameter doesn't exist: " + full_name)
-        return False
-
-    def apply_live_params(self, smart_track, param_dict, remaining_param_dict={}):
-        for param, value in param_dict.items():
-            if param == "pan":
-                smart_track.pan = value
-            elif param == "vol":
-                smart_track.vol = value
-            elif "_" in param and self.param_exists_in_live(smart_track, param):
-                device_name, param_name = self._split_param_name(param)
-                device = getattr(smart_track, device_name)
-                setattr(device, param_name, value)
+    def apply_all_existing_live_params(self, smart_track, param_dict, remaining_param_dict={}):
+        for param_fullname, value in param_dict.items():
+            device, name = get_device_and_param_name(smart_track, param_fullname)
+            # if param == "pan":
+            #     smart_track.pan = value
+            # elif param == "vol":
+            #     smart_track.vol = value
+            #elif "_" in param and self.param_exists_in_live(smart_track, param):
+            if device is not None: # means param exists in live
+                # device_name, param_name = self._split_param_name(param)
+                # device = getattr(smart_track, device_name)
+                # setattr(device, param_name, value)
+                set_smart_param(self._clock, smart_track, param_fullname, value, update_freq=0.05)
             else:
-                remaining_param_dict[param] = value
+                remaining_param_dict[param_fullname] = value
 
     def out(self, *args, channel=None, oct=None, scale=None, midi_map=None, dur=None, sus=None, amp=None, **kwargs):
         midi_map = midi_map if midi_map else self._midi_map
@@ -146,15 +151,16 @@ class AbletonInstrumentFacade:
                     key, value) in params.items() if track_name in key.split("_")}
                 # get the corresponding smart track
                 subtrack = getattr(self._smart_set, track_name+channel_suffix)
-                self.apply_live_params(subtrack, track_params)
+                self.apply_all_existing_live_params(subtrack, track_params)
                 for key in track_params.keys():  # remove per instrument params
                     del params[track_name+"_"+key]
 
         remaining_param_dict = {}
-        self.apply_live_params(self._smart_track, params, remaining_param_dict)
+        self.apply_all_existing_live_params(self._smart_track, params, remaining_param_dict)
 
         return AbletonOut(
             live_params=live_params,
+            smart_track=self._smart_track,
             midi_map=midi_map,
             channel=self._channel-1,
             oct=oct,
