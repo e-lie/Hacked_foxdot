@@ -29,7 +29,7 @@ def get_device_and_param_name(smart_track, full_name):
     if full_name in ['vol', 'pan']:
         device = smart_track
         name = full_name
-    else:
+    elif '_' in full_name:
         device_name, param_name = split_param_name(full_name)
         if (device_name in smart_track.smart_devices.keys()
             and param_name in smart_track.smart_devices[device_name].param_ids.keys()):
@@ -38,6 +38,8 @@ def get_device_and_param_name(smart_track, full_name):
         else:
             print("Parameter doesn't exist: " + full_name)
             device, name = None, None
+    else:
+        device, name = None, None
     return device, name
 
 
