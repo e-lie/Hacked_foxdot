@@ -90,36 +90,10 @@ class AbletonInstrumentFacade:
 
         return base_midi_map
 
-    # def _split_param_name(self, name):
-    #     if "_" in name:
-    #         splitted = name.split('_')
-    #         device_name = splitted[0]
-    #         param_name = '_'.join(splitted[1:])
-    #         return device_name, param_name
-    #     else:
-    #         raise KeyError("Parameter name not splittable by '_': " + name)
-    #
-    # def param_exists_in_live(self, smart_track, full_name):
-    #     device_name, param_name = self._split_param_name(full_name)
-    #     if device_name in smart_track.smart_devices.keys():
-    #         smart_device = smart_track.smart_devices[device_name]
-    #         if param_name in smart_device.param_ids.keys():
-    #             return True
-    #     print("Parameter doesn't exist: " + full_name)
-    #     return False
-
     def apply_all_existing_live_params(self, smart_track, param_dict, remaining_param_dict={}):
         for param_fullname, value in param_dict.items():
             device, name = get_device_and_param_name(smart_track, param_fullname)
-            # if param == "pan":
-            #     smart_track.pan = value
-            # elif param == "vol":
-            #     smart_track.vol = value
-            #elif "_" in param and self.param_exists_in_live(smart_track, param):
             if device is not None: # means param exists in live
-                # device_name, param_name = self._split_param_name(param)
-                # device = getattr(smart_track, device_name)
-                # setattr(device, param_name, value)
                 set_smart_param(self._clock, smart_track, param_fullname, value, update_freq=0.05)
             else:
                 remaining_param_dict[param_fullname] = value
@@ -132,7 +106,6 @@ class AbletonInstrumentFacade:
         dur = dur if dur else self._dur
         amp = amp if amp is not None else self._amp
         scale = scale if scale is not None else self._scale
-        remaining_kwargs = {}
         sus = sus if sus else self._sus
         # to avoid midi event collision between start and end note (which prevent the instrument from playing)
         sus = Pattern(sus) if sus is not None else Pattern(dur)-0.03
