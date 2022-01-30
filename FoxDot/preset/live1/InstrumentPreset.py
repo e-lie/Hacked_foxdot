@@ -1,5 +1,5 @@
 
-from FoxDot.lib.Extensions.Ableton import arm_all, create_instruc
+from FoxDot.lib.Extensions.Ableton import arm_all, AbletonInstrumentFactory
 from .UtilityFunctions import rndp
 
 from .EffectsPreset import *
@@ -9,11 +9,15 @@ arm_all()
 
 Clock.midi_nudge = 0
 
-mixer = create_instruc(track_name="mixer", channel=-1,
+ab = AbletonInstrumentFactory(config_default)
+
+mixer = ab.create_instruc(track_name="mixer", channel=-1,
                 scale=Scale.chromatic, oct=3, midi_map="stdrum")
 
 
-metronome = create_instruc(
+
+
+metronome = ab.create_instruc(
     track_name="metronome",
     channel=16,
     set_defaults=False,
@@ -25,7 +29,7 @@ metronome = create_instruc(
 
 # Channel 1
 
-kit808 = create_instruc(
+kit808 = ab.create_instruc(
     track_name="kit808",
     channel=1,
     scale=Scale.chromatic,
@@ -35,7 +39,7 @@ kit808 = create_instruc(
     dur=1 / 2,
 )
 
-kicker = create_instruc(
+kicker = ab.create_instruc(
     track_name="kicker",
     channel=1,
     config={"root": 0},
@@ -45,7 +49,7 @@ kicker = create_instruc(
     dur=1,
 )
 
-kitdatai = create_instruc(
+kitdatai = ab.create_instruc(
     track_name="kitdatai",
     channel=1,
     config={"root": 0},
@@ -57,7 +61,7 @@ kitdatai = create_instruc(
 
 # Channel 2
 
-kitcuba = create_instruc(
+kitcuba = ab.create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -74,7 +78,7 @@ kitcuba = create_instruc(
     scale=Scale.chromatic,
 )
 
-jazzkit = create_instruc(
+jazzkit = ab.create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -91,7 +95,7 @@ jazzkit = create_instruc(
     scale=Scale.chromatic,
 )
 
-reaktorkit = create_instruc(
+reaktorkit = ab.create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -108,7 +112,7 @@ reaktorkit = create_instruc(
     scale=Scale.chromatic,
 )
 
-harshkit = create_instruc(
+harshkit = ab.create_instruc(
     track_name="channel_2",
     channel=2,
     grouping=True,
@@ -127,7 +131,7 @@ harshkit = create_instruc(
 
 # Channel 6
 
-crubass = create_instruc(
+crubass = ab.create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -142,7 +146,7 @@ crubass = create_instruc(
     # scale=Scale.minor,
 )
 
-tb303 = create_instruc(
+tb303 = ab.create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -156,7 +160,7 @@ tb303 = create_instruc(
     # scale=Scale.minor,
 )
 
-ubass = create_instruc(
+ubass = ab.create_instruc(
     track_name="channel_6",
     channel=6,
     grouping=True,
@@ -171,7 +175,7 @@ ubass = create_instruc(
 
 # Channel 7
 
-crubass_2 = create_instruc(
+crubass_2 = ab.create_instruc(
     track_name="channel_7",
     channel=7,
     grouping=True,
@@ -185,7 +189,7 @@ crubass_2 = create_instruc(
     # scale=Scale.minor,
 )
 
-tb303_2 = create_instruc(
+tb303_2 = ab.create_instruc(
     track_name="channel_7",
     channel=7,
     grouping=True,
@@ -200,7 +204,7 @@ tb303_2 = create_instruc(
 
 # Channel 8
 
-piano = create_instruc(
+piano = ab.create_instruc(
     track_name="channel_8",
     channel=8,
     grouping=True,
@@ -212,7 +216,7 @@ piano = create_instruc(
     # scale=Scale.minor,
 )
 
-danceorg = create_instruc(
+danceorg = ab.create_instruc(
     track_name="channel_8",
     channel=8,
     grouping=True,
@@ -224,7 +228,7 @@ danceorg = create_instruc(
     # scale=Scale.minor,
 )
 
-kora = create_instruc(
+kora = ab.create_instruc(
     track_name="channel_4",
     channel=4,
     grouping=True,
@@ -235,7 +239,7 @@ kora = create_instruc(
     # scale=Scale.major,
 )
 
-strings = create_instruc(
+strings = ab.create_instruc(
     track_name="channel_9",
     channel=9,
     grouping=True,
@@ -247,7 +251,7 @@ strings = create_instruc(
     # scale=Scale.major,
 )
 
-owstr = create_instruc(
+owstr = ab.create_instruc(
     track_name="channel_9",
     channel=9,
     grouping=True,
@@ -259,7 +263,7 @@ owstr = create_instruc(
     # scale=Scale.major,
 )
 
-balafon = create_instruc(
+balafon = ab.create_instruc(
     track_name="channel_10",
     channel=10,
     grouping=True,
@@ -271,7 +275,7 @@ balafon = create_instruc(
     # scale=Scale.major,
 )
 
-bells = create_instruc(
+bells = ab.create_instruc(
     track_name="channel_10",
     channel=10,
     grouping=True,

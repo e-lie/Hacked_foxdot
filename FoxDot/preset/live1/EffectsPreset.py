@@ -2,6 +2,7 @@
 track_default = {
     "vol": 1,
     "pan": 0,
+    "amplify": .8,
 }
 
 reverb_default = {
