@@ -1,7 +1,7 @@
 
 from FoxDot import Clock, linvar, inf, PWhite, nextBar, player_method
 from FoxDot.lib.Extensions.Live import liveset
-from FoxDot.lib.Extensions.PyliveSmartParams import set_smart_param
+from FoxDot.lib.Extensions.PyliveSmartParams import SmartTrack
 
 
 def delay(subdiv=1 / 2, vol=0.6, time=None, feedback=0.5, pan=0.5, dry=1):
@@ -35,22 +35,38 @@ def tb3(config=None, decay=None, freq=None, reso=None, drive=None, delay=None):
 
 
 @player_method
-def fadein(self, dur=4, fvol=1, ivol=0):
-    smart_track = self.attr["smart_track"][0]
-    #change eq_gain to avoid conflict with volume (but for eq_gain .5 -> 0dB)
-    set_smart_param(smart_track, "eq_gain", linvar([ivol/2, fvol/2], [dur, inf], start=Clock.mod(4)))
+def fadein(self, dur=8, fvol=1, ivol=0):
+    if "smart_track" in self.attr.keys() and isinstance(self.attr["smart_track"][0], SmartTrack):
+        self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+    else:
+        self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
     return self
 
+@player_method
+def fadeout(self, dur=8, ivol=1, fvol=0):
+    if "smart_track" in self.attr.keys() and isinstance(self.attr["smart_track"][0], SmartTrack):
+        self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+    else:
+        self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+    return self
 
-def fadein(dur=4, fvol=1, ivol=0):
+@player_method
+def fadeoutin(self, dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
+    if "smart_track" in self.attr.keys() and isinstance(self.attr["smart_track"][0], SmartTrack):
+        self.vol = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+    else:
+        self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+    return self
+
+def fadein(dur=8, fvol=1, ivol=0):
     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
 
 
-def fadeout(dur=16, ivol=1, fvol=0):
+def fadeout(dur=8, ivol=1, fvol=0):
     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
 
 
-def fadeoutin(dur=16, outdur=16, ivol=1, mvol=0, fvol=1):
+def fadeoutin(dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
     return {"vol": linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))}
 
 
