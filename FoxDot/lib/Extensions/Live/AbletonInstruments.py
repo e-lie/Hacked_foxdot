@@ -1,6 +1,6 @@
 from typing import Mapping
 
-from FoxDot.lib.Extensions.Ableton.SmartSetParams import get_device_and_param_name, set_smart_param
+from FoxDot.lib.Extensions.PyliveSmartParams import get_device_and_param_name, set_smart_param
 from FoxDot.lib.Scale import Scale
 from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
@@ -94,7 +94,7 @@ class AbletonInstrumentFacade:
         for param_fullname, value in param_dict.items():
             device, name = get_device_and_param_name(smart_track, param_fullname)
             if device is not None: # means param exists in live
-                set_smart_param(self._clock, smart_track, param_fullname, value, update_freq=0.05)
+                set_smart_param(smart_track, param_fullname, value, update_freq=0.05)
             else:
                 remaining_param_dict[param_fullname] = value
 

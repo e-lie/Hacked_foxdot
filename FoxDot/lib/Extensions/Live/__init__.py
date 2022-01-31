@@ -2,8 +2,8 @@ import live
 
 from FoxDot.lib import Clock, player_method
 
-from .SmartSetParams import SmartSet
-from .AbletonInstruments import AbletonInstrumentFacade
+from FoxDot.lib.Extensions.PyliveSmartParams import SmartSet
+from FoxDot.lib.Extensions.Live.AbletonInstruments import AbletonInstrumentFacade
 
 liveset = live.Set()
 
@@ -37,15 +37,3 @@ class AbletonInstrumentFactory:
             output = err.message if hasattr(err, 'message') else err
             print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
             return None
-
-@player_method
-def vol(self, value):
-    smart_track = self.attr["smart_track"][0]
-    smart_track.vol = value
-    return self
-
-@player_method
-def pan(self, value):
-    smart_track = self.attr["smart_track"][0]
-    smart_track.pan = value
-    return self

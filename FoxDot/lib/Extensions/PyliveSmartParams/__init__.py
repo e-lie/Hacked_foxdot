@@ -24,7 +24,7 @@ def split_param_name(name):
     else:
         raise KeyError("Parameter name not splittable by '_': " + name)
 
-def get_device_and_param_name(smart_track, full_name):
+def get_device_and_param_name(smart_track, full_name, quiet=False):
     # device can point to a smart_device or a smart_track (when param is vol or pan)
     if full_name in ['vol', 'pan']:
         device = smart_track
@@ -36,16 +36,27 @@ def get_device_and_param_name(smart_track, full_name):
             device = smart_track.smart_devices[device_name]
             name = param_name
         else:
-            print("Parameter doesn't exist: " + full_name)
+            if not quiet:
+                print("Parameter doesn't exist: " + full_name)
             device, name = None, None
     else:
         device, name = None, None
     return device, name
 
 
-def set_smart_param(clock, smart_track, full_name, value, update_freq=0.05):
+def get_smart_param(smart_track, full_name):
     # device can point to a smart_device or a smart_track (when param is vol or pan)
     device, name = get_device_and_param_name(smart_track, full_name)
+    if device is None or name is None:
+        return
+    return getattr(device, name)
+
+
+def set_smart_param(smart_track, full_name, value, update_freq=0.05):
+    # device can point to a smart_device or a smart_track (when param is vol or pan)
+    device, name = get_device_and_param_name(smart_track, full_name)
+    if device is None or name is None:
+        return
     if isinstance(value, TimeVar):
         # to update a time varying param and tell the preceding recursion loop to stop
         # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
@@ -56,16 +67,16 @@ def set_smart_param(clock, smart_track, full_name, value, update_freq=0.05):
 
         def schedule_futureloop_update(name, value, new_state, update_freq):
             device.__param_states[name] = new_state
-            set_param_futureloop(clock, device, name, value, new_state, update_freq)
+            set_param_futureloop(smart_track._clock, device, name, value, new_state, update_freq)
         # beat=None means schedule for the next bar
-        clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq])
+        smart_track._clock.schedule(schedule_futureloop_update, beat=None, args=[name, value, new_state, update_freq])
     else:
         # to switch back to non varying value use the state normal to make the recursion loop stop
         def schedule_value_update(device, name, value):
             device.__param_states[name] = 'normal'
             setattr(device, name, float(value))
         # beat=None means schedule for the next bar
-        clock.schedule(schedule_value_update, beat=None, args=[device, name, value])
+        smart_track._clock.schedule(schedule_value_update, beat=None, args=[device, name, value])
 
 def set_param_futureloop(clock, device, name, value, state, update_freq):
     if device.__param_states[name] == state:
@@ -194,7 +205,8 @@ class SmartDevice(object):
         elif name == 'params':
             return [name for name in self.__param_ids.keys()]
         else:
-            return self.__params[self.__param_ids[name]].value
+            param = self.__params[self.__param_ids[name]]
+            return param.value[3]
 
     @property
     def param_ids(self):

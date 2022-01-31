@@ -25,6 +25,9 @@ eq_default = {
     "eq_gainhi": .85,
     "eq_freqlo": .3,
     "eq_freqhi": .57,
+    "eq_gain": .5,
+    "eq_width": .5,
+    "eq_pan": .5,
 }
 
 delay_default = {

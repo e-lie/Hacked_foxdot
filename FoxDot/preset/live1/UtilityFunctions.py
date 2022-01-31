@@ -1,20 +1,7 @@
 
 from FoxDot import Clock, linvar, inf, PWhite, nextBar, player_method
-from FoxDot.lib.Extensions.Ableton import liveset
-
-# def delay(config=None, vol=None, time=None, feedback=None, pan=None, dry=None):
-#     delay_base = { "delay_vol": 0, "delay_time": .5, "delay_feedback": .5, "delay_pan": .5, "delay_dry": 1 }
-#     if config and 'var' in config:
-#         dur = int(config[3:])
-#         vol = sinvar([0,.6],dur)
-#         time = 1 / (Clock.bpm / 60) # synchro delay time with current bpm
-#     vol = vol if vol is not None else delay_base["delay_vol"]
-#     time = time if time is not None else delay_base["delay_time"]
-#     feedback = feedback if feedback is not None else delay_base["delay_feedback"]
-#     pan = pan if pan is not None else delay_base["delay_pan"]
-#     dry = dry if dry is not None else delay_base["delay_dry"]
-#     return { "delay_vol": vol, "delay_time": time, "delay_feedback": feedback, "delay_pan": pan, "delay_dry": dry}
-from FoxDot.lib.Extensions.Ableton.SmartSetParams import set_smart_param
+from FoxDot.lib.Extensions.Live import liveset
+from FoxDot.lib.Extensions.PyliveSmartParams import set_smart_param
 
 
 def delay(subdiv=1 / 2, vol=0.6, time=None, feedback=0.5, pan=0.5, dry=1):
@@ -51,7 +38,7 @@ def tb3(config=None, decay=None, freq=None, reso=None, drive=None, delay=None):
 def fadein(self, dur=4, fvol=1, ivol=0):
     smart_track = self.attr["smart_track"][0]
     #change eq_gain to avoid conflict with volume (but for eq_gain .5 -> 0dB)
-    set_smart_param(Clock, smart_track, "eq_gain", linvar([ivol/2, fvol/2], [dur, inf], start=Clock.mod(4)))
+    set_smart_param(smart_track, "eq_gain", linvar([ivol/2, fvol/2], [dur, inf], start=Clock.mod(4)))
     return self
 
 

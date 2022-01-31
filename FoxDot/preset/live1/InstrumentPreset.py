@@ -1,5 +1,5 @@
 
-from FoxDot.lib.Extensions.Ableton import arm_all, AbletonInstrumentFactory
+from FoxDot.lib.Extensions.Live import arm_all, AbletonInstrumentFactory
 from .UtilityFunctions import rndp
 
 from .EffectsPreset import *

@@ -151,6 +151,8 @@ from .Bang import Bang
 
 from .TimeVar import TimeVar, Pvar
 
+from .Extensions.PyliveSmartParams import set_smart_param, get_device_and_param_name, get_smart_param, SmartTrack
+
 class EmptyPlayer(object):
     """ Place holder for Player objects created at run-time to reduce load time.
     """
@@ -374,15 +376,15 @@ class Player(Repeatable):
         """
         
         if isinstance(other, SynthDefProxy):
-            
+
             # Call the update method
-            
+
             self.update(other.name, other.degree, **other.kwargs)
-        
+
             # self.update_pattern_root('sample' if self.synthdef == SamplePlayer else 'degree')
             
             for method, arguments in other.methods:
-            
+
                 args, kwargs = arguments
             
                 getattr(self, method).__call__(*args, **kwargs)
@@ -450,14 +452,21 @@ class Player(Repeatable):
 
         if self.__init:
 
-            # Force the data into a Pattern if the attribute is used with SuperCollider
-            
             if name not in self.__vars:
 
-                # Get any alias
+                # Apply the parameter in live if it exists
+                if "smart_track" in self.attr.keys():
+                    smart_track = self.attr["smart_track"][0]
+                    if isinstance(smart_track, SmartTrack):
+                        device, param_name = get_device_and_param_name(smart_track, name, quiet=True)
+                        if device is not None:
+                            set_smart_param(smart_track, name, value)
+                            return
 
+                # Get any alias
                 name = self.alias.get(name, name)
 
+                # Force the data into a Pattern if the attribute is used with SuperCollider
                 value = asStream(value)
 
                 for item in value:
@@ -496,6 +505,14 @@ class Player(Repeatable):
 
     def __getattr__(self, name):
         try:
+            # Get the parameter value from live if it exists
+            if "smart_track" in self.attr.keys():
+                smart_track = self.attr["smart_track"][0]
+                if isinstance(smart_track, SmartTrack):
+                    device, param_name = get_device_and_param_name(smart_track, name, quiet=True)
+                    if device is not None:
+                        return get_smart_param(smart_track, name)
+
             # This checks for aliases, not the actual keys
             name = self.alias.get(name, name)
 
