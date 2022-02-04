@@ -11,7 +11,7 @@ class AbletonInstrumentFacade:
     default_degree = [0]
     default_scale = Scale.default
     default_oct = 3
-    default_amp = .8
+    default_amp = 1
 
     def __init__(self, clock, smart_set, track_name, channel, grouping=False, oct=None, amp=None, midi_map=None, config={}, scale=None, set_defaults=True, dur=1, sus=None):
         self._clock = clock
