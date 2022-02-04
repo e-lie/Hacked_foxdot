@@ -1,5 +1,6 @@
 from typing import Mapping
 
+from FoxDot.lib.Extensions.Live.MidiMapFactory import MidiMapFactory
 from FoxDot.lib.Extensions.PyliveSmartParams import get_device_and_param_name, set_smart_param
 from FoxDot.lib.Scale import Scale
 from FoxDot.lib.Midi import AbletonOut
@@ -25,70 +26,7 @@ class AbletonInstrumentFacade:
         self._amp = amp if amp else self.default_amp
         self._config = config
         self._scale = scale if scale is not None else self.default_scale
-        if midi_map and isinstance(midi_map, str):
-            if midi_map == 'stdrum':
-                self._midi_map = self.stdrum_midimap()
-            if midi_map == 'threesquare':
-                self._midi_map = self.threesquare_midimap()
-            if midi_map == 'linear':
-                self._midi_map = self.linear_midimap()
-        elif midi_map and isinstance(midi_map, Mapping):
-            # overwrite default midi_map with provided map
-            self._midi_map = self.threesquare_midimap() | midi_map
-        else:
-            self._midi_map = self.linear_midimap()
-
-    def linear_midimap(self):
-        lowcase = list(range(97, 123))
-        upcase = list(range(65, 91))
-        base_midi_map = {'default': 2, ' ': -1}
-        for i in range(52):
-            if i % 2 == 0:
-                base_midi_map[chr(lowcase[i//2])] = i
-            else:
-                base_midi_map[chr(upcase[i//2])] = i
-        return base_midi_map
-
-    def threesquare_midimap(self):
-        lowcase = list(range(97, 123))
-        upcase = list(range(65, 91))
-        base_midi_map = {'default': 2, ' ': -1}
-        for i in range(16):
-            base_midi_map[chr(lowcase[i])] = i
-        for i in range(16):
-            base_midi_map[chr(upcase[i])] = i+16
-        for i in range(10):
-            k = i + 16
-            j = i + 32
-            base_midi_map[chr(lowcase[k])] = j
-            base_midi_map[chr(upcase[k])] = j+10
-        return base_midi_map
-
-    def stdrum_midimap(self):
-        lowcase = list(range(97, 123))
-        upcase = list(range(65, 91))
-        base_midi_map = {
-            'default': 2,
-            ' ': -100,
-            'x': 0,
-            'r': 1,
-            'o': 2,
-            'c': 3,
-            'w': 4,
-            'T': 5,
-            'H': 6,
-            't': 7,
-            's': 8,
-            'm': 9,
-            '=': 10,
-            '-': 11,
-            'p': 12,
-            '*': 13,
-            'h': 14,
-            'b': 14,
-        }
-
-        return base_midi_map
+        self._midi_map = MidiMapFactory.generate_midimap(midi_map)
 
     def apply_all_existing_live_params(self, smart_track, param_dict, remaining_param_dict={}):
         for param_fullname, value in param_dict.items():
