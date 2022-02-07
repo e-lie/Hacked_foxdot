@@ -1,6 +1,6 @@
 
 from FoxDot import Clock, linvar, inf, PWhite, nextBar, player_method
-from FoxDot.lib.Extensions.Live import liveset
+from FoxDot.lib.Extensions.Live import live_set
 from FoxDot.lib.Extensions.PyliveSmartParams import SmartTrack
 
 
@@ -74,7 +74,7 @@ def fadeoutin(dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
 
 def change_bpm(bpm, midi_nudge=True, nudge_base=0.22):
     Clock.bpm = bpm
-    liveset.tempo = bpm
+    live_set.tempo = bpm
 
     @nextBar()
     def nudging():

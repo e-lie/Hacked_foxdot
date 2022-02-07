@@ -1,25 +1,23 @@
 
-from FoxDot.lib.Extensions.Live import arm_all, AbletonInstrumentFactory
+from FoxDot.lib.Extensions.Live import arm_all, live_set, smart_set, AbletonInstrumentFactory
 from .UtilityFunctions import rndp
 
 from .EffectsPreset import *
 from FoxDot import Clock, Scale
 
-arm_all()
+arm_all(live_set)
 
 Clock.midi_nudge = 0
 
-ab = AbletonInstrumentFactory(config_default)
+ab = AbletonInstrumentFactory(config_default, smart_set)
 
-mixer = ab.create_instruc(track_name="mixer", channel=-1,
+mixer = ab.create_instruc(track_name="mixer", midi_channel=-1,
                 scale=Scale.chromatic, oct=3, midi_map="stdrum")
-
-
 
 
 metronome = ab.create_instruc(
     track_name="metronome",
-    channel=16,
+    midi_channel=16,
     set_defaults=False,
     scale=Scale.chromatic,
     oct=3,
@@ -31,7 +29,7 @@ metronome = ab.create_instruc(
 
 kit808 = ab.create_instruc(
     track_name="kit808",
-    channel=1,
+    midi_channel=1,
     scale=Scale.chromatic,
     oct=3,
     config={"root": 0},
@@ -41,7 +39,7 @@ kit808 = ab.create_instruc(
 
 kicker = ab.create_instruc(
     track_name="kicker",
-    channel=1,
+    midi_channel=1,
     config={"root": 0},
     scale=Scale.chromatic,
     oct=1.6,
@@ -51,7 +49,7 @@ kicker = ab.create_instruc(
 
 kitdatai = ab.create_instruc(
     track_name="kitdatai",
-    channel=1,
+    midi_channel=1,
     config={"root": 0},
     scale=Scale.chromatic,
     oct=4.4,
@@ -62,9 +60,8 @@ kitdatai = ab.create_instruc(
 # Channel 2
 
 kitcuba = ab.create_instruc(
-    track_name="channel_2",
-    channel=2,
-    grouping=True,
+    track_name="_2",
+    midi_channel=2,
     oct=3,
     dur=1 / 2,
     midi_map="stdrum",
@@ -79,9 +76,8 @@ kitcuba = ab.create_instruc(
 )
 
 jazzkit = ab.create_instruc(
-    track_name="channel_2",
-    channel=2,
-    grouping=True,
+    track_name="_2",
+    midi_channel=2,
     oct=3,
     dur=1 / 2,
     midi_map="stdrum",
@@ -96,9 +92,8 @@ jazzkit = ab.create_instruc(
 )
 
 reaktorkit = ab.create_instruc(
-    track_name="channel_2",
-    channel=2,
-    grouping=True,
+    track_name="_2",
+    midi_channel=2,
     oct=3,
     dur=1 / 2,
     midi_map="stdrum",
@@ -113,9 +108,8 @@ reaktorkit = ab.create_instruc(
 )
 
 harshkit = ab.create_instruc(
-    track_name="channel_2",
-    channel=2,
-    grouping=True,
+    track_name="_2",
+    midi_channel=2,
     oct=3,
     dur=1 / 2,
     midi_map="stdrum",
@@ -132,9 +126,8 @@ harshkit = ab.create_instruc(
 # Channel 6
 
 crubass = ab.create_instruc(
-    track_name="channel_6",
-    channel=6,
-    grouping=True,
+    track_name="_6",
+    midi_channel=6,
     oct=3,
     # sus=1/2, #the sustain bug disappeared
     config={
@@ -143,13 +136,12 @@ crubass = ab.create_instruc(
         "tb303_vol": 0,
     }
     | rndp(crubassp, 12),
-    # scale=Scale.minor,
 )
 
+
 tb303 = ab.create_instruc(
-    track_name="channel_6",
-    channel=6,
-    grouping=True,
+    track_name="_6",
+    midi_channel=6,
     oct=4,
     # sus=1/2,
     config={
@@ -157,28 +149,24 @@ tb303 = ab.create_instruc(
         "crubass_vol": 0,
         "tb303_vol": 0.9,
     },
-    # scale=Scale.minor,
 )
 
 ubass = ab.create_instruc(
-    track_name="channel_6",
-    channel=6,
-    grouping=True,
+    track_name="_6",
+    midi_channel=6,
     oct=4,
     config={
         "ubass_vol": 0.9,
         "crubass_vol": 0,
         "tb303_vol": 0,
     },
-    # scale=Scale.minor,
 )
 
 # Channel 7
 
 crubass_2 = ab.create_instruc(
-    track_name="channel_7",
-    channel=7,
-    grouping=True,
+    track_name="_7",
+    midi_channel=7,
     oct=4,
     config={
         "ubass_vol": 0,
@@ -186,103 +174,86 @@ crubass_2 = ab.create_instruc(
         "tb303_vol": 0,
     }
     | rndp(crubassp, 12),
-    # scale=Scale.minor,
 )
 
 tb303_2 = ab.create_instruc(
-    track_name="channel_7",
-    channel=7,
-    grouping=True,
+    track_name="_7",
+    midi_channel=7,
     oct=4,
     config={
         "ubass_vol": 0,
         "crubass_vol": 0,
         "tb303_vol": 0.9,
     },
-    # scale=Scale.minor,
 )
 
 # Channel 8
 
 piano = ab.create_instruc(
-    track_name="channel_8",
-    channel=8,
-    grouping=True,
+    track_name="_8",
+    midi_channel=8,
     oct=5,
     config={
         "piano_vol": 1,
         "danceorg_vol": 0,
     },
-    # scale=Scale.minor,
 )
 
 danceorg = ab.create_instruc(
-    track_name="channel_8",
-    channel=8,
-    grouping=True,
+    track_name="_8",
+    midi_channel=8,
     oct=5,
     config={
         "piano_vol": 0,
         "danceorg_vol": 1,
     },
-    # scale=Scale.minor,
 )
 
 kora = ab.create_instruc(
-    track_name="channel_4",
-    channel=4,
-    grouping=True,
+    track_name="_4",
+    midi_channel=4,
     oct=5,
     config={
         "kora_vol": 1,
     },
-    # scale=Scale.major,
 )
 
 strings = ab.create_instruc(
-    track_name="channel_9",
-    channel=9,
-    grouping=True,
+    track_name="_9",
+    midi_channel=9,
     oct=5,
     config={
         "strings_vol": 1,
         "owstr_vol": 0,
     },
-    # scale=Scale.major,
 )
 
 owstr = ab.create_instruc(
-    track_name="channel_9",
-    channel=9,
-    grouping=True,
+    track_name="_9",
+    midi_channel=9,
     oct=5,
     config={
         "strings_vol": 0,
         "owstr_vol": 1,
     },
-    # scale=Scale.major,
 )
 
 balafon = ab.create_instruc(
-    track_name="channel_10",
-    channel=10,
-    grouping=True,
+    track_name="_10",
+    midi_channel=10,
     oct=5,
     config={
         "balafon_vol": 1,
         "bells_vol": 0,
     },
-    # scale=Scale.major,
 )
 
 bells = ab.create_instruc(
-    track_name="channel_10",
-    channel=10,
-    grouping=True,
+    track_name="_10",
+    midi_channel=10,
     oct=5,
     config={
         "balafon_vol": 0,
         "bells_vol": 1,
     },
-    # scale=Scale.major,
 )

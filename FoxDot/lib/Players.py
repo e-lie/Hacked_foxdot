@@ -151,7 +151,7 @@ from .Bang import Bang
 
 from .TimeVar import TimeVar, Pvar
 
-from .Extensions.PyliveSmartParams import set_smart_param, get_device_and_param_name, get_smart_param, SmartTrack
+from .Extensions.PyliveSmartParams import SmartTrack
 
 class EmptyPlayer(object):
     """ Place holder for Player objects created at run-time to reduce load time.
@@ -458,9 +458,9 @@ class Player(Repeatable):
                 if "smart_track" in self.attr.keys():
                     smart_track = self.attr["smart_track"][0]
                     if isinstance(smart_track, SmartTrack):
-                        device, param_name = get_device_and_param_name(smart_track, name, quiet=True)
+                        device, _, _ = smart_track.get_device_and_param_name(name, quiet=True)
                         if device is not None:
-                            set_smart_param(smart_track, name, value)
+                            smart_track.set_smart_param(name, value)
                             return
 
                 # Get any alias
@@ -509,9 +509,9 @@ class Player(Repeatable):
             if "smart_track" in self.attr.keys():
                 smart_track = self.attr["smart_track"][0]
                 if isinstance(smart_track, SmartTrack):
-                    device, param_name = get_device_and_param_name(smart_track, name, quiet=True)
+                    device, _, _ = smart_track.get_device_and_param_name(name, quiet=True)
                     if device is not None:
-                        return get_smart_param(smart_track, name)
+                        return smart_track.get_smart_param(name)
 
             # This checks for aliases, not the actual keys
             name = self.alias.get(name, name)
