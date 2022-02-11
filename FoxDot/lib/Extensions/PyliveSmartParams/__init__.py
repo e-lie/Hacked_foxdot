@@ -105,6 +105,15 @@ class SmartTrack(object):
         result = value * 0.85 if value <= 1.17 else 1.0
         self.__track.volume = result
 
+    def get_send(self, send_num):
+        return self.__track.get_send(send_num)
+
+    def set_send(self, send_num, value):
+        return self.__track.set_send(send_num, value)
+
+    def get_live_track(self):
+        return self.__track
+
     @property
     def pan(self):
         return self.__track.pan

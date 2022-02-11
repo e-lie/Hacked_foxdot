@@ -58,3 +58,17 @@ def getp(self, filter = None):
             else:
                 result = smart_track.config
     return result
+
+@player_method
+def get_send(self, send_num):
+    if "smart_track" in self.attr.keys():
+        smart_track = self.attr["smart_track"][0]
+        if isinstance(smart_track, SmartTrack):
+            return smart_track.get_send(send_num)
+
+@player_method
+def set_send(self, send_num, value):
+    if "smart_track" in self.attr.keys():
+        smart_track = self.attr["smart_track"][0]
+        if isinstance(smart_track, SmartTrack):
+            return smart_track.set_send(send_num, value)
