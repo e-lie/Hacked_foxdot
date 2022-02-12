@@ -11,8 +11,17 @@ Clock.midi_nudge = 0
 
 ab = AbletonInstrumentFactory(config_default, smart_set)
 
-mixer = ab.create_instruc(track_name="mixer", midi_channel=-1,
-                scale=Scale.chromatic, oct=3, midi_map="stdrum")
+smart_set.set_send_ids({
+    "sreverb": 0,
+    "ssc": 1,
+    "sgate": 2,
+    "swh": 3,
+    "swiden": 4,
+})
+
+mixer = ab.create_instruc(track_name="mixer", midi_channel=-1)
+
+sends = ab.create_instruc(track_name="sends", midi_channel=-1)
 
 
 metronome = ab.create_instruc(

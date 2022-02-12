@@ -11,6 +11,8 @@ class TrackType(Enum):
 
 class SmartSet(object):
 
+    send_ids = {}
+
     def __init__(self, clock, set):
         self._clock = clock
         self.__set = set
@@ -57,10 +59,14 @@ class SmartSet(object):
     def get_track(self, track_name):
         return self.__smart_tracks[track_name]
 
+    def set_send_ids(self, send_ids):
+        for track in self.__smart_tracks.values():
+            track.set_send_ids(send_ids)
+
 
 class SmartTrack(object):
 
-    __initialized = False
+    send_ids = {}
 
     def __init__(self, clock, track, name: str, type: TrackType, smart_set: SmartSet, subtracks=[]):
         self._clock = clock
@@ -83,6 +89,19 @@ class SmartTrack(object):
         else:
             result = "<SmartTrack {}>".format(pformat(self.__smart_devices))
         return result
+
+    def __getattr__(self, key):
+        if key in self.send_ids.keys():
+            return self.get_send(self.send_ids[key])
+        return self.__dict__[key]
+
+    def __setattr__(self, key, value):
+        if key in self.send_ids.keys():
+            self.set_send(self.send_ids[key], value)
+        self.__dict__[key] = value
+
+    def set_send_ids(self, send_ids):
+        self.send_ids = send_ids
 
     @classmethod
     def split_param_name(cls, name):
@@ -129,6 +148,10 @@ class SmartTrack(object):
         # device can point to a smart_device or a self (when param is vol or pan)
         device, name = None, None
         if full_name in ['vol', 'pan']:
+            device = self
+            name = full_name
+            full_name = full_name
+        elif full_name in self.send_ids.keys():
             device = self
             name = full_name
             full_name = full_name
