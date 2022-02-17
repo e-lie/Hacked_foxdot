@@ -77,10 +77,13 @@ class SmartTrack(object):
         self.config = {}
         self.__subtracks = subtracks
         self.__smart_devices = {}
+        self.__smart_device_list = []
         self.__param_states = {}
         for id, device in enumerate(self.__track.devices):
             snake_name = device.name.lower().replace(' ', '_').replace('/', '_')
-            self.__smart_devices[snake_name] = SmartDevice(device)
+            smart_device = SmartDevice(device)
+            self.__smart_devices[snake_name] = smart_device
+            self.__smart_device_list.append(smart_device)
 
     def __repr__(self):
         result = ""
@@ -144,37 +147,56 @@ class SmartTrack(object):
     def get_param_states(self):
         return self.__param_states
 
-    def get_device_and_param_name(self, full_name, quiet=False):
+    def get_live_object_and_param_name(self, param_fullname: str, quiet: bool = False):
+        """
+        Return object (SmartTrack or SmartDevice) and parameter name to apply modification to.
+        Choose usecase (parameter kind : track param like vol, send amount or device param) depending on parameter name.
+        This is important to make parameter modification uniform for all cases.
+        """
         # device can point to a smart_device or a self (when param is vol or pan)
-        device, name = None, None
-        if full_name in ['vol', 'pan']:
-            device = self
-            name = full_name
-            full_name = full_name
-        elif full_name in self.send_ids.keys():
-            device = self
-            name = full_name
-            full_name = full_name
-        elif self.type == TrackType.GROUP and '_' in full_name and full_name.split('_')[0] in self.__subtracks.keys():
-            subtrack_name = full_name.split('_')[0]
+        live_object, param_name = None, None
+        # Track vol or pan
+        if param_fullname in ['vol', 'pan']:
+            live_object = self
+            param_name = param_fullname
+            return live_object, param_name, param_fullname
+        # Param is a send name
+        elif param_fullname in self.send_ids.keys():
+            live_object = self
+            param_name = param_fullname
+            return live_object, param_name, param_fullname
+        # Param concerns a subtrack of the group -> recursive call on the subtrack
+        elif self.type == TrackType.GROUP and '_' in param_fullname and param_fullname.split('_')[0] in self.__subtracks.keys():
+            subtrack_name = param_fullname.split('_')[0]
             subtrack = self.__subtracks[subtrack_name]
-            device, name, _ = subtrack.get_device_and_param_name(full_name[len(subtrack_name)+1:], quiet=quiet)
-            full_name = full_name
-        elif '_' in full_name:
-            device_name, param_name = SmartTrack.split_param_name(full_name)
-            if (device_name in self.__smart_devices.keys()
-                    and param_name in self.__smart_devices[device_name].param_ids.keys()):
-                device = self.__smart_devices[device_name]
-                name = param_name
-                full_name = full_name
+            live_object, param_name, _ = subtrack.get_live_object_and_param_name(param_fullname[len(subtrack_name) + 1:], quiet=quiet)
+            return live_object, param_name, param_fullname
+        # Param is a device param
+        elif '_' in param_fullname:
+            first_part, rest = SmartTrack.split_param_name(param_fullname)
+            device_names = self.__smart_devices.keys()
+            if first_part in device_names:
+                device = self.__smart_devices[first_part]
+                param_names = device.param_ids.keys()
+                if rest in param_names:
+                    live_object = self.__smart_devices[first_part]
+                    param_name = rest
+                    return live_object, param_name, param_fullname
+        # If normal name split doesnt work use first device (param name shortcut intru_i_param -> instru_param)
         else:
-            if not quiet:
-                print("Parameter doesn't exist: " + full_name)
-        return device, name, full_name
+            first_device = self.__smart_device_list[0]
+            param_names = first_device.param_ids.keys()
+            if param_fullname in param_names:
+                live_object = self.__smart_device_list[0]
+                param_name = param_fullname
+                return live_object, param_name, param_fullname
+        if not quiet:
+            print("Parameter doesn't exist: " + param_fullname)
+        return live_object, param_name, param_fullname
 
     def set_smart_param(self, full_name, value, update_freq=0.05):
         # device can point to a smart_device or a smart track (self) -> (when param is vol or pan)
-        device, name, full_name = self.get_device_and_param_name(full_name)
+        device, name, full_name = self.get_live_object_and_param_name(full_name)
         if device is None or name is None:
             return
 
@@ -202,7 +224,7 @@ class SmartTrack(object):
 
     def get_smart_param(self, full_name):
         # device can point to a smart_device or a smart track (self) -> (when param is vol or pan)
-        device, name, _ = self.get_device_and_param_name(full_name)
+        device, name, _ = self.get_live_object_and_param_name(full_name)
         if device is None or name is None:
             return
         return getattr(device, name)

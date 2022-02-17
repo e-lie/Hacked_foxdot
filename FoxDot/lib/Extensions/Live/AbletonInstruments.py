@@ -28,7 +28,7 @@ class AbletonInstrumentFacade:
 
     def apply_all_existing_live_params(self, smart_track, param_dict, remaining_param_dict={}):
         for param_fullname, value in param_dict.items():
-            device, name, _ = smart_track.get_device_and_param_name(param_fullname)
+            device, name, _ = smart_track.get_live_object_and_param_name(param_fullname)
             if device is not None:  # means param exists in live
                 smart_track.set_smart_param(param_fullname, value, update_freq=0.05)
             else:

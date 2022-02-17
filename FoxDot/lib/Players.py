@@ -458,7 +458,7 @@ class Player(Repeatable):
                 if "smart_track" in self.attr.keys():
                     smart_track = self.attr["smart_track"][0]
                     if isinstance(smart_track, SmartTrack):
-                        device, _, _ = smart_track.get_device_and_param_name(name, quiet=True)
+                        device, _, _ = smart_track.get_live_object_and_param_name(name, quiet=True)
                         if device is not None:
                             smart_track.set_smart_param(name, value)
                             return
@@ -509,7 +509,7 @@ class Player(Repeatable):
             if "smart_track" in self.attr.keys():
                 smart_track = self.attr["smart_track"][0]
                 if isinstance(smart_track, SmartTrack):
-                    device, _, _ = smart_track.get_device_and_param_name(name, quiet=True)
+                    device, _, _ = smart_track.get_live_object_and_param_name(name, quiet=True)
                     if device is not None:
                         return smart_track.get_smart_param(name)
 

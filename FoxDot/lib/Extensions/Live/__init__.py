@@ -22,18 +22,21 @@ def arm_all(live_set):
 
 class AbletonInstrumentFactory:
 
-    def __init__(self, config_default, smart_set):
+    def __init__(self, config_base, config_default, smart_set):
+        self._config_base = config_base
         self._config_default = config_default
         self._smart_set = smart_set
 
     def create_instruc(self, *args, set_defaults=True, **kwargs):
         """handle exceptions gracefully especially if corresponding track does not exist in Live"""
         try:
-            config_default = self._config_default if set_defaults else {}
+            config = self._config_base
+            if set_defaults:
+                config = config | self._config_default
             if "config" in kwargs:
-                kwargs["config"] = config_default | kwargs["config"]
+                kwargs["config"] = config | kwargs["config"]
             else:
-                kwargs["config"] = config_default
+                kwargs["config"] = config
             result = AbletonInstrumentFacade(Clock, self._smart_set, *args, **kwargs)
             return result.out
         except Exception as err:

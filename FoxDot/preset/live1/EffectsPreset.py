@@ -5,6 +5,16 @@ track_default = {
     "amplify": .8,
 }
 
+sends_default = {
+    "sreverb": 0,
+    "ssc": 0,
+    "sgate": 0,
+    "swh": 0,
+    "swiden": 0,
+}
+
+config_base = {} | track_default | sends_default
+
 reverb_default = {
     "reverb_dw": 0,
     "reverb_hifreq": .89,
@@ -60,7 +70,8 @@ phaser_default = {
     "phaser_lfo3": .5,
 }
 
-config_default = {} | track_default | reverb_default | eq_default | resob_default | delay_default | hamp_default | phaser_default
+
+config_default = {} | reverb_default | eq_default | resob_default | delay_default | hamp_default | phaser_default
 
 ###########################################################
 ###########################################################

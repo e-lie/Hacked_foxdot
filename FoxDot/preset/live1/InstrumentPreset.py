@@ -9,7 +9,7 @@ arm_all(live_set)
 
 Clock.midi_nudge = 0
 
-ab = AbletonInstrumentFactory(config_default, smart_set)
+ab = AbletonInstrumentFactory(config_base, config_default, smart_set)
 
 smart_set.set_send_ids({
     "sreverb": 0,
@@ -21,7 +21,7 @@ smart_set.set_send_ids({
 
 mixer = ab.create_instruc(track_name="mixer", midi_channel=-1)
 
-sends = ab.create_instruc(track_name="sends", midi_channel=-1)
+sends = ab.create_instruc(track_name="sends", midi_channel=-1, set_defaults=False)
 
 
 metronome = ab.create_instruc(
