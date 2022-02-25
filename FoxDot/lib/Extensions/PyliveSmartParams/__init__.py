@@ -15,19 +15,23 @@ class SmartSet(object):
 
     def __init__(self, clock, set):
         self._clock = clock
-        self.__set = set
-        self.__smart_tracks = {}
-        self.__simple_tracks = {}
-        self.__group_tracks = {}
-        self.__subtracks = {}
+        self.set = set
+        self.smart_tracks = {}
+        self.simple_tracks = {}
+        self.group_tracks = {}
+        self.subtracks = {}
+        self.sends = {}
+        self.gmixer = None
+        self.sends_group = None
+        self.instrument_tracks = []
 
         # dict of form -> snake_name: track_index (index in tracks list)
         groups_dict = {group.name.lower().replace(' ', '_').replace('/', '_'): group.index for group in set.groups}
 
-        for id, track in enumerate(self.__set.tracks):
+        for id, track in enumerate(self.set.tracks):
             snake_name = track.name.lower().replace(' ', '_').replace('/', '_')
             if snake_name in groups_dict.keys():
-                group_subtracks = [subtrack  for subtrack in self.__set.tracks[groups_dict[snake_name]]]
+                group_subtracks = [subtrack for subtrack in self.set.tracks[groups_dict[snake_name]]]
                 smart_subtracks = {
                     subtrack.name.lower().replace(' ', '_').replace('/', '_'): SmartTrack(
                         self._clock,
@@ -41,26 +45,42 @@ class SmartSet(object):
                 mixer_track = [mixer_track for mixer_track in group_subtracks if "mixer" in mixer_track.name][0]
                 smart_track = SmartTrack(self._clock, name=snake_name, type=TrackType.GROUP, track=mixer_track,
                                          smart_set=self, subtracks=smart_subtracks)
-                self.__subtracks = self.__subtracks | smart_subtracks
-                self.__group_tracks[snake_name] = smart_track
-                self.__smart_tracks[snake_name] = smart_track
-            elif snake_name not in self.__subtracks.keys() and "mixer_" not in snake_name:
+                self.subtracks = self.subtracks | smart_subtracks
+                self.group_tracks[snake_name] = smart_track
+                self.smart_tracks[snake_name] = smart_track
+                for subtrack_name, subtrack in smart_subtracks.items():
+                    self.smart_tracks[subtrack_name] = subtrack
+            elif snake_name not in self.subtracks.keys() and "mixer_" not in snake_name:
                 smart_track = SmartTrack(self._clock, name=snake_name, type=TrackType.SIMPLE, track=track,
                                          smart_set=self)
-                self.__smart_tracks[snake_name] = smart_track
-                self.__simple_tracks[snake_name] = smart_track
+                self.smart_tracks[snake_name] = smart_track
+                self.simple_tracks[snake_name] = smart_track
+
+
+    def autodetect_tracks(self):
+        for name, smart_track in self.simple_tracks.items():
+            if name == "mixer":
+                self.gmixer = smart_track
+            else:
+                self.instrument_tracks.append(smart_track)
+
+        if "sends" in self.group_tracks.keys():
+            self.sends_group = self.group_tracks["sends"]
+            for i, smart_subtrack in enumerate(self.sends_group.subtracks.values()):
+                self.sends[smart_subtrack.name] = i
+
 
     #def display_set(self):
     #   for simple_track in self.__simple_tracks
 
     def __repr__(self):
-        return "<SmartSet {} \n\n ################ \n\n {}>".format(self.__simple_tracks, self.__group_tracks)
+        return "<SmartSet {} \n\n ################ \n\n {}>".format(self.simple_tracks, self.group_tracks)
 
     def get_track(self, track_name):
-        return self.__smart_tracks[track_name]
+        return self.smart_tracks[track_name]
 
     def set_send_ids(self, send_ids):
-        for track in self.__smart_tracks.values():
+        for track in self.smart_tracks.values():
             track.set_send_ids(send_ids)
 
 
@@ -75,7 +95,7 @@ class SmartTrack(object):
         self.name = name
         self.type = type
         self.config = {}
-        self.__subtracks = subtracks
+        self.subtracks = subtracks
         self.__smart_devices = {}
         self.__smart_device_list = []
         self.__param_states = {}
@@ -88,9 +108,9 @@ class SmartTrack(object):
     def __repr__(self):
         result = ""
         if self.type == TrackType.GROUP:
-            result = "<SmartTrack {} subtracks: {}>".format(pformat(self.__smart_devices), pformat(self.__subtracks))
+            result = "<SmartTrack {} - {} subtracks: {}>".format(self.name, pformat(self.__smart_devices), pformat(self.subtracks))
         else:
-            result = "<SmartTrack {}>".format(pformat(self.__smart_devices))
+            result = "<SmartTrack {} - {}>".format(self.name, pformat(self.__smart_devices))
         return result
 
     def __getattr__(self, key):
@@ -101,7 +121,15 @@ class SmartTrack(object):
     def __setattr__(self, key, value):
         if key in self.send_ids.keys():
             self.set_send(self.send_ids[key], value)
-        self.__dict__[key] = value
+        elif key == "vol":
+            """function make volume 1.0 corresponds to gain 0 in ableton (max volume without gain)
+            so 1.1 gives the volume some gain"""
+            result = value * 0.85 if value <= 1.17 else 1.0
+            self.__track.volume = result
+        elif key == "pan":
+            self.__track.pan = value
+        else:
+            self.__dict__[key] = value
 
     def set_send_ids(self, send_ids):
         self.send_ids = send_ids
@@ -120,12 +148,9 @@ class SmartTrack(object):
     def vol(self):
         return float(self.__track.volume) / 0.85
 
-    @vol.setter
-    def vol(self, value):
-        """function make volume 1.0 corresponds to gain 0 in ableton (max volume without gain)
-        so 1.1 gives the volume some gain"""
-        result = value * 0.85 if value <= 1.17 else 1.0
-        self.__track.volume = result
+    @property
+    def pan(self):
+        return self.__track.pan
 
     def get_send(self, send_num):
         return self.__track.get_send(send_num)
@@ -135,14 +160,6 @@ class SmartTrack(object):
 
     def get_live_track(self):
         return self.__track
-
-    @property
-    def pan(self):
-        return self.__track.pan
-
-    @pan.setter
-    def pan(self, value):
-        self.__track.pan = value
 
     def get_param_states(self):
         return self.__param_states
@@ -166,9 +183,9 @@ class SmartTrack(object):
             param_name = param_fullname
             return live_object, param_name, param_fullname
         # Param concerns a subtrack of the group -> recursive call on the subtrack
-        elif self.type == TrackType.GROUP and '_' in param_fullname and param_fullname.split('_')[0] in self.__subtracks.keys():
+        elif self.type == TrackType.GROUP and '_' in param_fullname and param_fullname.split('_')[0] in self.subtracks.keys():
             subtrack_name = param_fullname.split('_')[0]
-            subtrack = self.__subtracks[subtrack_name]
+            subtrack = self.subtracks[subtrack_name]
             live_object, param_name, _ = subtrack.get_live_object_and_param_name(param_fullname[len(subtrack_name) + 1:], quiet=quiet)
             return live_object, param_name, param_fullname
         # Param is a device param
@@ -183,7 +200,7 @@ class SmartTrack(object):
                     param_name = rest
                     return live_object, param_name, param_fullname
         # If normal name split doesnt work use first device (param name shortcut intru_i_param -> instru_param)
-        else:
+        elif self.__smart_device_list:
             first_device = self.__smart_device_list[0]
             param_names = first_device.param_ids.keys()
             if param_fullname in param_names:

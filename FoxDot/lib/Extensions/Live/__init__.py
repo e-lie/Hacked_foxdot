@@ -1,5 +1,7 @@
 import live
 
+from typing import Mapping
+
 from FoxDot.lib import Clock, player_method
 
 from FoxDot.lib.Extensions.PyliveSmartParams import SmartSet, SmartTrack
@@ -22,7 +24,7 @@ def arm_all(live_set):
 
 class AbletonInstrumentFactory:
 
-    def __init__(self, config_base, config_default, smart_set):
+    def __init__(self, config_base: Mapping, config_default: Mapping, smart_set: SmartSet) -> None:
         self._config_base = config_base
         self._config_default = config_default
         self._smart_set = smart_set
@@ -43,6 +45,45 @@ class AbletonInstrumentFactory:
             output = err.message if hasattr(err, 'message') else err
             print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
             return None
+
+    def instruments_to_instanciate(self):
+
+        smset: SmartSet = self._smart_set
+        smset.autodetect_tracks()
+
+        instrument_dict = {}
+
+        mixer_kwargs = {
+            "track_name": "mixer",
+            "midi_channel": -1,
+            "set_defaults": False
+        }
+
+        instrument_dict["mixer"] = self.create_instruc(**mixer_kwargs)
+
+        smset.set_send_ids(smset.sends)
+
+        sends_kwargs = {
+            "track_name": "sends",
+            "midi_channel": -1,
+            "set_defaults": False
+        }
+        instrument_dict["sends"] = self.create_instruc(**sends_kwargs)
+
+        for i, track in enumerate(smset.instrument_tracks):
+            instrument_kwargs = {
+                "track_name": track.name,
+                "midi_channel": i + 1,
+                "set_defaults": False,
+                #"scale": Scale.chromatic,
+                #"oct": 3,
+                #"root": 0,
+                #"midi_map": "stdrum",
+            }
+
+            instrument_dict[track.name] = self.create_instruc(**instrument_kwargs)
+
+        return instrument_dict
 
 @player_method
 def setp(self, param_dict):
