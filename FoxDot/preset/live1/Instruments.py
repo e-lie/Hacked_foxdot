@@ -2,20 +2,19 @@
 from FoxDot.lib.Extensions.Live import arm_all, live_set, smart_set, AbletonInstrumentFactory
 from .UtilityFunctions import rndp
 
-from .EffectsPreset import *
+from .Presets import presets
 from FoxDot import Clock, Scale
 
 arm_all(live_set)
 
 Clock.midi_nudge = 0
 
-ab = AbletonInstrumentFactory(config_base, config_default, smart_set)
+ab = AbletonInstrumentFactory(presets, smart_set)
 
 instrucs = ab.instruments_to_instanciate()
 
 for key, value in instrucs.items():
     globals()[key] = value
-
 
 
 # smart_set.set_send_ids({

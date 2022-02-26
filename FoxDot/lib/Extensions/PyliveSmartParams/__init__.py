@@ -96,21 +96,21 @@ class SmartTrack(object):
         self.type = type
         self.config = {}
         self.subtracks = subtracks
-        self.__smart_devices = {}
-        self.__smart_device_list = []
-        self.__param_states = {}
+        self.smart_devices = {}
+        self.smart_device_list = []
+        self.param_states = {}
         for id, device in enumerate(self.__track.devices):
             snake_name = device.name.lower().replace(' ', '_').replace('/', '_')
-            smart_device = SmartDevice(device)
-            self.__smart_devices[snake_name] = smart_device
-            self.__smart_device_list.append(smart_device)
+            smart_device = SmartDevice(device, snake_name)
+            self.smart_devices[snake_name] = smart_device
+            self.smart_device_list.append(smart_device)
 
     def __repr__(self):
         result = ""
         if self.type == TrackType.GROUP:
-            result = "<SmartTrack {} - {} subtracks: {}>".format(self.name, pformat(self.__smart_devices), pformat(self.subtracks))
+            result = "<SmartTrack {} - {} subtracks: {}>".format(self.name, pformat(self.smart_devices), pformat(self.subtracks))
         else:
-            result = "<SmartTrack {} - {}>".format(self.name, pformat(self.__smart_devices))
+            result = "<SmartTrack {} - {}>".format(self.name, pformat(self.smart_devices))
         return result
 
     def __getattr__(self, key):
@@ -144,6 +144,14 @@ class SmartTrack(object):
         else:
             raise KeyError("Parameter name not splittable by '_': " + name)
 
+    def getp(self):
+        result = {}
+        result["vol"] = self.vol
+        result["pan"] = self.pan
+        for name, smart_device in self.smart_devices.items():
+            result = result | smart_device.get_params()
+        return result
+
     @property
     def vol(self):
         return float(self.__track.volume) / 0.85
@@ -162,9 +170,9 @@ class SmartTrack(object):
         return self.__track
 
     def get_param_states(self):
-        return self.__param_states
+        return self.param_states
 
-    def get_live_object_and_param_name(self, param_fullname: str, quiet: bool = False):
+    def get_live_object_and_param_name(self, param_fullname: str, quiet: bool = True):
         """
         Return object (SmartTrack or SmartDevice) and parameter name to apply modification to.
         Choose usecase (parameter kind : track param like vol, send amount or device param) depending on parameter name.
@@ -191,20 +199,20 @@ class SmartTrack(object):
         # Param is a device param
         elif '_' in param_fullname:
             first_part, rest = SmartTrack.split_param_name(param_fullname)
-            device_names = self.__smart_devices.keys()
+            device_names = self.smart_devices.keys()
             if first_part in device_names:
-                device = self.__smart_devices[first_part]
-                param_names = device.param_ids.keys()
+                device = self.smart_devices[first_part]
+                param_names = device.params.keys()
                 if rest in param_names:
-                    live_object = self.__smart_devices[first_part]
+                    live_object = self.smart_devices[first_part]
                     param_name = rest
                     return live_object, param_name, param_fullname
         # If normal name split doesnt work use first device (param name shortcut intru_i_param -> instru_param)
-        elif self.__smart_device_list:
-            first_device = self.__smart_device_list[0]
-            param_names = first_device.param_ids.keys()
+        elif self.smart_device_list:
+            first_device = self.smart_device_list[0]
+            param_names = first_device.params.keys()
             if param_fullname in param_names:
-                live_object = self.__smart_device_list[0]
+                live_object = self.smart_device_list[0]
                 param_name = param_fullname
                 return live_object, param_name, param_fullname
         if not quiet:
@@ -255,39 +263,47 @@ def set_param_futureloop(clock, device, name, value, state, update_freq):
 
 class SmartDevice(object):
 
-    def __init__(self, device):
-        self.__device = device
-        self.__params = device.parameters
-        self.__param_names = {}
-        self.__param_ids = {}
-        self.__param_states = {}
-        for id, param in enumerate(self.__params):
+    def __init__(self, device, name):
+        self.device = device
+        self.name = name
+        #self.__params = device.parameters
+        #self.__param_names = {}
+        #self.__param_ids = {}
+        self.params = {}
+        self.param_states = {}
+        for id, param in enumerate(device.parameters):
             snake_name = param.name.lower().replace(' ', '_').replace('/', '_')
             if 'macro' not in snake_name:
-                self.__param_names[id] = snake_name
-                self.__param_ids[snake_name] = id
+                #self.__param_names[id] = snake_name
+                #self.__param_ids[snake_name] = id
+                self.params[snake_name] = param
+                #self.smart_device_list.append(smart_device)
+
+    def get_params(self):
+        result = {}
+        for param_name, param in self.params.items():
+            result[self.name + "_" + param_name] = self.get_normalized_param(param)
+        return result
 
     def __getattr__(self, name):
-        dict_name = '_SmartDevice__' + name
-        if dict_name in self.__dict__.keys():
-            return self.__dict__[dict_name]
+        if name in ['device', 'params', 'name', 'param_states', '_clock']:
+            return self.__dict__[name]
         else:
-            param = self.__params[self.__param_ids[name]]
+            param = self.params[name]
             return self.get_normalized_param(param)
 
     def __setattr__(self, name, value):
-        if name in ['_SmartDevice__device', '_SmartDevice__params', '_SmartDevice__param_names',
-                    '_SmartDevice__param_ids', '_SmartDevice__param_states', '_clock']:
+        if name in ['device', 'params', 'name', 'param_states', '_clock']:
             super().__setattr__(name, value)
         else:
-            param = self.__params[self.__param_ids[name]]
+            param = self.params[name]
             param.value = self.set_normalized_param(param, value)
 
     def __repr__(self):
-        return "<SmartDevice {}>".format(self.__device.name)
+        return "<SmartDevice {}>".format(self.device.name)
 
     def get_param_states(self):
-        return self.__param_states
+        return self.param_states
 
     def set_normalized_param(self, param, value):
         if param.maximum == 127:

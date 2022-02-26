@@ -1,6 +1,7 @@
 import live
 
 from typing import Mapping
+from pprint import pprint
 
 from FoxDot.lib import Clock, player_method
 
@@ -24,22 +25,14 @@ def arm_all(live_set):
 
 class AbletonInstrumentFactory:
 
-    def __init__(self, config_base: Mapping, config_default: Mapping, smart_set: SmartSet) -> None:
-        self._config_base = config_base
-        self._config_default = config_default
+    def __init__(self, presets: Mapping, smart_set: SmartSet) -> None:
+        self._presets = presets
         self._smart_set = smart_set
 
-    def create_instruc(self, *args, set_defaults=True, **kwargs):
+    def create_instruc(self, *args, **kwargs):
         """handle exceptions gracefully especially if corresponding track does not exist in Live"""
         try:
-            config = self._config_base
-            if set_defaults:
-                config = config | self._config_default
-            if "config" in kwargs:
-                kwargs["config"] = config | kwargs["config"]
-            else:
-                kwargs["config"] = config
-            result = AbletonInstrumentFacade(Clock, self._smart_set, *args, **kwargs)
+            result = AbletonInstrumentFacade(Clock, self._smart_set, self._presets, *args, **kwargs)
             return result.out
         except Exception as err:
             output = err.message if hasattr(err, 'message') else err
@@ -56,7 +49,6 @@ class AbletonInstrumentFactory:
         mixer_kwargs = {
             "track_name": "mixer",
             "midi_channel": -1,
-            "set_defaults": False
         }
 
         instrument_dict["mixer"] = self.create_instruc(**mixer_kwargs)
@@ -66,7 +58,6 @@ class AbletonInstrumentFactory:
         sends_kwargs = {
             "track_name": "sends",
             "midi_channel": -1,
-            "set_defaults": False
         }
         instrument_dict["sends"] = self.create_instruc(**sends_kwargs)
 
@@ -74,7 +65,6 @@ class AbletonInstrumentFactory:
             instrument_kwargs = {
                 "track_name": track.name,
                 "midi_channel": i + 1,
-                "set_defaults": False,
                 #"scale": Scale.chromatic,
                 #"oct": 3,
                 #"root": 0,
@@ -98,10 +88,14 @@ def getp(self, filter = None):
         if isinstance(smart_track, SmartTrack):
             result = smart_track.config
             if filter is not None:
-                result = {key: value for key, value in smart_track.config.items() if filter in key}
+                result = {key: value for key, value in smart_track.getp().items() if filter in key}
             else:
-                result = smart_track.config
+                result = smart_track.getp()
     return result
+
+@player_method
+def showp(self, filter = None):
+    pprint(self.getp(filter))
 
 @player_method
 def get_send(self, send_num):

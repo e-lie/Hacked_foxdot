@@ -13,9 +13,10 @@ class AbletonInstrumentFacade:
     default_oct = 3
     default_amp = 1
 
-    def __init__(self, clock, smart_set, track_name, midi_channel, oct=None, amp=None, midi_map=None, config={}, scale=None, dur=1, sus=None):
+    def __init__(self, clock, smart_set, presets, track_name, midi_channel, oct=None, amp=None, midi_map=None, config={}, scale=None, dur=1, sus=None):
         self._clock = clock
         self._smart_set = smart_set
+        self._presets = presets
         self._smart_track = smart_set.get_track(track_name)
         self._midi_channel = midi_channel
         self._oct = oct if oct else self.default_oct
@@ -27,6 +28,26 @@ class AbletonInstrumentFacade:
         self._midi_map = MidiMapFactory.generate_midimap(midi_map)
 
     def apply_all_existing_live_params(self, smart_track, param_dict, remaining_param_dict={}):
+        """ This function gather all the params from different sources to apply them
+         in ableton live or supercollider.
+         - first it gathers all the parameters present in the current presets matching the track name or device name
+         - second it merges it with runtime arguments from instrument class and instrument function call (out method)
+         - then tries to apply all this in ableton live
+         - finally send the preset to FoxDot to control supercollider"""
+
+        config_defaults = {}
+
+        preset_name = smart_track.name + "_default"
+        if preset_name in self._presets.keys():
+            config_defaults = config_defaults | self._presets[preset_name]
+
+        for device_name in smart_track.smart_devices.keys():
+            preset_name = device_name + "_default"
+            if preset_name in self._presets.keys():
+                config_defaults = config_defaults | self._presets[preset_name]
+
+        param_dict = config_defaults | param_dict
+
         for param_fullname, value in param_dict.items():
             device, name, _ = smart_track.get_live_object_and_param_name(param_fullname)
             if device is not None:  # means param exists in live

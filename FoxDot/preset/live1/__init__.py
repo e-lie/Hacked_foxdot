@@ -1,4 +1,4 @@
-from .InstrumentPreset import *
-from .EffectsPreset import *
+from .Instruments import *
+from .Presets import *
 from .UtilityFunctions import *
 
