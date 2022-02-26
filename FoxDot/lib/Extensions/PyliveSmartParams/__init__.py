@@ -90,8 +90,8 @@ class SmartTrack(object):
 
     def __init__(self, clock, track, name: str, type: TrackType, smart_set: SmartSet, subtracks=[]):
         self._clock = clock
-        self.__track = track
-        self.__smart_set = smart_set
+        self.track = track
+        self.smart_set = smart_set
         self.name = name
         self.type = type
         self.config = {}
@@ -99,7 +99,7 @@ class SmartTrack(object):
         self.smart_devices = {}
         self.smart_device_list = []
         self.param_states = {}
-        for id, device in enumerate(self.__track.devices):
+        for id, device in enumerate(self.track.devices):
             snake_name = device.name.lower().replace(' ', '_').replace('/', '_')
             smart_device = SmartDevice(device, snake_name)
             self.smart_devices[snake_name] = smart_device
@@ -125,9 +125,9 @@ class SmartTrack(object):
             """function make volume 1.0 corresponds to gain 0 in ableton (max volume without gain)
             so 1.1 gives the volume some gain"""
             result = value * 0.85 if value <= 1.17 else 1.0
-            self.__track.volume = result
+            self.track.volume = result
         elif key == "pan":
-            self.__track.pan = value
+            self.track.pan = value
         else:
             self.__dict__[key] = value
 
@@ -148,26 +148,28 @@ class SmartTrack(object):
         result = {}
         result["vol"] = self.vol
         result["pan"] = self.pan
+        for name, send_num in self.smart_set.sends.items():
+            result[name] = self.get_send(send_num)
         for name, smart_device in self.smart_devices.items():
             result = result | smart_device.get_params()
         return result
 
     @property
     def vol(self):
-        return float(self.__track.volume) / 0.85
+        return float(self.track.volume) / 0.85
 
     @property
     def pan(self):
-        return self.__track.pan
+        return self.track.pan
 
     def get_send(self, send_num):
-        return self.__track.get_send(send_num)
+        return self.track.get_send(send_num)
 
     def set_send(self, send_num, value):
-        return self.__track.set_send(send_num, value)
+        return self.track.set_send(send_num, value)
 
     def get_live_track(self):
-        return self.__track
+        return self.track
 
     def get_param_states(self):
         return self.param_states
