@@ -11,20 +11,12 @@ Clock.midi_nudge = 0
 
 ab = AbletonInstrumentFactory(presets, smart_set)
 
-instrucs = ab.instruments_to_instanciate()
+instruments = ab.instruments_to_instanciate()
 
-for key, value in instrucs.items():
+for key, value in instruments.items():
     globals()[key] = value
 
 
-# smart_set.set_send_ids({
-#     "sreverb": 0,
-#     "ssc": 1,
-#     "sgate": 2,
-#     "swh": 3,
-#     "swiden": 4,
-# })
-#
 # mixer = ab.create_instruc(track_name="mixer", midi_channel=-1)
 #
 # sends = ab.create_instruc(track_name="sends", midi_channel=-1, set_defaults=False)

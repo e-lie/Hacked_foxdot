@@ -35,6 +35,9 @@ class AbletonInstrumentFacade:
          - then tries to apply all this in ableton live
          - finally send the preset to FoxDot to control supercollider"""
 
+        # First reset sends
+        for send_name, send_num in smart_track.smart_set.sends.items():
+            smart_track.set_send(send_num, 0)
         config_defaults = {}
 
         preset_name = smart_track.name + "_default"
