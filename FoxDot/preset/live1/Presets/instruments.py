@@ -1,4 +1,5 @@
 from .effects import *
+from FoxDot import var, sinvar, linvar, expvar, Scale
 
 presets["crubass_default"] = {
     "i_wt_pos":.2,
@@ -73,4 +74,44 @@ presets["danceorg_amb1"] = {
     "i_release":.8,
     "i_tremolo":0,
     # "i_volume":.2,
+}
+
+owstr_default = presets["owstr_default"] = {
+ 'i_attack': 0.5,
+ 'i_bright': 0.5,
+ 'i_reso': 0.5,
+ 'i_interval': 0.7,
+ 'i_motion': 0.5,
+ #'i_vol': 0.7,
+ 'i_release': 0.5,
+ 'i_reverb': 0.5,
+}
+
+owstr_1 = presets["owstr_1"] = {
+    'i_attack': 0.0,
+    'i_bright': sinvar([.3,1], 8),
+    'i_filter_res': 0.6575854444128322,
+    'i_interval': var([.5,.9,.6],3),
+    'i_motion': 0.7007874015748031,
+    #'i_vol': 0.7,
+    'i_release': 0.1889763779527559,
+    'i_reverb_amount': 0.8976377952755905,
+}
+
+marimba_default = presets["marimba_default"] = {'i_attack': 0.14960629921259844,
+ 'i_bright': 0.6062992125984252,
+ 'i_distortion': 0.31496062992125984,
+ 'i_overtone': 0.5039370078740157,
+ 'i_release': 0.5590551181102362,
+ 'i_reverb': 0.4645669291338583,
+ 'i_tone': 0.0,
+ #'i_volume': 0.8500000360443836
+}
+
+kit808_default = presets["kit808_default"] = {
+    'dur': .5,
+    'oct': 3,
+    'root': 0,
+    'midi_map': "stdrum",
+    'scale': Scale.chromatic
 }

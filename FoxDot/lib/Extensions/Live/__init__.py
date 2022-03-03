@@ -46,12 +46,8 @@ class AbletonInstrumentFactory:
 
         instrument_dict = {}
 
-        mixer_kwargs = {
-            "track_name": "mixer",
-            "midi_channel": -1,
-        }
-
-        instrument_dict["mixer"] = self.create_instruc(**mixer_kwargs)
+        for smart_track in smset.special_tracks:
+            instrument_dict[smart_track.name[1:]] = self.create_instruc(track_name=smart_track.name, midi_channel=-1)
 
         smset.set_send_ids(smset.sends)
 

@@ -1,1 +1,1 @@
-from .sends import *
+from .send_effects import *

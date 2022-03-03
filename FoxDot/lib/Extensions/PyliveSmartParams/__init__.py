@@ -11,8 +11,6 @@ class TrackType(Enum):
 
 class SmartSet(object):
 
-    send_ids = {}
-
     def __init__(self, clock, set):
         self._clock = clock
         self.set = set
@@ -24,6 +22,7 @@ class SmartSet(object):
         self.gmixer = None
         self.sends_group = None
         self.instrument_tracks = []
+        self.special_tracks = []
 
         # dict of form -> snake_name: track_index (index in tracks list)
         groups_dict = {group.name.lower().replace(' ', '_').replace('/', '_'): group.index for group in set.groups}
@@ -59,10 +58,10 @@ class SmartSet(object):
 
     def autodetect_tracks(self):
         for name, smart_track in self.simple_tracks.items():
-            if name == "mixer":
-                self.gmixer = smart_track
-            else:
+            if name[0] != "_":      # special tracks names should start with '_'
                 self.instrument_tracks.append(smart_track)
+            else:
+                self.special_tracks.append(smart_track)
 
         if "sends" in self.group_tracks.keys():
             self.sends_group = self.group_tracks["sends"]

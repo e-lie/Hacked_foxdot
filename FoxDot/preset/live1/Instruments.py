@@ -1,9 +1,8 @@
 
 from FoxDot.lib.Extensions.Live import arm_all, live_set, smart_set, AbletonInstrumentFactory
-from .UtilityFunctions import rndp
 
 from .Presets import presets
-from FoxDot import Clock, Scale
+from FoxDot import Clock
 
 arm_all(live_set)
 

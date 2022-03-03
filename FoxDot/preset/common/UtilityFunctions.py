@@ -67,7 +67,7 @@ def Pzr(root_pattern_list):
 # Param shortcut functions to use with dict unpack : **lpf(linvar([0,.3],8))
 
 @player_method
-def human(self, velocity=20, humanize=5, swing=0):
+def humz(self, velocity=20, humanize=5, swing=0):
     """ Humanize the velocity, delay and add swing in % (less to more)"""
     humanize += 0.1
     if velocity!=0:
@@ -153,14 +153,18 @@ ZP = zipat
 
 
 def ampfadein(dur=4, famp=.8, iamp=0):
-    return {"amp": linvar([iamp, famp], [dur, inf], start=Clock.mod(4))}
-
+    return {"amplify": linvar([iamp, famp], [dur, inf], start=Clock.mod(4))}
 
 def ampfadeout(dur=16, iamp=.8, famp=0):
-    return {"amp": linvar([iamp, famp], [dur, inf], start=Clock.mod(4))}
+    return {"amplify": linvar([iamp, famp], [dur, inf], start=Clock.mod(4))}
 
+@player_method
+def ampfadein(self, dur=4, famp=.8, iamp=0):
+    self.amplify = linvar([iamp, famp], [dur, inf], start=Clock.mod(4))
 
-
+@player_method
+def ampfadeout(self, dur=4, iamp=.8, famp=0):
+    self.amplify = linvar([iamp, famp], [dur, inf], start=Clock.mod(4))
 
 def run_now(f):
     f()

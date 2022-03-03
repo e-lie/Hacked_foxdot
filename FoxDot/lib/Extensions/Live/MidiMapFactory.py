@@ -1,3 +1,5 @@
+from typing import Mapping
+
 class MidiMapFactory:
     @classmethod
     def generate_midimap(cls, midi_map):
@@ -63,7 +65,6 @@ class MidiMapFactory:
             'p': 12,
             '*': 13,
             'h': 14,
-            'b': 14,
+            'b': 15,
         }
-
         return base_midi_map
