@@ -73,7 +73,7 @@ phasers1 = {
     'phaser_width': 1.0
 }
 
-presets["lpf_default"] = {
+lpf_default = presets["lpf_default"] = {
     'lpf_drive': 0.0,
     'lpf_dw': 1.0,
     'lpf_freq': 1.0,
@@ -84,7 +84,7 @@ presets["lpf_default"] = {
     'lpf_volume': 0.8500000360443836
 }
 
-presets["hpf_default"] = {
+hpf_default = presets["hpf_default"] = {
     'hpf_drive': 0.0,
     'hpf_dw': 1.0,
     'hpf_freq': 0.0,

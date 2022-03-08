@@ -115,3 +115,37 @@ kit808_default = presets["kit808_default"] = {
     'midi_map': "stdrum",
     'scale': Scale.chromatic
 }
+
+crubass_1 = presets["crubass_1"] = {
+ 'i_crush': 0.19999999699630136,
+ 'i_cutoff': 0.09999999849815068,
+ 'i_delay': 0.3999999939926027,
+ 'i_filter': 0.29999998798520544,
+ 'i_glide': 0.0,
+ 'i_intensity': 0.7999999879852054,
+ 'i_reso': 0.29999998798520544,
+ 'i_wt_pos': 0.19999999699630136}
+
+kicker_default = presets["kicker_default"] = {
+    'scale': Scale.chromatic,
+    'oct': 3,
+    'root': 0,
+}
+
+crazykit2_default = crazykit_default = presets["crazykit_2"] = presets["crazykit_default"] = {
+    'scale': Scale.major,
+    'oct': 3,
+    'root': 0,
+    'midi_map': "linear",
+    # | {
+    #     "/": 53,
+    #     "-": 54,
+    #     "=": 54,
+    #     "*": 54,
+    #     "%": 54,
+    #     "$": 54,
+    #     "#": 54,
+    #     "&": 54,
+    #     "&": 54,
+    # }
+}

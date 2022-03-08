@@ -78,6 +78,9 @@ def humz(self, velocity=20, humanize=5, swing=0):
         self.amplify=1
     return self
 
+def bpmto(new_bpm, duration=16):
+    old_bpm = Clock.bpm
+    return linvar([old_bpm, new_bpm], [duration, inf], start=Clock.mod(4))
 
 
 # def pattern_tweak(pattern, tweak_len=None, config="random", random_amount=.1, compensation=True):
@@ -165,6 +168,20 @@ def ampfadein(self, dur=4, famp=.8, iamp=0):
 @player_method
 def ampfadeout(self, dur=4, iamp=.8, famp=0):
     self.amplify = linvar([iamp, famp], [dur, inf], start=Clock.mod(4))
+
+@player_method
+def sampfadeout(self, dur=16, iamp=.8, famp=0):
+    for player in list(self.metro.playing):
+        if player is not self:
+            player.ampfadeout(dur, iamp, famp)
+    return self
+
+@player_method
+def sampfadein(self, dur=16, famp=.8, iamp=0):
+    for player in list(self.metro.playing):
+        if player is not self:
+            player.ampfadein(dur, famp, iamp)
+    return self
 
 def run_now(f):
     f()
