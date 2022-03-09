@@ -1,7 +1,4 @@
-from typing import Mapping
-
-from FoxDot.lib.Extensions.Live.MidiMapFactory import MidiMapFactory
-from FoxDot.lib.Scale import Scale
+from FoxDot.lib.Extensions.MidiMapFactory import MidiMapFactory
 from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
 
