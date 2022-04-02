@@ -1,7 +1,8 @@
 # Pattern function
 from copy import Error
 
-from FoxDot import Pvar, player_method, PWhite, linvar, inf, Clock
+import math
+from FoxDot import Pvar, player_method, PWhite, linvar, inf, Clock, TimeVar, var, expvar, sinvar, Pattern, xvar, yvar
 
 
 def interpolate(start, end, step=7, go_back=True):
@@ -198,3 +199,174 @@ def later_clockless(clock):
             return f
         return later_decorator
     return later_clocked
+
+
+def hexa_panning_beta(value):
+    value = value % 6
+    # continous panning between front speakers
+    output = 2
+    pan = 0
+    if value >= 0 and value <= 1:
+        output = 2
+        pan = value * 2 - 1
+    # brutal jump to rear right speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 1 and value < 2:
+        output = 4
+        pan = -1
+    # continuous panning between rear right speakers
+    elif value >= 2 and value <= 3:
+        output = 4
+        pan = (value-2) * 2 - 1
+    # brutal jump to rear left speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 3 and value < 4:
+        output = 6
+        pan = -1
+    # continuous panning between rear left speakers
+    elif value >= 4 and value <= 5:
+        output = 6
+        pan = (value-4) * 2 - 1
+    # brutal jump to left speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 5 and value < 6:
+        output = 2
+        pan = -1
+    return {"output": output, "pan": pan}
+
+def hexa_panning_beta_old(value): # for interleaved speakers (less intuitive)
+    value = value % 6
+    # continous panning between front speakers
+    output = 2
+    pan = 0
+    if value >= 0 and value <= 1:
+        output = 2
+        pan = value * 2 - 1
+    # brutal jump to right speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 1 and value < 3:
+        output = 4
+        pan = -1
+    # continuous panning between rear speakers
+    elif value >= 3 and value <= 4:
+        output = 6
+        pan = 1 - (value - 3) * 2
+    # brutal jump to left speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 4 and value < 6:
+        output = 4
+        pan = 1
+    return {"output": output, "pan": pan}
+
+def hexa_panning_timevar_beta(entry: TimeVar):
+    output = 2
+    pan = 0
+    output_values = []
+    pan_values = []
+    for value in entry.values:
+        output_values.append(hexa_panning_beta(value)["output"])
+        pan_values.append(hexa_panning_beta(value)["pan"])
+        output = var(values=output_values, dur=entry.dur, start=entry.start_time)
+    if isinstance(entry, linvar):
+        pan = linvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, sinvar):
+        pan = sinvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, expvar):
+        pan = expvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, TimeVar) and not isinstance(entry, Pvar):
+        pan = var(values=pan_values, dur=entry.dur, start=entry.start_time)
+    return {"output": output, "pan": pan}
+
+
+def hexa_panning_simple_pattern(entry: Pattern):
+    output_pattern = []
+    pan_pattern = []
+    for value in entry:
+        output_pattern.append(hexa_panning_beta(value)["output"])
+        pan_pattern.append(hexa_panning_beta(value)["pan"])
+    result = {"output": output_pattern, "pan": pan_pattern}
+    return result
+
+@player_method
+def mpan(self, entry):
+    if isinstance(entry, TimeVar):
+        res = hexa_panning_timevar_beta(entry)
+        self.pan = res["pan"]
+        self.output = res["output"]
+        return self
+    elif not hasattr(entry, '__iter__') or isinstance(entry, tuple):
+        entry = Pattern(entry)
+    res = hexa_panning_simple_pattern(entry)
+    self.pan = res["pan"]
+    self.output = res["output"]
+    return self
+
+def mpan(entry):
+    if isinstance(entry, TimeVar):
+        return hexa_panning_timevar_beta(entry)
+    elif not hasattr(entry, '__iter__') or isinstance(entry, tuple):
+        entry = Pattern(entry)
+    return hexa_panning_simple_pattern(entry)
+
+
+def surround_panning(position=0, distance=1):
+    position = (position + 4) % 6  # first speaker is at 240 degree (fifth speaker => 4 counting from 0)
+    degree = -1 * position / 6.0 * 360
+    surx = math.cos(math.radians(degree))
+    sury = math.sin(math.radians(degree))
+    # the circle is at center .5/.5 and r = distance/2
+    sury = distance * 1 / 2 * sury + .5
+    surx = distance * 1 / 2 * surx + .5
+    return {"sur_x": surx, "sur_y": sury}
+
+
+def span(position, distance=1):
+    if isinstance(position, linvar):
+        a = 360
+        b = 0
+        if position.values[0] < position.values[1]:
+            a = 0
+            b = 360
+        surx = xvar([a, b], [position.dur[0], 0])
+        sury = yvar([a, b], [position.dur[0], 0])
+        sury = distance * 1 / 2 * sury + .5
+        surx = distance * 1 / 2 * surx + .5
+    elif isinstance(position, TimeVar):
+        xy_values = [surround_panning(pos, distance) for pos in position.values]
+        surx = var(values=[elem["sur_x"] for elem in xy_values], dur=position.dur, start=position.start_time)
+        sury = var(values=[elem["sur_y"] for elem in xy_values], dur=position.dur, start=position.start_time)
+    else:
+        surx = surround_panning(position, distance)["sur_x"]
+        sury = surround_panning(position, distance)["sur_y"]
+    return {"sur_x": surx, "sur_y": sury}
+
+base_mpan_dict = {
+    0: {
+        "output": 2,
+        "pan": -1
+    },
+    1: {
+        "output": 2,
+        "pan": 1
+    },
+    2: {
+        "output": 4,
+        "pan": -1
+    },
+    3: {
+        "output": 6,
+        "pan": 1
+    },
+    4: {
+        "output": 6,
+        "pan": -1
+    },
+    5: {
+        "output": 4,
+        "pan": 1
+    },
+}
+
+def surotate(dur=4):
+    sury = sinvar([0,1], 4)
+    return {"sur_x": 1, "sur_y": 1}
