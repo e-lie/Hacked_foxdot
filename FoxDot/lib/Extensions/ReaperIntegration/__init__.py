@@ -7,7 +7,6 @@ from FoxDot.lib import Clock, player_method
 from .ReaperInstruments import ReaperInstrumentFacade
 from FoxDot.lib.Extensions.DynamicReaperParams import ReaProject, ReaTrack
 
-reapy_project = None
 project = None
 
 #try:

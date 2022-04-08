@@ -151,7 +151,6 @@ from .Bang import Bang
 
 from .TimeVar import TimeVar, Pvar
 
-from .Extensions.PyliveSmartParams import SmartTrack
 from .Extensions.DynamicReaperParams import ReaTrack
 
 class EmptyPlayer(object):

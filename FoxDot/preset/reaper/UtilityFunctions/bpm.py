@@ -1,11 +1,9 @@
-
 from FoxDot import Clock, nextBar
-from FoxDot.lib.Extensions.Livebak import live_set
+from FoxDot.lib.Extensions.ReaperIntegration import project
 
-
-def change_bpm(bpm, midi_nudge=True, nudge_base=0.22):
+def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
     Clock.bpm = bpm
-    live_set.tempo = bpm
+    project.bpm = bpm
 
     @nextBar()
     def nudging():

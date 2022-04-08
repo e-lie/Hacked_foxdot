@@ -1,5 +1,4 @@
 from FoxDot import PWhite, inf, Clock, linvar, player_method
-from FoxDot.lib.Extensions.PyliveSmartParams import SmartTrack
 
 def randomize_settings(param_dict, seed=0):
     params_values = PWhite(seed=seed)[:len(param_dict.keys())]
