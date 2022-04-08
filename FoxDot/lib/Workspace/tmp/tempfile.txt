@@ -1,6 +1,8 @@
-p1 >> piano([0,2,4,6], scale=Scale.minor, dur=1, sus=4)
-b1 >> pluck([0,2,4,6], oct=[2,3,4,5])
+a1 >> play("<X-><..o.>", krush=0, comp=0, octer=0, octersub=4, octersubsub=4, sample_atk=0, comp_above=0.8, comp_below=0.2)
 
-Clock.midi_nudge = -0.4
+a2 >> blip(PWalk(8), oct=5, squiz=0, position=0, triode=2, krush=2.8, kutoff=8400).unison(3)
 
-Clock.bpm = 360
+
+a3 >> moogpluck(PWalk(8), oct=(3,[4,5]), dur=1/2)
+
+print(SynthDefs)

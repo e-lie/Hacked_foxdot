@@ -54,7 +54,7 @@ FOXDOT_ICON_GIF = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/img/icon.gif")
 FOXDOT_HELLO = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/img/hello.txt")
 FOXDOT_STARTUP_PATH = os.path.realpath(FOXDOT_ROOT + "/lib/Custom/startup.py")
 FOXDOT_SND   = os.path.realpath(FOXDOT_ROOT + "/snd/")
-FOXDOT_LOOP  = os.path.realpath(FOXDOT_ROOT + "/snd/_loop_/")
+FOXDOT_LOOP  = "_loop_"
 
 SCLANG_EXEC   = 'sclang.exe' if SYSTEM == WINDOWS else 'sclang'
 SYNTHDEF_DIR  = os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef/")
@@ -104,6 +104,7 @@ PORT2                     = conf.PORT2
 FONT                      = conf.FONT
 SC3_PLUGINS               = conf.SC3_PLUGINS
 MAX_CHANNELS              = conf.MAX_CHANNELS
+SDB			  			  = conf.SDB
 GET_SC_INFO               = conf.GET_SC_INFO
 USE_ALPHA                 = conf.USE_ALPHA
 ALPHA_VALUE               = conf.ALPHA_VALUE
@@ -152,7 +153,6 @@ class _MidiPlayer:
 SamplePlayer = _SamplePlayer()
 LoopPlayer   = _LoopPlayer()
 MidiPlayer   = _MidiPlayer()
-
 
 # OSC Information
 
