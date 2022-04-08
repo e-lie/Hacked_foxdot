@@ -1,10 +1,10 @@
 
 from FoxDot import Clock, linvar, inf, player_method
-from FoxDot.lib.Extensions.PyliveSmartParams import SmartTrack
+from FoxDot.lib.Extensions.DynamicReaperParams import ReaTrack
 
 @player_method
 def fadein(self, dur=8, fvol=1, ivol=0):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], SmartTrack):
+    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
         self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
     else:
         self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
@@ -12,7 +12,7 @@ def fadein(self, dur=8, fvol=1, ivol=0):
 
 @player_method
 def fadeout(self, dur=8, ivol=1, fvol=0):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], SmartTrack):
+    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
         self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
     else:
         self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
@@ -20,7 +20,7 @@ def fadeout(self, dur=8, ivol=1, fvol=0):
 
 @player_method
 def fadeoutin(self, dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], SmartTrack):
+    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
         self.vol = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
     else:
         self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))

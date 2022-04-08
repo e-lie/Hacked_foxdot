@@ -6,7 +6,7 @@ from pprint import pprint
 from FoxDot.lib import Clock, player_method
 
 from FoxDot.lib.Extensions.PyliveSmartParams import SmartSet, SmartTrack
-from FoxDot.lib.Extensions.Live.AbletonInstruments import AbletonInstrumentFacade
+from FoxDot.lib.Extensions.Livebak.AbletonInstruments import AbletonInstrumentFacade
 
 live_set = live.Set()
 smart_set = None
@@ -30,7 +30,7 @@ class AbletonInstrumentFactory:
         self._smart_set = smart_set
 
     def create_instruc(self, *args, **kwargs):
-        """handle exceptions gracefully especially if corresponding track does not exist in Live"""
+        """handle exceptions gracefully especially if corresponding track does not exist in Livebak"""
         try:
             result = AbletonInstrumentFacade(Clock, self._smart_set, self._presets, *args, **kwargs)
             return result.out

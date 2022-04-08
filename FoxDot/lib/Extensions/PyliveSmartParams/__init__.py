@@ -1,6 +1,6 @@
 from enum import Enum
 from FoxDot.lib.TimeVar import TimeVar
-from pprint import pprint, pformat
+from pprint import pformat
 
 
 class TrackType(Enum):

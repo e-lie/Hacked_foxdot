@@ -25,8 +25,8 @@ class ReaProject(object):
         self.bus_tracks = []
         self.param_updates = []
         self.currently_processing_params = False
-        self.param_update_freq = 0.05
-        self.param_updates_queue_size = 50
+        self.param_update_freq = 0.02
+        self.param_updates_queue_size = 200
 
         with reapy.inside_reaper():
             for id, track in enumerate(self.reapy_project.tracks):
@@ -65,7 +65,7 @@ class ReaProject(object):
             with reapy.inside_reaper():
                 while self.param_updates:
                     device, name, value = self.param_updates.pop(0)
-                    print("processing {}".format((device, name, value)))
+                    #print("processing {}".format((device, name, value)))
                     setattr(device, name, float(value))
             self.currently_processing_params = False
             #print("adding execute schedule from execute")
@@ -231,7 +231,7 @@ class ReaTrack(object):
             # beat=None means schedule for the next bar
             self._clock.schedule(schedule_value_update, beat=None, args=[rea_object, name, value])
 
-    def get_smart_param(self, full_name):
+    def get_reaper_param(self, full_name):
         # rea_object can point to a fx or a track (self) -> (when param is vol or pan)
         rea_object, name, _ = self.get_reaper_object_and_param_name(full_name)
         if rea_object is None or name is None:

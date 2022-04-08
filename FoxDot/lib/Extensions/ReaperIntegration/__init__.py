@@ -5,7 +5,7 @@ from pprint import pprint
 from FoxDot.lib import Clock, player_method
 
 from .ReaperInstruments import ReaperInstrumentFacade
-from .DynamicReaperParams import ReaProject, ReaTrack
+from FoxDot.lib.Extensions.DynamicReaperParams import ReaProject, ReaTrack
 
 reapy_project = None
 project = None
@@ -53,7 +53,6 @@ class ReaperInstrumentFactory:
                 "track_name": track.name,
                 "midi_channel": i + 1,
             }
-            print(i+1)
             instrument_dict[track.name] = self.create_instruc(**instrument_kwargs)
 
         return instrument_dict

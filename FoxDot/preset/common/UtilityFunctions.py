@@ -320,15 +320,12 @@ def surround_panning(position=0, distance=1):
     return {"sur_x": surx, "sur_y": sury}
 
 
-def span(position, distance=1):
+def surpan(position, distance=1):
     if isinstance(position, linvar):
-        a = 360
-        b = 0
-        if position.values[0] < position.values[1]:
-            a = 0
-            b = 360
-        surx = xvar([a, b], [position.dur[0], 0])
-        sury = yvar([a, b], [position.dur[0], 0])
+        values = [ (value % 6) * 60 for value in position.values ]
+        print(values)
+        surx = xvar(values=values, dur=position.dur, start=position.start_time)
+        sury = yvar(values=values, dur=position.dur, start=position.start_time)
         sury = distance * 1 / 2 * sury + .5
         surx = distance * 1 / 2 * surx + .5
     elif isinstance(position, TimeVar):
@@ -339,6 +336,14 @@ def span(position, distance=1):
         surx = surround_panning(position, distance)["sur_x"]
         sury = surround_panning(position, distance)["sur_y"]
     return {"sur_x": surx, "sur_y": sury}
+
+@player_method
+def span(self, position, distance=1):
+    res = surpan(position, distance)
+    self.sur_x = res["sur_x"]
+    self.sur_y = res["sur_y"]
+    return self
+
 
 base_mpan_dict = {
     0: {

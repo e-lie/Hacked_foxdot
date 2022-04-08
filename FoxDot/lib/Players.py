@@ -152,6 +152,7 @@ from .Bang import Bang
 from .TimeVar import TimeVar, Pvar
 
 from .Extensions.PyliveSmartParams import SmartTrack
+from .Extensions.DynamicReaperParams import ReaTrack
 
 class EmptyPlayer(object):
     """ Place holder for Player objects created at run-time to reduce load time.
@@ -463,6 +464,15 @@ class Player(Repeatable):
                             smart_track.set_smart_param(name, value)
                             return
 
+                # Apply the parameter in reaper if it exists
+                if "reatrack" in self.attr.keys():
+                    reatrack = self.attr["reatrack"][0]
+                    if isinstance(reatrack, ReaTrack):
+                        device, _, _ = reatrack.get_reaper_object_and_param_name(name, quiet=True)
+                        if device is not None:
+                            reatrack.set_reaper_param(name, value)
+                            return
+
                 # Get any alias
                 name = self.alias.get(name, name)
 
@@ -512,6 +522,14 @@ class Player(Repeatable):
                     device, _, _ = smart_track.get_live_object_and_param_name(name, quiet=True)
                     if device is not None:
                         return smart_track.get_smart_param(name)
+
+            # Get the parameter value from reaper if it exists
+            if "reatrack" in self.attr.keys():
+                reatrack = self.attr["reatrack"][0]
+                if isinstance(reatrack, ReaTrack):
+                    device, _, _ = reatrack.get_reaper_object_and_param_name(name, quiet=True)
+                    if device is not None:
+                        return reatrack.get_reaper_param(name)
 
             # This checks for aliases, not the actual keys
             name = self.alias.get(name, name)

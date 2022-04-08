@@ -60,7 +60,7 @@ class ReaperInstrumentFacade:
 
 
         return AbletonOut(
-            smart_track=self._reatrack,
+            reatrack=self._reatrack,
             channel=self._midi_channel - 1,
             sus=sus,
             *args,
