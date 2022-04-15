@@ -151,7 +151,7 @@ from .Bang import Bang
 
 from .TimeVar import TimeVar, Pvar
 
-from .Extensions.DynamicReaperParams import ReaTrack
+from .Extensions.DynamicReaperParams import ReaTrack, set_reaper_param, get_reaper_param, get_reaper_object_and_param_name
 
 class EmptyPlayer(object):
     """ Place holder for Player objects created at run-time to reduce load time.
@@ -453,23 +453,13 @@ class Player(Repeatable):
         if self.__init:
 
             if name not in self.__vars:
-
-                # Apply the parameter in live if it exists
-                if "smart_track" in self.attr.keys():
-                    smart_track = self.attr["smart_track"][0]
-                    if isinstance(smart_track, SmartTrack):
-                        device, _, _ = smart_track.get_live_object_and_param_name(name, quiet=True)
-                        if device is not None:
-                            smart_track.set_smart_param(name, value)
-                            return
-
                 # Apply the parameter in reaper if it exists
                 if "reatrack" in self.attr.keys():
                     reatrack = self.attr["reatrack"][0]
                     if isinstance(reatrack, ReaTrack):
-                        device, _, _ = reatrack.get_reaper_object_and_param_name(name, quiet=True)
+                        device, _  = get_reaper_object_and_param_name(reatrack, name, quiet=True)
                         if device is not None:
-                            reatrack.set_reaper_param(name, value)
+                            set_reaper_param(reatrack, name, value)
                             return
 
                 # Get any alias
@@ -514,21 +504,13 @@ class Player(Repeatable):
 
     def __getattr__(self, name):
         try:
-            # Get the parameter value from live if it exists
-            if "smart_track" in self.attr.keys():
-                smart_track = self.attr["smart_track"][0]
-                if isinstance(smart_track, SmartTrack):
-                    device, _, _ = smart_track.get_live_object_and_param_name(name, quiet=True)
-                    if device is not None:
-                        return smart_track.get_smart_param(name)
-
             # Get the parameter value from reaper if it exists
             if "reatrack" in self.attr.keys():
                 reatrack = self.attr["reatrack"][0]
                 if isinstance(reatrack, ReaTrack):
-                    device, _, _ = reatrack.get_reaper_object_and_param_name(name, quiet=True)
+                    device, _ = get_reaper_object_and_param_name(reatrack, name, quiet=True)
                     if device is not None:
-                        return reatrack.get_reaper_param(name)
+                        return get_reaper_param(reatrack, name)
 
             # This checks for aliases, not the actual keys
             name = self.alias.get(name, name)
