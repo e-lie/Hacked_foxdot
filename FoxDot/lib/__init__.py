@@ -13,6 +13,8 @@ FoxDotCode.namespace = globals()
 from .TempoClock import *
 from .Buffers import *
 from .Players import *
+from .Groups import *
+from .PlayerMethods import *
 from .Patterns import *
 from .Effects import *
 from .TimeVar import *
@@ -48,19 +50,6 @@ def __getitem__(self, key):
     else:
         return self.getitem(key)
 
-def player_method(f):
-    """ Decorator for assigning functions as Player methods.
-
-    >>> @player_method
-    ... def test(self):
-    ...    print(self.degree)
-
-    >>> p1.test()
-    """
-    setattr(Player, f.__name__, f)
-    return getattr(Player, f.__name__)
-
-PlayerMethod = player_method # Temporary alias
 
 def _futureBarDecorator(n, multiplier=1):
     if callable(n):

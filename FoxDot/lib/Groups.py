@@ -1,6 +1,8 @@
 from __future__ import division, absolute_import, print_function
 
-from FoxDot import Player, TimeVar, WarningMsg
+from .Players import Player
+from .TimeVar import TimeVar
+from .Code import WarningMsg
 
 
 class Group:
