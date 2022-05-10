@@ -1,4 +1,5 @@
 from FoxDot.lib.Extensions.MidiMapFactory import MidiMapFactory
+from FoxDot.lib.Extensions.DynamicReaperParams import get_reaper_object_and_param_name, set_reaper_param
 from FoxDot.lib.Midi import AbletonOut
 from FoxDot.lib.Patterns import Pattern
 
@@ -19,13 +20,10 @@ class ReaperInstrumentFacade:
          - tries to apply all parameters in ableton live (track fx and send parameters)
          - then send the rest to FoxDot to control supercollider"""
 
-        for send_name, send_num in reatrack.reaproject.sends.items():
-            reatrack.set_send(send_num, 0)
-
         for param_fullname, value in param_dict.items():
-            rea_object, name, _ = reatrack.get_reaper_object_and_param_name(param_fullname)
+            rea_object, name = get_reaper_object_and_param_name(reatrack, param_fullname)
             if rea_object is not None:  # means param exists in reaper
-                reatrack.set_reaper_param(param_fullname, value, update_freq=0.05)
+                set_reaper_param(reatrack, param_fullname, value, update_freq=0.05)
             else:
                 remaining_param_dict[param_fullname] = value
 
