@@ -124,17 +124,17 @@
 
 from __future__ import absolute_import, division, print_function
 
-from copy import copy
+import itertools
 
 from .Settings import SamplePlayer, LoopPlayer
-from .SCLang.SynthDef import SynthDefProxy, SynthDef, SynthDefs
+from .SCLang.SynthDef import SynthDefProxy, SynthDefs
 from .Effects import FxList
 from .Buffers import Samples
 
-from .Key import *
-from .Repeat import *
-from .Patterns import *
-# from .Midi import *
+from .Code import WarningMsg
+from .Key import PlayerKey, NumberKey
+from .Repeat import Repeatable
+from .Patterns import Pattern, PGroup, asStream, get_first_item, modi, pattern_depth, get_expanded_len, GeneratorPattern, group_modi
 
 from .Root import Root
 from .Scale import Scale
@@ -145,6 +145,77 @@ from .Bang import Bang
 from .TimeVar import TimeVar
 
 from .Extensions.DynamicReaperParams import ReaTrack, set_reaper_param, get_reaper_param, get_reaper_object_and_param_name
+
+
+class Rest(object):
+    ''' Represents a rest when used with a Player's `dur` keyword
+    '''
+    def __init__(self, dur=1):
+        self.dur = dur if not isinstance(dur, self.__class__) else dur.dur
+
+    def __repr__(self):
+        return "<rest: {}>".format(self.dur)
+
+    def __add__(self, other):
+        return Rest(self.dur + other)
+
+    def __radd__(self, other):
+        return Rest(other + self.dur)
+
+    def __sub__(self, other):
+        return Rest(self.dur - other)
+
+    def __rsub__(self, other):
+        return Rest(other - self.dur)
+
+    def __mul__(self, other):
+        return Rest(self.dur * other)
+
+    def __rmul__(self, other):
+        return Rest(other * self.dur)
+
+    def __div__(self, other):
+        return Rest(self.dur / other)
+
+    def __rdiv__(self, other):
+        return Rest(other / self.dur)
+
+    def __truediv__(self, other):
+        return Rest(float(self.dur) / other)
+
+    def __rtruediv__(self, other):
+        return Rest(other / float(self.dur))
+
+    def __mod__(self, other):
+        return Rest(self.dur % other)
+
+    def __rmod__(self, other):
+        return Rest(other % self.dur)
+
+    def __eq__(self, other):
+        return (self.dur == other)
+
+    def __ne__(self, other):
+        return (self.dur != other)
+
+    def __lt__(self, other):
+        return (self.dur < other)
+
+    def __le__(self, other):
+        return (self.dur <= other)
+
+    def __gt__(self, other):
+        return (self.dur > other)
+
+    def __ge__(self, other):
+        return (self.dur >= other)
+
+    def __int__(self):
+        return int(self.dur)
+
+    def __float__(self):
+        return float(self.dur)
+
 
 
 class EmptyPlayer(object):
@@ -342,117 +413,19 @@ class Player(Repeatable):
     def __hash__(self):
         return hash(self.id)  # could be problematic if there are id clashes?
 
-    #############################################
-    #######   Player Object Manipulation   ######
-    #############################################
+    def __repr__(self):
+        if self.id is not None:
+            return "<{} - {}>".format(self.id, self.synthdef)
+        else:
+            return "a '{}' Player Object".format(self.synthdef)
 
-    def __rshift__(self, other):
-        """ Handles the allocation of SynthDef objects using >> syntax, other must be
-            an instance of `SynthDefProxy`, which is usually created when calling a
-            `SynthDef`
-        """
-        if isinstance(other, SynthDefProxy):
-            # Call the update method
-            self.update(other.name, other.degree, **other.kwargs)
-            # self.update_pattern_root('sample' if self.synthdef == SamplePlayer else 'degree')
-            for method, arguments in other.methods:
-                args, kwargs = arguments
-                getattr(self, method).__call__(*args, **kwargs)
-            # Add the modifier (check if not 0 to stop adding 0 to values)
-            if (not isinstance(other.mod, (int, float))) or (other.mod != 0):
-                self + other.mod
-            return self
-        raise TypeError(f"{other} is an innapropriate argument type for PlayerObject")
-        return self
-
-    def test_for_circular_reference(self, value, attr, last_player=None, last_attr=None):
-        """ Used to raise an exception if a player's attribute refers to itself e.g. `p1 >> pads(dur=p1.dur)` """
-        # We are setting self.attr to value, check if value depends on self.attr
-        if isinstance(value, PGroup):
-            for item in value:
-                self.test_for_circular_reference(item, attr, last_player, last_attr)
-        elif isinstance(value, PlayerKey):
-            # If the Player key relies on this player.attr, raise error
-            if value.cmp(self, attr):
-                ident_self = value.name()
-                if last_player is not None:
-                    ident_other = "{}.{}".format(last_player.id, last_attr)
-                else:
-                    ident_other = ident_self
-                raise ValueError(f"Circular reference found: {ident_self} to itself via {ident_other}")
-            elif last_player == value.player and last_attr == value.attr:
-                return
-            else:
-                # Go through the player key's
-                for item in value.get_player_attribute():
-                    self.test_for_circular_reference(item, attr, value.player, value.attr)
-        return
-
-    def __setattr__(self, name, value):
-        # Possibly replace with slots?
-        if self.__init:
-            if name not in self.__vars:
-                # Apply the parameter in reaper if it exists
-                if "reatrack" in self.attr.keys():
-                    reatrack = self.attr["reatrack"][0]
-                    if isinstance(reatrack, ReaTrack):
-                        device, _ = get_reaper_object_and_param_name(reatrack, name, quiet=True)
-                        if device is not None:
-                            set_reaper_param(reatrack, name, value)
-                            return
-                # Get any alias
-                name = self.alias.get(name, name)
-                # Force the data into a Pattern if the attribute is used with SuperCollider
-                value = asStream(value)
-                for item in value:
-                    self.test_for_circular_reference(item, name)
-                # Update the attribute dict if no error
-                self.attr[name] = value
-
-                # Remove from the stored pattern dict / call those
-                self.update_pattern_root(name)
-
-                # keep track of what values we change with +-
-                if (self.synthdef == SamplePlayer and name == "sample")\
-                or (self.synthdef != SamplePlayer and name == "degree")\
-                or (self.synthdef == SamplePlayer and name == "sdb"):
-                    self.modifier = value
-
-                # Update any playerkey
-                if name in self.__dict__:
-                    if isinstance(self.__dict__[name], PlayerKey):
-                        self.__dict__[name].update_pattern()
-                # self.update_player_key(name, 0, 0)
-                return
-        self.__dict__[name] = value
-        return
-
-    def __getattr__(self, name):
-        try:
-            # Get the parameter value from reaper if it exists
-            if "reatrack" in self.attr.keys():
-                reatrack = self.attr["reatrack"][0]
-                if isinstance(reatrack, ReaTrack):
-                    device, _ = get_reaper_object_and_param_name(reatrack, name, quiet=True)
-                    if device is not None:
-                        return get_reaper_param(reatrack, name)
-
-            # This checks for aliases, not the actual keys
-            name = self.alias.get(name, name)
-            if name in self.attr and name not in self.__dict__:
-                # Return a Player key
-                self.update_player_key(name, self.now(name), 0)
-            item = self.__dict__[name]
-
-            # If returning a player key, keep track of which are being accessed
-            if isinstance(item, PlayerKey) and name not in self.accessed_keys:
-                self.accessed_keys.append(name)
-            return item
-
-        except KeyError:
-            err = "Player Object has no attribute '{}'".format(name)
-            raise AttributeError(err)
-        return
+    def info(self):
+        s = "Player Instance using '%s' \n\n" % self.synthdef
+        s += "ATTRIBUTES\n"
+        s += "----------\n\n"
+        for attr, val in self.attr.items():
+            s += "\t{}\t:{}\n".format(attr, val)
+        return s
 
     def __getattribute__(self, name):
         # This checks for aliases, not the actual keys
@@ -475,6 +448,131 @@ class Player(Repeatable):
 
     def __ne__(self, other):
         return not self is other
+
+    def __int__(self):
+        return int(self.now('degree'))
+
+    def __float__(self):
+        return float(self.now('degree'))
+
+    def __add__(self, data):
+        """ Change the degree modifier stream """
+        self.mod_data = data
+        if self.synthdef == SamplePlayer:
+            # self.attr['sample'] = self.modifier + self.mod_data
+            self.sample = self.modifier + self.mod_data
+        else:
+            #self.attr['degree'] = self.modifier + self.mod_data
+            self.degree = self.modifier + self.mod_data
+        return self
+
+    def __sub__(self, data):
+        """ Change the degree modifier stream """
+        self.mod_data = 0 - data
+        if self.synthdef == SamplePlayer:
+            self.attr['sample'] = self.modifier + self.mod_data
+        else:
+            self.attr['degree'] = self.modifier + self.mod_data
+        return self
+
+    def __mul__(self, data):
+        return self
+
+    def __div__(self, data):
+        return self
+
+    def __iter__(self):
+        for _, value in self.event.items():
+            yield value
+
+    def __getattr__(self, name):
+        try:
+            # Get the parameter value from reaper if it exists
+            if "reatrack" in self.attr.keys():
+                reatrack = self.attr["reatrack"][0]
+                if isinstance(reatrack, ReaTrack):
+                    device, _ = get_reaper_object_and_param_name(reatrack, name, quiet=True)
+                    if device is not None:
+                        return get_reaper_param(reatrack, name)
+
+            # This checks for aliases, not the actual keys
+            name = self.alias.get(name, name)
+            if name in self.attr and name not in self.__dict__:
+                # Return a Player key
+                self._update_player_key(name, self.now(name), 0)
+            item = self.__dict__[name]
+
+            # If returning a player key, keep track of which are being accessed
+            if isinstance(item, PlayerKey) and name not in self.accessed_keys:
+                self.accessed_keys.append(name)
+            return item
+
+        except KeyError:
+            err = "Player Object has no attribute '{}'".format(name)
+            raise AttributeError(err)
+        return
+
+    def __setattr__(self, name, value):
+        # Possibly replace with slots?
+        if self.__init:
+            if name not in self.__vars:
+                # Apply the parameter in reaper if it exists
+                if "reatrack" in self.attr.keys():
+                    reatrack = self.attr["reatrack"][0]
+                    if isinstance(reatrack, ReaTrack):
+                        device, _ = get_reaper_object_and_param_name(reatrack, name, quiet=True)
+                        if device is not None:
+                            set_reaper_param(reatrack, name, value)
+                            return
+                # Get any alias
+                name = self.alias.get(name, name)
+                # Force the data into a Pattern if the attribute is used with SuperCollider
+                value = asStream(value)
+                for item in value:
+                    self._test_for_circular_reference(item, name)
+                # Update the attribute dict if no error
+                self.attr[name] = value
+
+                # Remove from the stored pattern dict / call those
+                self.update_pattern_root(name)
+
+                # keep track of what values we change with +-
+                if (self.synthdef == SamplePlayer and name == "sample")\
+                or (self.synthdef != SamplePlayer and name == "degree")\
+                or (self.synthdef == SamplePlayer and name == "sdb"):
+                    self.modifier = value
+
+                # Update any playerkey
+                if name in self.__dict__:
+                    if isinstance(self.__dict__[name], PlayerKey):
+                        self.__dict__[name].update_pattern()
+                # self._update_player_key(name, 0, 0)
+                return
+        self.__dict__[name] = value
+        return
+
+    def _test_for_circular_reference(self, value, attr, last_player=None, last_attr=None):
+        """ Used to raise an exception if a player's attribute refers to itself e.g. `p1 >> pads(dur=p1.dur)` """
+        # We are setting self.attr to value, check if value depends on self.attr
+        if isinstance(value, PGroup):
+            for item in value:
+                self._test_for_circular_reference(item, attr, last_player, last_attr)
+        elif isinstance(value, PlayerKey):
+            # If the Player key relies on this player.attr, raise error
+            if value.cmp(self, attr):
+                ident_self = value.name()
+                if last_player is not None:
+                    ident_other = "{}.{}".format(last_player.id, last_attr)
+                else:
+                    ident_other = ident_self
+                raise ValueError(f"Circular reference found: {ident_self} to itself via {ident_other}")
+            elif last_player == value.player and last_attr == value.attr:
+                return
+            else:
+                # Go through the player key's
+                for item in value.get_player_attribute():
+                    self._test_for_circular_reference(item, attr, value.player, value.attr)
+        return
 
     ##################################
     #######   Startup methods   ######
@@ -553,12 +651,12 @@ class Player(Repeatable):
                 print("TypeError: Innappropriate argument type for 'dur'")
 
         # Get the current state
-        self.get_event()
+        self._get_event()
 
         # Play the note
-        if not isinstance(self.event["dur"], rest):
+        if not isinstance(self.event["dur"], Rest):
             try:
-                self.send(verbose=(self.metro.solo == self and kwargs.get('verbose', True)))
+                self._send_osc_messages_to_server(verbose=(self.metro.solo == self and kwargs.get('verbose', True)))
 
             except Exception as err:
                 print("Error in Player {}: {}".format(self.id, err))
@@ -637,6 +735,29 @@ class Player(Repeatable):
         """ Returns the players array of durations at this point in time """
         return list(map(lambda x: x if isinstance(x, (int, float)) else self.unpack(x), self.attr["dur"]))
 
+    #############################################
+    #######   Player Object Manipulation   ######
+    #############################################
+
+    def __rshift__(self, other):
+        """ Handles the allocation of SynthDef objects using >> syntax, other must be
+            an instance of `SynthDefProxy`, which is usually created when calling a
+            `SynthDef`
+        """
+        if isinstance(other, SynthDefProxy):
+            # Call the update method
+            self.update(other.name, other.degree, **other.kwargs)
+            # self.update_pattern_root('sample' if self.synthdef == SamplePlayer else 'degree')
+            for method, arguments in other.methods:
+                args, kwargs = arguments
+                getattr(self, method).__call__(*args, **kwargs)
+            # Add the modifier (check if not 0 to stop adding 0 to values)
+            if (not isinstance(other.mod, (int, float))) or (other.mod != 0):
+                self + other.mod
+            return self
+        raise TypeError(f"{other} is an innapropriate argument type for PlayerObject")
+        return self
+
     def update(self, synthdef, degree, **kwargs):
         """ Updates the attributes of the player. Called using the >> syntax.
         """
@@ -698,23 +819,19 @@ class Player(Repeatable):
             # Add to clock
             self.isplaying = True
             self.stopping = False
-
             # If we want to update now, set the start point to now
             after = True
             if self.metro.now_flag:
                 start_point = self.metro.now()
                 after = False
-
             elif kwargs.get("quantise", True) == False:
                 start_point = self.metro.now()
-
             else:
                 start_point = self.metro.next_bar()
 
             self.event_n = 0
             self.event_n, self.event_index = self.count(start_point, event_after=after)
             self.metro.schedule(self, self.event_index)
-
         return self
 
     def get_timestamp(self, beat=None):
@@ -735,44 +852,7 @@ class Player(Repeatable):
         return self
 
 
-    def __float__(self):
-        return float(self.now('degree'))
-
-    def __add__(self, data):
-        """ Change the degree modifier stream """
-        self.mod_data = data
-        if self.synthdef == SamplePlayer:
-            # self.attr['sample'] = self.modifier + self.mod_data
-            self.sample = self.modifier + self.mod_data
-        else:
-            #self.attr['degree'] = self.modifier + self.mod_data
-            self.degree = self.modifier + self.mod_data
-        return self
-
-    def __sub__(self, data):
-        """ Change the degree modifier stream """
-        self.mod_data = 0 - data
-        if self.synthdef == SamplePlayer:
-            self.attr['sample'] = self.modifier + self.mod_data
-        else:
-            self.attr['degree'] = self.modifier + self.mod_data
-        return self
-
-    def __mul__(self, data):
-        return self
-
-    def __div__(self, data):
-        return self
-
-    ###############################
-    #######   Data methods   ######
-    ###############################
-
-    def __iter__(self):
-        for _, value in self.event.items():
-            yield value
-
-    def number_of_layers(self, **kwargs):
+    def _number_of_layers(self, **kwargs):
         """ Returns the deepest nested item in the event """
         num = 1
         for attr, value in self.event.items():
@@ -785,7 +865,7 @@ class Player(Repeatable):
                 num = l
         return num
 
-    def largest_attribute(self, **kwargs):
+    def _largest_attribute(self, **kwargs):
         """ Returns the length of the largest nested tuple in the current event dict """
         size = 1
         values = []
@@ -796,7 +876,7 @@ class Player(Repeatable):
                 size = l
         return size
 
-    def get_event_length(self, event=None, **kwargs):
+    def _get_event_length(self, event=None, **kwargs):
         """ Returns the largest length value in the event dictionary """
         if event is None:
             event = self.event
@@ -814,11 +894,11 @@ class Player(Repeatable):
                 max_val = l
         return max_val
 
-    def number_attr(self, attr):
+    def _number_attr(self, attr):
         """ Returns true if the attribute should be a number """
         return not (self.synthdef == SamplePlayer and attr in ("degree", "freq"))
 
-    def update_player_key(self, key, value, time):
+    def _update_player_key(self, key, value, time):
         """  Forces object's dict uses PlayerKey instances
         """
         if (key not in self.__dict__) or (not isinstance(self.__dict__[key], PlayerKey)):
@@ -831,7 +911,7 @@ class Player(Repeatable):
                 self.__dict__[key].update(value, time)
         return
 
-    def update_all_player_keys(self, ignore=[], event=None, **kwargs):
+    def _update_all_player_keys(self, ignore=[], event=None, **kwargs):
         """ Updates the internal values of player keys that have been accessed e.g. p1.pitch. If there is a delay,
             then schedule a function to update the values in the future. """
 
@@ -842,7 +922,7 @@ class Player(Repeatable):
             event = self.event
         delay = event.get("delay", 0)
         if isinstance(delay, PGroup):
-            event_size = self.get_event_length(event, **kwargs)
+            event_size = self._get_event_length(event, **kwargs)
             delays = itertools.cycle(delay)
             for i in range(event_size):
                 delay = next(delays)
@@ -858,32 +938,31 @@ class Player(Repeatable):
 
                 if isinstance(delay, PGroup):
                     # Recursively unpack and send messages
-                    for i in range(self.get_event_length(new_event)):
-                        self.update_all_player_keys(event=new_event, ignore=ignore, **kwargs)
+                    for i in range(self._get_event_length(new_event)):
+                        self._update_all_player_keys(event=new_event, ignore=ignore, **kwargs)
                 else:
-                    self.update_player_key_from_event(
+                    self._update_player_key_from_event(
                         new_event, time=self.event_index, ignore=ignore, delay=delay, **kwargs
                     )
 
         else:
-            self.update_player_key_from_event(event, time=self.event_index, ignore=ignore, delay=delay, **kwargs)
+            self._update_player_key_from_event(event, time=self.event_index, ignore=ignore, delay=delay, **kwargs)
         return
 
-    def update_player_key_from_event(self, event, time=None, delay=0, ignore=[], **kwargs):
+    def _update_player_key_from_event(self, event, time=None, delay=0, ignore=[], **kwargs):
         timestamp = self.event_index if time is None else time
         if delay == 0:
             for key in (x for x in self.accessed_keys if x not in ignore):
-                self.update_player_key(key, kwargs.get(key, event.get(key, 0)), timestamp)
+                self._update_player_key(key, kwargs.get(key, event.get(key, 0)), timestamp)
         else:
             func_args = (event, timestamp + delay, 0, ignore)
-            self.metro.schedule(self.update_player_key_from_event, timestamp + delay, args=func_args, kwargs=kwargs)
+            self.metro.schedule(self._update_player_key_from_event, timestamp + delay, args=func_args, kwargs=kwargs)
         return
 
-    def update_player_key_relation(self, item):
+    def _update_player_key_relation(self, item: NumberKey):
         """ Called during 'now' to update any Players that a player key is related to before using that value """
-
         if item.parent is self:  # If this *is* the parent, just get the current value
-            self.update_player_key(item.attr, self.now(item.attr), 0)
+            self._update_player_key(item.attr, self.now(item.attr), 0)
 
         # If the parent is in the same queue block, make sure its values are up-to-date
         elif self.queue_block is not None:
@@ -894,7 +973,7 @@ class Player(Repeatable):
                 queue_item = None
             # Update the parent with an up-to-date value
             if queue_item is not None and queue_item.called is False:
-                item.player.update_player_key(item.attr, item.player.now(item.attr), 0)
+                item.player._update_player_key(item.attr, item.player.now(item.attr), 0)
         return item.now()
 
     ##################################################################################
@@ -913,7 +992,7 @@ class Player(Repeatable):
 
         if isinstance(item, NumberKey):
             # Update any relationships to the number key if necessary
-            item = self.update_player_key_relation(item)
+            item = self._update_player_key_relation(item)
 
         if isinstance(item, PGroup):
             # Make sure any values in the PGroup have their "now" methods called
@@ -927,7 +1006,7 @@ class Player(Repeatable):
     #####   Private methods   #####
     ###############################
 
-    def now(self, attr="degree", x=0, **kwargs):
+    def now(self, attr="degree", x=0, **kwargs): # TODO should be renamed -> not clear and conflict with other classes now method
         """ Calculates the values for each attr to send to the server at the current clock time """
         index = self.event_n + x
         try:
@@ -969,7 +1048,7 @@ class Player(Repeatable):
             event = func(event, key)
         return event
 
-    def unduplicate_durs(self, event):
+    def _unduplicate_durs(self, event):
         """ Converts values stored in event["dur"] in a tuple/PGroup into delays """
         if "dur" in event:  # If there are more than one dur then add to the delay
             try:
@@ -997,27 +1076,27 @@ class Player(Repeatable):
                 pass
         return event
 
-    def get_event(self):
+    def _get_event(self):
         """ Returns a dictionary of attr -> now values """
         self.event = dict(map(lambda attr: (attr, self.now(attr)), self.attr.keys()))
-        self.event = self.unduplicate_durs(self.event)
+        self.event = self._unduplicate_durs(self.event)
         self.event = self.get_prime_funcs(self.event)
 
         # Update internal player keys / schedule future updates
-        self.update_all_player_keys()
+        self._update_all_player_keys()
         return self
 
-    def send(self, timestamp=None, verbose=True, **kwargs):
-        """ Goes through the current event and compiles osc messages and sends to server via the tempo clock """
+    def _send_osc_messages_to_server(self, timestamp=None, verbose=True, **kwargs):
+        """ Goes through the current event and compiles osc messages and sends them to server via the tempo clock """
         timestamp = timestamp if timestamp is not None else self.queue_block.time
         # self.do_bang = False
-        for i in range(self.get_event_length(**kwargs)):
-            self.send_osc_message(self.event, i, timestamp=timestamp, verbose=verbose, **kwargs)
+        for i in range(self._get_event_length(**kwargs)):
+            self._send_osc_message(self.event, i, timestamp=timestamp, verbose=verbose, **kwargs)
         # if self.do_bang:
         #     self.bang()
         return
 
-    def send_osc_message(self, event, index, timestamp=None, verbose=True, **kwargs):
+    def _send_osc_message(self, event, index, timestamp=None, verbose=True, **kwargs):
         """ Compiles and sends an individual OSC message created by recursively unpacking nested PGroups """
         packet = {}
         event = event.copy()
@@ -1036,8 +1115,8 @@ class Player(Repeatable):
                         new_event[new_key] = new_value
 
                 # Recursively unpack and send messages
-                for i in range(self.get_event_length(new_event)):
-                    self.send_osc_message(new_event, i, timestamp, verbose)
+                for i in range(self._get_event_length(new_event)):
+                    self._send_osc_message(new_event, i, timestamp, verbose)
                 return
             else:
                 # If it is a number, use the numbers (check for kwargs override)
@@ -1048,15 +1127,15 @@ class Player(Repeatable):
             packet["amp"] = packet["amp"] * packet["amplify"]
 
         # Send compiled messages
-        self.push_osc_to_server(packet, timestamp, verbose, **kwargs)
+        self._push_osc_to_server(packet, timestamp, verbose, **kwargs)
         return
 
-    def push_osc_to_server(self, packet, timestamp, verbose=True, **kwargs):
+    def _push_osc_to_server(self, packet, timestamp, verbose=True, **kwargs):
         """ Adds message head, calculating frequency then sends to server if verbose is True and 
             amp/bufnum values meet criteria """
 
         # Do any calculations e.g. frequency
-        message = self.new_message_header(packet, **kwargs)
+        message = self._new_message_header(packet, **kwargs)
 
         # Only send if amp > 0 etc
         if verbose and (message["amp"] > 0) and (
@@ -1065,7 +1144,7 @@ class Player(Repeatable):
         ):
             # Need to send delay and synthdef separately
             delay = self.metro.beat_dur(message.get("delay", 0))
-            synthdef = self.get_synth_name(message.get("buf", 0))  # to send to play1 or play2
+            synthdef = self._get_synth_name(message.get("buf", 0))  # to send to play1 or play2
             compiled_msg = self.metro.server.get_bundle(synthdef, message, timestamp=timestamp + delay)
 
             # We can set a condition to only send messages
@@ -1073,7 +1152,7 @@ class Player(Repeatable):
             # self.do_bang = True
         return
 
-    def new_message_header(self, event, **kwargs):
+    def _new_message_header(self, event, **kwargs):
         """ Returns the header of an osc message to be added to by osc_message() """
 
         # Let SC know the duration of 1 beat so effects can use it and adjust sustain too
@@ -1144,7 +1223,7 @@ class Player(Repeatable):
         self.queue_block = queue_block
         return
 
-    def get_synth_name(self, buf=0):
+    def _get_synth_name(self, buf=0):
         """ Returns the real SynthDef name of the player. Useful only for "play" 
             as there is a play1 and play2 SynthDef for playing audio files with
             one or two channels respectively. """
@@ -1163,9 +1242,9 @@ class Player(Repeatable):
             after it has been triggered. """
         return self
 
-    #################################################
-    #####   Methods for stop/starting players   #####
-    #################################################
+    #####################################################
+    #####   Methods for stopping/starting players   #####
+    #####################################################
 
     def kill(self):
         """ Removes this object from the Clock and resets itself"""
@@ -1242,71 +1321,3 @@ class Player(Repeatable):
         return self
 
 
-class rest(object):
-    ''' Represents a rest when used with a Player's `dur` keyword
-    '''
-    def __init__(self, dur=1):
-        self.dur = dur if not isinstance(dur, self.__class__) else dur.dur
-
-    def __repr__(self):
-        return "<rest: {}>".format(self.dur)
-
-    def __add__(self, other):
-        return rest(self.dur + other)
-
-    def __radd__(self, other):
-        return rest(other + self.dur)
-
-    def __sub__(self, other):
-        return rest(self.dur - other)
-
-    def __rsub__(self, other):
-        return rest(other - self.dur)
-
-    def __mul__(self, other):
-        return rest(self.dur * other)
-
-    def __rmul__(self, other):
-        return rest(other * self.dur)
-
-    def __div__(self, other):
-        return rest(self.dur / other)
-
-    def __rdiv__(self, other):
-        return rest(other / self.dur)
-
-    def __truediv__(self, other):
-        return rest(float(self.dur) / other)
-
-    def __rtruediv__(self, other):
-        return rest(other / float(self.dur))
-
-    def __mod__(self, other):
-        return rest(self.dur % other)
-
-    def __rmod__(self, other):
-        return rest(other % self.dur)
-
-    def __eq__(self, other):
-        return (self.dur == other)
-
-    def __ne__(self, other):
-        return (self.dur != other)
-
-    def __lt__(self, other):
-        return (self.dur < other)
-
-    def __le__(self, other):
-        return (self.dur <= other)
-
-    def __gt__(self, other):
-        return (self.dur > other)
-
-    def __ge__(self, other):
-        return (self.dur >= other)
-
-    def __int__(self):
-        return int(self.dur)
-
-    def __float__(self):
-        return float(self.dur)
