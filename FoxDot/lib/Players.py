@@ -632,6 +632,9 @@ class Player(Repeatable):
         # Tempo
         self.bpm     = None
 
+        # Output (Elie's hexaphonic setup)
+        self.output  = 2
+
         # Stop calling any repeating methods
 
         self.stop_calling_all()
@@ -1841,7 +1844,7 @@ class Player(Repeatable):
             playing state to False in N bars time
             - When N is 0 it stops immediately"""
 
-        self.stopping = True        
+        self.stopping = True
         self.stop_point = self.metro.now()
 
         if N > 0:
