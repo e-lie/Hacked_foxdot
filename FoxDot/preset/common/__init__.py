@@ -1,5 +1,7 @@
 from .PatternsPreset import *
 from .UtilityFunctions import *
-from . import MusicStateMachine
+#from . import MusicStateMachine
 
-msm = MusicStateMachine
+#msm = MusicStateMachine
+
+from .ParamMatrix import *
