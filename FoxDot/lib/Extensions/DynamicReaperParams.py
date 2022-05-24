@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Tuple, Union, Optional, Dict
+from typing import Tuple, Union, Optional, Dict, List
 
 from FoxDot.lib.TimeVar import TimeVar
 from pprint import pformat
@@ -30,12 +30,10 @@ class ReaTask(object):
         self.param_value = param_value
         self.result = None
 
-
 class ReaParamState(Enum):
     NORMAL = 0
     VAR1 = 1
     VAR2 = 2
-
 
 class ReaParam(object):
     def __init__(self, name, value, index=None, state=ReaParamState.NORMAL):
@@ -44,6 +42,9 @@ class ReaParam(object):
         self.value = value
         self.state: ReaParamState = state
 
+class ReaSend(ReaParam):
+    def __repr__(self):
+        return "<ReaSend {}>".format(self.name)
 
 class ReaTrack(object):
     def __init__(self, clock, track: reapy.Track, name: str, type: ReaTrackType, reaproject):
@@ -53,15 +54,27 @@ class ReaTrack(object):
         self.name = name
         self.type = type
         self.reafxs = {}
-        self.reafx_list = []
-        self.reaparams: Dict[str, ReaParam] = {}
-        if len(self.track.sends) > 0:
-            self.reaparams["vol"] = ReaParam(name="vol", index=0, value=self.track.sends[0].volume)
+        self.firstfx = None
+        self.reaparams: Dict[str, ReaSend] = {}
+        for index, send in enumerate(self.track.sends):
+            name = make_snake_name(send.dest_track.name)[1:]
+            if name =="mixer":
+                self.reaparams["vol"] = ReaSend(name=name, index=index, value=send.volume*2)
+            else:
+                self.reaparams[name] = ReaSend(name=name, index=index, value=send.volume)
         for index, fx in enumerate(self.track.fxs):
             snake_name = make_snake_name(fx.name)
-            reafx = ReaFX(fx, snake_name, index)
-            self.reafxs[snake_name] = reafx
-            self.reafx_list.append(reafx)
+            if index == 0 and self.firstfx is None:
+                self.firstfx = snake_name
+            if snake_name not in self.reafxs.keys():
+                reafx = ReaFX(fx, snake_name, index)
+                self.reafxs[snake_name] = reafx
+            elif isinstance(self.reafxs[snake_name], ReaFXGroup):
+                self.reafxs[snake_name].add_fx(fx, index)
+            else:
+                old_reafx = self.reafxs[snake_name]
+                reafxgroup = ReaFXGroup([old_reafx.fx, fx], snake_name, [old_reafx.index, index])
+                self.reafxs[snake_name] = reafxgroup
 
     def __repr__(self):
         return "<ReaTrack {} - {}>".format(self.name, pformat(self.reafxs))
@@ -74,17 +87,23 @@ class ReaTrack(object):
             return self.reafxs[fx_name].reaparams[param_name].value
 
     def get_all_params(self):
-        result = {track_param.name: track_param.value for track_param in self.reaparams.values()}
+        result = {send.name: send.value for send in self.reaparams.values()}
         for reafx in self.reafxs.values():
             result = result | reafx.get_all_params()
         return result
 
     def set_param(self, name, value):
+        # if name == "mixer":
+        #     name = "vol"
+        # name = "vol" if name =="mixer" else name
+        # value = value/2 if name =="vol" else value
         self.reaparams[name].value = value
 
     def set_param_direct(self, name, value):
+        value = value/2 if name =="vol" else value
         param = self.reaparams[name]
-        self.track.sends[param.index].volume = float(value)
+        self.track.sends[param.index].volume = 5*float(value)**2.5 # convert vol logarithmic value to linear 0 -> 1 value
+
 
 
 
@@ -113,6 +132,29 @@ class ReaFX(object):
     def set_param_direct(self, name, value):
         id = self.reaparams[name].index
         self.fx.params[id] = float(value)
+
+
+class ReaFXGroup(ReaFX):
+    def __init__(self, fxs: List[reapy.FX], name, indexes:List[int]):
+        self.fxs = fxs
+        self.name = name
+        self.indexes = indexes
+        self.reaparams: Dict[str, ReaParam] = {}
+        for index, param in enumerate(fxs[0].params):
+            snake_name = make_snake_name(param.name)
+            self.reaparams[snake_name] = ReaParam(name=snake_name, value=param.real, index=index)
+
+    def add_fx(self, fx:reapy.FX, index):
+        self.fxs.append(fx)
+        self.indexes.append(index)
+
+    def __repr__(self):
+        return "<ReaFXGroup {}>".format(self.name)
+
+    def set_param_direct(self, name, value):
+        id = self.reaparams[name].index
+        for fx in self.fxs:
+            fx.params[id] = float(value)
 
 
 class ReaProject(object):
@@ -184,18 +226,13 @@ def get_reaper_object_and_param_name(track: ReaTrack, param_fullname: str, quiet
         fx_name, rest = split_param_name(param_fullname)
         if fx_name in track.reafxs.keys():
             fx = track.reafxs[fx_name]
-            if rest in fx.reaparams.keys():
+            if rest in fx.reaparams.keys() or rest == 'on':
                 reaper_object = track.reafxs[fx_name]
                 param_name = rest
                 return reaper_object, param_name
-    # If normal name split doesnt work try to find param in first fx (param name shortcut intru_i_param -> instru_param)
-    elif track.reafx_list:
-        first_fx = track.reafx_list[0]
-        param_names = first_fx.reaparams.keys()
-        if param_fullname in param_names:
-            reaper_object = track.reafx_list[0]
-            param_name = param_fullname
-            return reaper_object, param_name
+    elif param_fullname in track.reafxs[track.firstfx].reaparams.keys(): # Try to match param name with first fx params
+        reaper_object = track.reafxs[track.firstfx]
+        return reaper_object, param_fullname
     if not quiet:
         print("Parameter doesn't exist: " + param_fullname)
     return reaper_object, param_name
@@ -206,7 +243,16 @@ def set_reaper_param(track: ReaTrack, full_name, value, update_freq=0.05):
     rea_object, name = get_reaper_object_and_param_name(track, full_name)
     if rea_object is None or name is None:
         return
-    if isinstance(value, TimeVar):
+    if name == "on":
+        # TODO: wrong way to do fx disabling this doesn't work -> put it in set_param_direct method
+        def fx_enable(rea_object, name, value):
+            if not value:
+                rea_object.disable()
+            else:
+                rea_object.enable()
+            return
+        track._clock.schedule(fx_enable, beat=None, args=[rea_object, name, value])
+    elif isinstance(value, TimeVar) and name != 'on':
         # to update a time varying param and tell the preceding recursion loop to stop
         # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
         if rea_object.reaparams[name].state != ReaParamState.VAR1:
