@@ -8,4 +8,4 @@
 p1 >> pads([0,1,2,3,4], dur=[1,1,1,1,1])
 
 # With a rest ... 4 notes and a rest, note "4" is silenced for 4 beats
-p1 >> pads([0,1,2,3,4], dur=[1,1,1,1,rest(4)])
+p1 >> pads([0,1,2,3,4], dur=[1,1,1,1,Rest(4)])
