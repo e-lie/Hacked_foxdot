@@ -26,6 +26,14 @@ def fadeoutin(self, dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
         self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
     return self
 
+@player_method
+def fadeinout(self, dur=8, outdur=16, ivol=0, mvol=1, fvol=0):
+    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
+        self.vol = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+    else:
+        self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+    return self
+
 def fadein(dur=8, fvol=1, ivol=0):
     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
 
