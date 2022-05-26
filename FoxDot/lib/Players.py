@@ -652,8 +652,6 @@ class Player(Repeatable):
         # Tempo
         self.bpm = None
 
-        self.sdb = SAMPLES_DB
-
         # Stop calling any repeating methods
 
         self.stop_calling_all()
