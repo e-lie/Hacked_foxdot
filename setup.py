@@ -30,6 +30,8 @@ setup(name='FoxDot',
                 'FoxDot.lib.SCLang',
                 'FoxDot.lib.Settings',
                 'FoxDot.lib.Utils',
+                'FoxDot.lib.Crashserver',
+                'FoxDot.lib.Killa',
       ],
       install_requires=[
           'playsound',

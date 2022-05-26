@@ -604,7 +604,6 @@ fx.add("osc = osc * EnvGen.ar(Env([0,1,0], [revatk,revsus], curve: 'welch'))")
 fx.add("osc = SelectX.ar(mix2, [dry, osc])")
 fx.save()
 
-
 In()
 Out()
 Effect.server.setFx(FxList)
