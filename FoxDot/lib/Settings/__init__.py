@@ -54,7 +54,7 @@ FOXDOT_ICON_GIF = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/img/icon.gif")
 FOXDOT_HELLO = os.path.realpath(FOXDOT_ROOT + "/lib/Workspace/img/hello.txt")
 FOXDOT_STARTUP_PATH = os.path.realpath(FOXDOT_ROOT + "/lib/Custom/startup.py")
 FOXDOT_SND   = os.path.realpath(FOXDOT_ROOT + "/snd/")
-FOXDOT_LOOP  = os.path.realpath(FOXDOT_ROOT + "/snd/_loop_/")
+FOXDOT_LOOP  = "_loop_"
 
 SCLANG_EXEC   = 'sclang.exe' if SYSTEM == WINDOWS else 'sclang'
 SYNTHDEF_DIR  = os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef/")
@@ -91,13 +91,12 @@ def GET_TUTORIAL_FILES():
 
 # Set Environment Variables
 
-try:
-    reload(conf) # incase of a reload
-except NameError:
-    from . import conf
+from . import conf
+
+reload(conf) # incase of a reload
 
 FOXDOT_CONFIG_FILE  = conf.filename
-    
+
 ADDRESS                   = conf.ADDRESS
 PORT                      = conf.PORT
 PORT2                     = conf.PORT2
@@ -117,6 +116,7 @@ CPU_USAGE                 = conf.CPU_USAGE
 CLOCK_LATENCY             = conf.CLOCK_LATENCY
 FORWARD_ADDRESS           = conf.FORWARD_ADDRESS
 FORWARD_PORT              = conf.FORWARD_PORT
+SAMPLES_DB                = conf.SAMPLES_DB
 
 if conf.SAMPLES_DIR is not None and conf.SAMPLES_DIR != "":
 
@@ -161,15 +161,37 @@ OSC_MIDI_ADDRESS = "/foxdot_midi"
 # Colours
 
 class COLOURS:
-    plaintext  = conf.plaintext
-    background = conf.background
-    functions  = conf.functions
-    key_types  = conf.key_types
-    user_defn  = conf.user_defn
-    other_kws  = conf.other_kws
-    comments   = conf.comments
-    numbers    = conf.numbers
-    strings    = conf.strings
-    dollar     = conf.dollar
-    arrow      = conf.arrow
-    players    = conf.players
+    plaintext       = conf.plaintext
+    background      = conf.background
+    functions       = conf.functions
+    key_types       = conf.key_types
+    user_defn       = conf.user_defn
+    other_kws       = conf.other_kws
+    comments        = conf.comments
+    numbers         = conf.numbers
+    strings         = conf.strings
+    dollar          = conf.dollar
+    arrow           = conf.arrow
+    players         = conf.players
+    kick            = conf.kick
+    various         = conf.various
+    vocal           = conf.vocal
+    bell            = conf.bell
+    hihat           = conf.hihat
+    clap            = conf.clap
+    snap            = conf.snap
+    shaker          = conf.shaker
+    tambourine       = conf.tambourine
+    crash           = conf.crash
+    cymbal          = conf.cymbal
+    soundfx         = conf.soundfx
+    tom             = conf.tom
+    noise           = conf.noise
+    ride            = conf.ride
+    perc            = conf.perc
+    snare           = conf.snare
+    rim             = conf.rim
+    loops           = conf.loops
+    default         = conf.default
+    text1           = conf.text1
+    text2           = conf.text2

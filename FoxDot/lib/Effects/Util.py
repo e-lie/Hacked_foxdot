@@ -326,17 +326,20 @@ fx = FxList.new("pshift", "pitchShift", {"pshift": 0}, order=0)
 fx.add("osc = osc * (1.059463**pshift)")
 fx.save()
 
+# ==not implemented
 # fx = FxList.new("fm_sin", "FrequencyModulationSine", {"fm_sin":0, "fm_sin_i":1}, order=0)
 # fx.add("osc = osc + (fm_sin_i * SinOsc.kr(osc * fm_sin))")
 # fx.save()
-
+#
 # fx = FxList.new("fm_saw", "FrequencyModulationSaw", {"fm_saw":0, "fm_saw_i":1}, order=0)
 # fx.add("osc = osc + (fm_saw_i * Saw.kr(osc * fm_saw))")
 # fx.save()
-
+#
 # fx = FxList.new("fm_pulse", "FrequencyModulationPulse", {"fm_pulse":0, "fm_pulse_i":1}, order=0)
 # fx.add("osc = osc + (fm_pulse_i * Pulse.kr(osc * fm_pulse))")
 # fx.save()
+#
+
 
 # Signal effects
 
@@ -373,17 +376,13 @@ fx.add("bpr = LFNoise1.kr(bpnoise).exprange(bpr * 0.5, bpr * 2)")
 fx.add("osc = BPF.ar(osc, bpf, bpr)")
 fx.save()
 
+
 # MoogLPF
 fx = FxList.new('mpf', 'MoogFF', {'mpf': 0, 'mpr': 0}, order=2)
 fx.doc("MoogFF filter")
 fx.add('osc = MoogFF.ar(osc, mpf, mpr,0,1)')
 fx.save()
 
-# DFM1 LPF
-fx = FxList.new('dfm', 'DFM1', {'dfm': 1000, 'dfmr': 0.1, 'dfmd': 1}, order=2)
-fx.doc("DFM1 filter")
-fx.add('osc = DFM1.ar(osc, dfm, dfmr, dfmd,0.0)')
-fx.save()
 
 if SC3_PLUGINS:
 
@@ -409,6 +408,8 @@ if SC3_PLUGINS:
 #New Chop, with wave select :
 #chopwave = (0: Pulse, 1: Tri, 2: Saw, 3: Sin, 4: Parabolic )
 # and chopi = oscillator phase
+
+
 fx = FxList.new('chop', 'chop', {
                 'chop': 0, 'sus': 1, 'chopmix': 1, 'chopwave': 0, 'chopi': 0}, order=2)
 fx.add("osc = LinXFade2.ar(osc * SelectX.kr(chopwave, [LFPulse.kr(chop / sus, iphase:chopi, add: 0.01), LFTri.kr(chop / sus, iphase:chopi, add: 0.01), LFSaw.kr(chop / sus, iphase:chopi, add: 0.01), FSinOsc.kr(chop / sus, iphase:chopi, add: 0.01), LFPar.kr(chop / sus, iphase:chopi, add: 0.01)]), osc, 1-chopmix)")
@@ -604,6 +605,7 @@ fx.add("osc = osc * EnvGen.ar(Env([0,1,0], [revatk,revsus], curve: 'welch'))")
 fx.add("osc = SelectX.ar(mix2, [dry, osc])")
 fx.save()
 
+
 In()
 Out()
 Effect.server.setFx(FxList)
@@ -772,4 +774,11 @@ Effect.server.setFx(FxList)
 # fx.add("ampgain = (compensationGain * (1 - 0.4)) + (envFollower * 0.4)")
 # fx.add("osc = SmoothFoldS.ar((osc + LinLin.kr(symetry, 0, 1, 1, 0)) * LinLin.kr(fold, 0, 1, 1, 20), smoothAmount: smooth)")
 # fx.add("osc = LeakDC.ar(osc*ampgain)")
+# fx.save()
+
+# # Causes permanent background noise
+# # DFM1 LPF
+# fx = FxList.new('dfm', 'DFM1', {'dfm': 1000, 'dfmr': 0.1, 'dfmd': 1}, order=2)
+# fx.doc("DFM1 filter")
+# fx.add('osc = DFM1.ar(osc, dfm, dfmr, dfmd,0.0)')
 # fx.save()

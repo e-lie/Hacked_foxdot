@@ -28,6 +28,7 @@ from .LineNumbers import LineNumbers
 from .MenuBar import MenuBar, PopupMenu
 from ..Code import write_to_file
 from ..Utils import get_pypi_version
+from .SampleChart import SampleChart
 
 from functools import partial
 from distutils.version import LooseVersion as VersionNumber
@@ -40,7 +41,7 @@ import socket
 from ..Code import execute
 from ..Settings import FONT, FOXDOT_ICON, FOXDOT_HELLO, SC3_PLUGINS, FOXDOT_CONFIG_FILE, ALPHA_VALUE, USE_ALPHA
 from ..Settings import MENU_ON_STARTUP, TRANSPARENT_ON_STARTUP, RECOVER_WORK, CHECK_FOR_UPDATE
-from ..Settings import PY_VERSION
+from ..Settings import PY_VERSION, FOXDOT_SND
 from ..ServerManager import TempoServer
 
 # App object
@@ -769,6 +770,15 @@ class workspace:
             print("Hmm... Looks like we couldn't open the directory but you can find the samples in {}".format(FOXDOT_SND))
 
         return
+
+    def open_samples_chart_app(self):
+        try:
+            sample_chart = SampleChart()
+        except OSError as e:
+            print(e)
+            print("Hmm... Looks like we couldn't open the chart app.")
+        return
+
 
     # Toggle console: Ctrl+#
     #-----------------------------

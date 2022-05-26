@@ -1,4 +1,4 @@
-"""    
+"""
     Players are what make FoxDot make music. They are similar in design to
     SuperCollider's `PDef` and `PBind` combo but with slicker syntax. FoxDot
     uses SuperCollider to *actually* make the sound and does so by triggering
@@ -41,7 +41,7 @@
     Play multiple pitches together by putting them in round brackets: ::
 
         p1 >> pads([0,2,4,(0,2,4)])
-    
+
     When you start FoxDot up, your clock is ticking at 120bpm and your player
     objects are all playing in the major scale. With 8 pitches in the major scale,
     the 0 refers to the first pitch and the 7 refers to the pitch one octave
@@ -88,7 +88,7 @@
 
     To play multiple patterns simultaneously, you can create a new `play` object. This
     is useful if you want to have different attributes for each player. ::
-        
+
         bd >> play("x( x)  ", dur=1)
         hh >> play("---[--]", dur=[1/2,1/2,1/4], rate=4)
         sn >> play("  o ", rate=(.9,1), pan=(-1,1))
@@ -118,7 +118,7 @@
     delay - A duration of time to wait before sending the information to SuperCollider (defaults to 0)
 
     sample - Special keyword for Sample Players; selects another audio file from the bank of samples for a sample character.
-    
+
 
 """
 
@@ -136,7 +136,7 @@ from .Code import WarningMsg, debug_stdout
 from .SCLang.SynthDef import SynthDefProxy, SynthDef, SynthDefs
 from .Effects import FxList
 from .Utils import stdout
-from .Buffers import Samples
+from .Buffers import Samples, SAMPLES_DB
 
 from .Key import *
 from .Repeat import *
@@ -163,7 +163,7 @@ class EmptyPlayer(object):
 
     def __repr__(self):
         return "<{} - Unassigned>".format(self.name)
-    
+
     def __rshift__(self, *args, **kwargs):
         """ Converts an EmptyPlayer to a Player. """
         self.__class__ = Player
@@ -193,9 +193,9 @@ class Player(Repeatable):
     """
     FoxDot generates music by creating instances of `Player` and giving them instructions
     to follow. At startup FoxDot creates many instances of `Player` and assigns them to
-    any valid two character variable. This is so that when you start playing you don't 
+    any valid two character variable. This is so that when you start playing you don't
     have to worry about typing `myPlayer = Player()` and `myPlayer_2 = Player()` every
-    time you want to do something new. Of course there is nothing stopping you from 
+    time you want to do something new. Of course there is nothing stopping you from
     doing that if yo so wish.
 
     Instances of `Player` are given instructions to generate music using the `>>` syntax,
@@ -205,7 +205,7 @@ class Player(Repeatable):
     see more information about these in the `SCLang` module. Below describes how to assign
     a `SynthDefProxy` of the `SynthDef` `pads` to a `Player` instance called `p1`: ::
 
-        # Calling pads as if it were a function returns a 
+        # Calling pads as if it were a function returns a
         # pads SynthDefProxy object which is assigned to p1
         p1 >> pads()
 
@@ -233,10 +233,11 @@ class Player(Repeatable):
 
     # Base attributes
 
-    base_attributes = ('sus', 'fmod', 'pan', 'rate', 'amp', 'midinote', 'channel')
+    base_attributes = ('sus', 'fmod', 'pan', 'rate',
+                       'amp', 'midinote', 'channel')
 
     required_keys = ("amp", "sus")
-    
+
     internal_keywords = tuple(value for value in keywords if value != "degree")
 
     # Aliases
@@ -270,9 +271,9 @@ class Player(Repeatable):
 
         self.method_synonyms["->"] = "rshift"
         self.method_synonyms["<-"] = "lshift"
-    
+
         # General setup
-        
+
         self.synthdef = None
         self.id = name
 
@@ -318,11 +319,11 @@ class Player(Repeatable):
         self.current_dur = None
         self.old_pattern_dur = None
         self.old_dur = None
-        
+
         self.isplaying = False
         self.isAlive = True
 
-        # These dicts contain the attribute and modifier values that are sent to SuperCollider     
+        # These dicts contain the attribute and modifier values that are sent to SuperCollider
 
         self.attr = {}
 
@@ -356,7 +357,7 @@ class Player(Repeatable):
         self.scale = None
         self.offset = 0
         self.following = None
-        
+
         # List the internal variables we don't want to send to SuperCollider
 
         self.__vars = list(self.__dict__.keys())
@@ -398,7 +399,7 @@ class Player(Repeatable):
         return hash(self.id)  # could be problematic if there are id clashes?
 
     # Player Object Manipulation
-    
+
     def __rshift__(self, other):
         """ Handles the allocation of SynthDef objects using >> syntax, other must be
             an instance of `SynthDefProxy`, which is usually created when calling a
@@ -509,7 +510,7 @@ class Player(Repeatable):
 
                 # keep track of what values we change with +-
 
-                if (self.synthdef == SamplePlayer and name == "sample") or (self.synthdef != SamplePlayer and name == "degree"):
+                if (self.synthdef == SamplePlayer and name == "sample") or (self.synthdef == SamplePlayer and name == "sdb") or (self.synthdef != SamplePlayer and name == "degree"):
 
                     self.modifier = value
 
@@ -646,11 +647,12 @@ class Player(Repeatable):
         self.degree = " " if self.synthdef is SamplePlayer else 0
 
         # Octave of the note
-        
         self.oct = 5
 
         # Tempo
         self.bpm = None
+
+        self.sdb = SAMPLES_DB
 
         # Stop calling any repeating methods
 
@@ -1717,8 +1719,8 @@ class Player(Repeatable):
 
             degree = kwargs.get("degree", event['degree'])
             sample = kwargs.get("sample", event["sample"])
-            rate   = kwargs.get("rate", event["rate"])
             sdb = kwargs.get("sdb", event["sdb"])
+            rate = kwargs.get("rate", event["rate"])
 
             if rate < 0:
 
@@ -1728,11 +1730,12 @@ class Player(Repeatable):
 
             else:
 
-                pos = 0 
- 
-            buf  = self.samples.getBufferFromSymbol(str(degree), sample).bufnum
-            
-            message.update( {'buf': buf,'pos': pos} )
+                pos = 0
+
+            buf = self.samples.getBufferFromSymbol(
+                str(degree), sdb, sample).bufnum
+
+            message.update({'buf': buf, 'pos': pos})
 
             # Update player key
 
