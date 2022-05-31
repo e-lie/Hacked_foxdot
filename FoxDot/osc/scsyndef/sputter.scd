@@ -1,8 +1,4 @@
 SynthDef.new(\sputter, {
-	//Standard Values
-	// Modulation Controls
-	// Resonator controls
-	// Other Controls (all go from 0 to 1, except for method from 0 to 4)
 	|bus = 0, pan = 0, amp = 1, freq = 440, fmod = 0, atk = 0.1, sus = 1, rel = 2.5, crv = -6,
 	pw = 0.5, noisedepth = 0.05, pwmrate = 12, pwmdepth = 0.15, rstartf = 2000, rlf = 500, rrf = 5000,
 	ratk = 0.5, method = 0, gateSwitch = 1, gateThresh = 0.5, stereoWidth = 0.75|
@@ -49,7 +45,7 @@ SynthDef.new(\sputter, {
 	DetectSilence.ar(in: Mix.ar(osc), doneAction: 0);
 	// Stereo Version of Pan2.ar
 	osc = Balance2.ar(left: osc[0], right: osc[1], pos: pan);
-	osc = Mix(osc) * 0.05;
+	osc = Mix(osc) * 0.2;
 	ReplaceOut.ar(bus, osc)
 },
 metadata: (

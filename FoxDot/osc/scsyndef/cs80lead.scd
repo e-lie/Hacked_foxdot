@@ -19,7 +19,7 @@ SynthDef.new(\cs80lead, {
 	//Sending it through an LPF: (Keep ffreq below nyquist!!)
 	ffreq = max(fenv * freq * 12, cutoff) + 100;
 	osc = LPF.ar(osc, ffreq);
-	osc = Mix(osc);
+	osc = Mix(osc) * amp * 2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

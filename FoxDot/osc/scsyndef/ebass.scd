@@ -50,7 +50,7 @@ SynthDef(\ebass, {
 	// Mute the String
 	osc = LPF.ar(in: osc, freq: LinExp.ar(in: mute, srclo: 0, srchi: 1, dstlo: 20, dsthi: 20000));
 	// Output Stuff
-	osc = osc * amp;
+	osc = osc * amp * 0.3;
 	osc = osc.tanh;
 	osc = LeakDC.ar(osc);
 	osc = Limiter.ar(osc);

@@ -5,7 +5,7 @@ SynthDef.new(\blips, {
 	freq = [freq, freq+fmod];
 	env = Env.perc(atk, rel * sus * 20, amp).kr(doneAction: 0);
 	osc = LeakDC.ar(Mix(Blip.ar([freq, freq * offnote], nharm)));
-	osc = osc * env * amp * 0.15;
+	osc = osc * env * amp * 0.25;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },

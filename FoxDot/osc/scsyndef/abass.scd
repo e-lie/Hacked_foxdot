@@ -19,7 +19,7 @@ SynthDef.new(\abass, {
 	//add a ADSR envelope
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	sig = sig.tanh;
-	osc = Mix(sig) * 0.25;
+	osc = Mix(sig) * 0.12;
 	osc = Pan2.ar(osc * env , pan);
 	ReplaceOut.ar(bus, osc * amp)
 	},

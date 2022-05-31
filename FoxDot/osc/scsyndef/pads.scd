@@ -3,13 +3,12 @@ SynthDef.new(\pads, {
 	var osc, env, filter;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
-	amp=(amp * 2);
 	freq = freq * [1, 1.01];
-	osc = SinOsc.ar(Line.kr(freq * 4, freq, 0.01) + (Line.kr(10, (freq * 2), sus) * Pulse.ar(freq * rate, width: SinOsc.kr(0.225/sus))), mul:decay);
-	env = EnvGen.ar(Env([0, atk, decay, 0],[atk, decay * sus, rel * sus]));
+	osc = SinOsc.ar(Line.kr(freq * 4, freq, 0.01) + (Line.kr(10, (freq * 2), sus) * Pulse.ar(freq * rate, width: SinOsc.kr(0.225 / sus))),  mul: decay);
+	env = EnvGen.ar(Env([0, atk, sus + decay, 0],[atk, decay + sus, rel + sus]));
 	osc = RHPF.ar(osc, [Line.kr(400, 1000, sus), Line.kr(4000,900,sus)], decay);
-	osc = osc * env * amp * Line.ar(0.001,1,sus * 0.05);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc);
+	osc = osc * env * amp  * 2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

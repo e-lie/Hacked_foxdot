@@ -3,11 +3,11 @@ SynthDef.new(\angel, {
 	var osc, env, filter;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
-	amp=(amp * 2);
+	amp=(amp * 2.3);
 	freq = freq * [1, 1.01];
 	osc = Ringz.ar(ClipNoise.ar(0.001).dup / 2, freq * 3);
 	osc = RHPF.ar(osc, freq * 2.5, rq);
-	env = EnvGen.ar(Env([1, 0.8, 0.5, 0],[0.2 * sus, 0.5 * sus, 0.7 * sus]));
+	env = EnvGen.ar(Env([1, 0.8, 0.5, 0], [0.2 * sus, 0.5 * sus, 0.7 * sus]));
 	osc = Mix(osc) * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)

@@ -15,7 +15,7 @@ SynthDef(\epiano, {
 	osc = HPF.ar(osc, hollowness.linlin(0, 1, 50, 1000));
 	osc = osc * env;
 	osc = Limiter.ar(osc);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

@@ -10,7 +10,7 @@ SynthDef.new(\four, {
 	osc = FreeVerb.ar(osc, 0.133, 1);
 	env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.02, 0.01,sus,sus]), doneAction: 0);
 	osc = (osc * env * amp);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc) * 0.4;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

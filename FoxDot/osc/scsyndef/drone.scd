@@ -12,7 +12,7 @@ SynthDef.new(\drone, {
 		, hpf2);
 	osc = LeakDC.ar(osc, 0.995);
 	osc = Limiter.ar(osc, 0.8);
-	osc  = Mix(osc * env) * amp;
+	osc  = Mix(osc) * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

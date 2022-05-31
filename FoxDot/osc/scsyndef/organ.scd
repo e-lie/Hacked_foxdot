@@ -29,7 +29,7 @@ SynthDef.new(\organ, {
 	timeMod = LFDNoise3.ar(rate, 0.0005);
 	eqMod = LFDNoise3.kr(1, 400);
 	osc = 2*env*output.tanh;
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc) * 0.3;
 	osc = HPF.ar(osc, 40);
 	osc = LPF.ar(osc, 14000);
 	osc = Splay.ar(osc * amp, pan);

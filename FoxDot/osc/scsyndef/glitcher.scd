@@ -18,8 +18,9 @@ SynthDef(\glitcher, {
 	osc = (bass+tone1+tone2+tone3+noise+impulse).tanh;
 	osc = DelayN.ar(osc, 0.2, 0.1);
 	osc = HPF.ar(osc, 200);
-	osc = osc * amp * env;
-	osc = Mix(osc) * 0.8;
+	osc = osc * env;
+	osc = Mix(osc);
+	osc = osc * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

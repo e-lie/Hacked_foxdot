@@ -5,9 +5,9 @@ SynthDef.new(\ladder, {
 	freq = [freq, freq+fmod];
 	osc = MoogLadder.ar(LFSaw.ar(freq),  LinExp.kr(LFCub.kr(rate, 1*pi), -1, 1, 180, 8500), 0.75);
 	env = EnvGen.ar(Env.new([1, 1], [1, 1]), doneAction:1);
-	// env=EnvGen.ar(Env(times: [(sus / 2), (sus / 2)],levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
+    env = EnvGen.ar(Env(times: [(sus / 2), (sus / 2)],levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
+	osc = Mix(osc);
 	osc = (osc * env * amp);
-	osc = Mix(osc) * 1;
 	osc = Pan2.ar(osc * amp, pan);
 	ReplaceOut.ar(bus, osc)
 	},

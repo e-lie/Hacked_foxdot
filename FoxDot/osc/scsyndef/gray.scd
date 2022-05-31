@@ -6,7 +6,7 @@ SynthDef.new(\gray, {
 	osc = GrayNoise.ar();
 	env=EnvGen.ar(Env.new([1, 1], [1, 1]), doneAction:1);
 	osc=(osc * env * amp);
-	osc = Mix(osc) * 0.3;
+	osc = Mix(osc) * 0.15;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

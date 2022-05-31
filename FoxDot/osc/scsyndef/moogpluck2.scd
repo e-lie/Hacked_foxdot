@@ -8,9 +8,9 @@ SynthDef.new(\moogpluck2, {
 	freq = (freq + [0, LFNoise2.ar(50).range(-2, 2)]);
 	osc_pluck = Pluck.ar(PinkNoise.ar, 1, 0.2, freq.reciprocal, dur*legato, 1-para1);
 	osc_moog = 	MoogFF.ar(osc_pluck, (freq*3), 2);
-	osc = SelectX.ar(0.5, [LPF.ar(osc_pluck,2500),osc_moog]);
+	osc = SelectX.ar(0.5, [LPF.ar(osc_pluck,2500), osc_moog]);
 	osc = ((osc * XLine.kr(amp, (amp / 1000), (sus * 4), doneAction: 0)) * 1);
-	osc = Mix(osc) * amp * 0.5;
+	osc = Mix(osc) * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

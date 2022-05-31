@@ -5,10 +5,11 @@ SynthDef.new(\radio, {
 	freq = [freq, freq+fmod];
 	env = EnvGen.ar(Env.asr(0, 1, rel), gate, doneAction: 0);
 	osc = Pan2.ar(CombN.ar(Resonz.ar(Gendy5.ar(1, 40, minfreq: 0.2, maxfreq: freq, durscale: 0.1, initCPs: 10), freq * rate,0.1),0.1,0.5,0.6));
-	//sig = FreeVerb.ar(sig, 0.1, 0.5);
-	osc = Mix(osc) * 0.4;
-	osc = Limiter.ar(osc*env);
-	osc = Splay.ar(osc*amp, pan);
+	osc = FreeVerb.ar(osc, 0.1, 0.5);
+	osc = Mix(osc);
+	osc = Limiter.ar(osc);
+	osc = osc * env * amp * 0.5;
+	osc = Splay.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },
 metadata: (

@@ -9,8 +9,8 @@ SynthDef(\mhpad, {
 	trem = LFNoise2.kr(1).range(0.2, 2) * SinOsc.kr(trem).range((1 - tremdepth), 1);
 	osc = SinOsc.ar(freq: [freq, vibrato], mul: 1.0).distort;
 	env = Env.asr(atk, sus / 2, rel, curve: \sin).kr(gate: gate, doneAction: 0);
-	osc = osc * env * amp * 0.15;
 	DetectSilence.ar(osc, 0.0001, 0.2, doneAction: 0);
+	osc = osc * env * amp * 0.5;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

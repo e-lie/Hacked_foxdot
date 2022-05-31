@@ -9,7 +9,7 @@ SynthDef.new(\supersaw, {
 	osc = LFSaw.ar(freq, phase);
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \lin), doneAction: 0);
 	osc = Mix(osc);
-	osc = osc * env * amp * 0.2;
+	osc = osc * env * amp * 0.4;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

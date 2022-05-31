@@ -25,7 +25,7 @@ SynthDef.new(\subbass2, {
 	osc = Mix.ar([octave * blend, in * (blend - 1)]);
     osc = LeakDC.ar(osc);
 	osc = Limiter.ar(in: osc, level: 1);
-	osc = osc * env * amp * 0.8;
+	osc = osc * env * amp * 0.25;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

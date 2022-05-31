@@ -29,7 +29,7 @@ SynthDef.new(\spacesaw, {
 	leftOut = mid + side;
 	rightOut = mid - side;
 	osc = Select.ar(which: monoswitch, array: [[leftOut, rightOut], Pan2.ar(leftOut, pan)]);
-	osc = osc * amp * 0.15;
+	osc = osc * amp * 0.8;
 	osc = Limiter.ar(osc);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)

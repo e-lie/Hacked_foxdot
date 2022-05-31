@@ -4,11 +4,11 @@ SynthDef.new(\moogpluck, {
 	sus = sus * blur;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
-	pluck =	Pluck.ar(SinOsc.ar(freq * PinkNoise.ar()), 1, freq.reciprocal, freq.reciprocal, sus, coef:pluckcoef.clip(-0.5,0.99));
-	pluck = pluck * EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
-	moog = MoogFF.ar(pluck, (freq*pluckfilter), 2);
+	pluck =	Pluck.ar(SinOsc.ar(freq * PinkNoise.ar()), 1, freq.reciprocal, freq.reciprocal, sus, coef:pluckcoef.clip(-0.5, 0.99));
+	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
+	moog = MoogFF.ar(pluck, (freq*pluckfilter), 2, mul: 2);
 	osc = SelectX.ar(pluckmix,[LPF.ar(pluck, 4300), moog]);
-	osc = osc * amp;
+	osc = osc * env * amp;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

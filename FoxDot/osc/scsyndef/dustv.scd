@@ -8,7 +8,7 @@ SynthDef.new(\dustv, {
 	//env = EnvGen.ar(Env.new([1, 1], [1, 1]), doneAction: 0);
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve:\lin), doneAction: 0);
 	osc = (osc * env * amp);
-	osc = Mix(osc) * 0.3;
+	osc = Mix(osc) * 0.4;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

@@ -9,12 +9,12 @@ SynthDef.new(\acidbass, {
 		decayTime: dec,
 		sustainLevel: sus / 20,
 		releaseTime: rel,
-		peakLevel: amp * 0.1,
+		peakLevel: amp,
 		curve: [0, curve, curve, curve]
 	).kr(gate: gate, doneAction: 0);
 	filterEnv = Env.adsr(
 		attackTime: atk,
-		decayTime: dec * 2,
+		decayTime: dec,
 		sustainLevel: sus * 1/20,
 		releaseTime: rel,
 		peakLevel: 2.pow(frange), // octaves multiplier
@@ -23,7 +23,7 @@ SynthDef.new(\acidbass, {
 	).kr(gate: gate, doneAction: 0);
 	osc = LFPulse.ar(freq: freq, width: width).range(-1, 1);
 	osc = RLPF.ar(osc, freq * filterEnv, rq);
-	osc = osc * ampEnv;
+	osc = osc * ampEnv * 0.27;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

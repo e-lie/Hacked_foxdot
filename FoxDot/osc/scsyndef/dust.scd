@@ -5,8 +5,8 @@ SynthDef.new(\dust, {
 	freq = [freq, freq + fmod];
 	osc = Dust.ar(freq + rate);
 	env = EnvGen.ar(Env.new([1, 1], [1, 1]), doneAction: 0);
-	osc = (osc * env * amp);
-	osc = Mix(osc) * 0.25;
+	osc = Mix(osc);
+	osc = osc * env * amp * 0.3;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

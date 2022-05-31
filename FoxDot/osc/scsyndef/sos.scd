@@ -10,10 +10,9 @@ SynthDef(\sos, {
 	osc2 = SinOscFB;
 	osc2 = RLPF.ar(BrownNoise.ar(1), Rand(200, 1600), 0.015,1) * 1;
 	osc = (osc + (osc2 * Rand(0, 0.01)))  * env;
-	// sig = Mix(sig) * 1;
-	// sig = LPF.ar(sig, 5000);
 	osc = BLowShelf.ar(osc, 60);
-	osc = osc * amp * 0.4;
+	osc = Mix(osc);
+	osc = osc * amp * 0.2;
 	osc = Pan2.ar(osc, pan).tanh;
 	ReplaceOut.ar(bus, osc)
 },

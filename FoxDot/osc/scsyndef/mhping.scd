@@ -6,7 +6,7 @@ SynthDef.new(\mhping, {
 	lfo = LFNoise2.ar(rate).range(1/(1 + depth),(1 + depth));
 	env = Env.linen(attackTime: atk, sustainTime: sus, releaseTime: rel, curve: curve).kr(doneAction:0);
 	osc = SinOsc.ar(freq: [freq, freq * lfo], mul: env);
-	osc = osc * env * amp * 0.1;
+	osc = osc * env * amp * 0.18;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },

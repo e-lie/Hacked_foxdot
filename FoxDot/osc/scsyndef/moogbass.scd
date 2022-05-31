@@ -4,12 +4,12 @@ SynthDef.new(\moogbass, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	freq = freq / 4;
-	osc = Mix(VarSaw.ar(freq.lag(lagamount) * [1.0, 1.001, 2.0], iphase: 0.5, width: width, mul: 0.2));
+	osc = Mix(VarSaw.ar(freq.lag(lagamount) * [1.0, 1.001, 2.0], iphase: 0.5, width: width, mul: 0.1));
 	filterenv = EnvGen.ar(envelope: Env.asr(atk, sus, rel), gate: gate);
 	filter =  MoogFF.ar(in: osc, freq: cutoff * (1.0 + (0.8 * filterenv)), gain: gain);
 	env = EnvGen.ar(Env.asr(atk, sus, rel), gate: gate, doneAction: 0);
 	osc = (0.9 * filter + (0.3 * filter.distort));
-	osc = osc * env * amp * 0.4;
+	osc = osc * env * amp * 1.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

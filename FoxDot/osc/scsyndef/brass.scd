@@ -9,8 +9,8 @@ SynthDef.new(\brass, {
 	osc = BPF.ar(osc, (freq * 2.5), 0.3);
 	osc = RLPF.ar(osc, 1300, 0.78);
 	env = EnvGen.ar(Env.perc(level: amp, curve: 0, attackTime: atk,releaseTime: sus), doneAction: 0);
-	osc = (osc * env);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc);
+	osc = osc * env  * 0.9;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

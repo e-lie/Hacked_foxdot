@@ -24,7 +24,7 @@ SynthDef.new(\fmbass, {
 	osc = carrier + SinOsc.ar(freq: freq/2, mul: carrierEnv * subamp);
 	// Output Stuff
 	osc = Limiter.ar(osc);
-	osc = Mix(osc) * amp * 0.2;
+	osc = Mix(osc) * amp * 0.15;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

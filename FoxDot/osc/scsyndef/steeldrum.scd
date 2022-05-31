@@ -13,8 +13,9 @@ SynthDef.new(\steeldrum, {
 	oscb = SinOsc.ar(freq: freq * offnote, mul: envb);
 	oscc = DynKlank.ar(specificationsArrayRef:Ref.new([resFreqArray * freq, resAmpArray, resDecArray * sus
 	]),input:LPF.ar(HPF.ar(CombN.ar(PinkNoise.ar(1), 1/freq, 1/freq, -1, envc), freq * 2), freq * fharm));
-	osc = Mix.ar([osca, oscb, oscc]) * amp * 0.1;
-	osc = Limiter.ar(osc, amp);
+	osc = Mix.ar([osca, oscb, oscc]);
+	osc = Limiter.ar(osc);
+	osc = osc * amp * 0.4;
 	DetectSilence.ar(in: osc, amp: 0.0001, time: 0.5, doneAction: 0);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)

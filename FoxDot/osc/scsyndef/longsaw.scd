@@ -6,8 +6,8 @@ SynthDef.new(\longsaw, {
 	amp = (amp / 10);
 	env = EnvGen.ar(Env.linen(atk, sus, rel), doneAction: 0);
 	osc = Saw.ar(freq,Line.kr(1, 2, 4), mul: 1);
-	osc = (osc * env * amp);
-	osc = Mix(osc) * 0.3;
+	osc = Mix(osc);
+	osc = osc * env * amp * 0.8;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

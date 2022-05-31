@@ -15,7 +15,7 @@ SynthDef.new(\rhpiano, {
     osc1 = SinOsc.ar(freq, osc2) * env1 * vel;
 	osc = Mix((osc3 * (1 - mix)) + (osc1 * mix)) * 0.3;
 	osc = osc * (SinOsc.ar(lfospeed) * lfodepth + 1);
-	osc = osc * env * amp * 0.3;
+	osc = osc * env * amp * 0.4;
     osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },

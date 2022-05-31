@@ -1,6 +1,6 @@
 SynthDef.new(\combs, {
 	|bus=0, pan=0, amp=1, freq=440, gate=1, fmod=0, atk=0.01, sus=1, rel=0.3,
-	vibrate=2, depth=0.8, regen= -3, sweep=8, rq=0.9, nharm=2|
+	vibrate=2, depth=0.8, regen= -3, sweep=8, rq=0.9, nharm=2, lmul=0.8, nmul=0.8|
 	var max, min, vibrato, osc, env, filterenv;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
@@ -14,13 +14,13 @@ SynthDef.new(\combs, {
 	filterenv = ((filterenv * sweep) + 1) * freq;
 	//The core noise:
 	osc = Mix.ar([BrownNoise.ar(1) * 1/4, freq]);
-	osc = CombL.ar(osc, max, vibrato, regen);
-	osc = CombN.ar(osc, nharm / freq, nharm / freq, regen, env);
+	osc = CombL.ar(osc, max, vibrato, regen, mul: lmul);
+	osc = CombN.ar(osc, nharm / freq, nharm / freq, regen, mul: nmul);
 	//More filters and output stuff:
 	osc = RHPF.ar(osc, freq * 2, rq);
 	osc = RLPF.ar(osc, filterenv, rq, amp);
 	osc = Limiter.ar(osc, amp);
-	osc = Mix(osc) * 0.02;
+	osc = Mix(osc) * env * 0.1;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },
