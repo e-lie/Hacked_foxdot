@@ -13,7 +13,7 @@ SynthDef.new(\risseto, {
 	osc = RLPF.ar(in: osc, freq: freq * LFPulse.ar(pulsefreq).range(2, 4), rq: SinOsc.ar(LFNoise2.kr(1).range(4, 9)).range(0.1, 0.3));
 	osc = LPF.ar(osc, 12000);
 	osc = Mix.ar(osc);
-	osc = osc * env * amp;
+	osc = osc * env * amp * 1.5;
 	osc = Limiter.ar(osc);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)

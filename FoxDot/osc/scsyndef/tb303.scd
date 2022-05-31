@@ -9,8 +9,9 @@ SynthDef.new(\tb303, {
 	osc = RLPF .ar(  Select .ar(wave, waves), ctf + (filEnv * top), res).dup * amp;
 	osc = HPF.ar(osc, 20);
 	osc = LPF.ar(osc, 14000);
-	osc = Mix(osc) * 0.1;
-	osc = Splay.ar(osc * amp, pan);
+	osc = Mix(osc);
+	osc = osc * amp * 0.12;
+	osc = Splay.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },
 metadata: (
