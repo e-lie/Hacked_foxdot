@@ -24,7 +24,7 @@ if SC3_PLUGINS:
     piano = SynthDef("piano")
     piano.amp = piano.amp * 0.7
     piano.osc = MdaPiano.ar(
-    piano.freq[0], vel=40 + (piano.amp * 60), decay=piano.sus / 4)
+        piano.freq[0], vel=40 + (piano.amp * 60), decay=piano.sus / 4)
     piano.env = Env.ramp()
     piano.add()
 
@@ -37,9 +37,9 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
 
     with SynthDef("sinepad") as sinepad:
         sinepad.amp = sinepad.amp * 1.5
-        sinepad.freq = sinepad.freq + [0,2]
+        sinepad.freq = sinepad.freq + [0, 2]
         sinepad.osc = SinOsc.ar(sinepad.freq, mul=sinepad.amp)
-        sinepad.osc = HPF.ar(sinepad.osc, 1000);
+        sinepad.osc = HPF.ar(sinepad.osc, 1000)
         sinepad.env = Env.perc()
 
     with SynthDef("noise") as noise:
@@ -127,7 +127,6 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
                             SinOscFB.ar(20, 0, 10), gong.freq, gong.freq * gong.rate, 4) * gong.amp
         gong.osc = HPF.ar(gong.osc, 440)
 
-
     with SynthDef("soprano") as soprano:
         soprano.sus = soprano.sus * 1.75
         soprano.amp = soprano.amp / 2
@@ -199,7 +198,8 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
             0.3 + SinOsc.ar(freq, phase=VarSaw.ar(freq,
                             width=Line.ar(1, 0.2, 2))) * 0.3
         pluck.osc = pluck.osc * \
-            XLine.kr(pluck.amp, pluck.amp/10000, pluck.sus * 4, doneAction=2) * 0.3
+            XLine.kr(pluck.amp, pluck.amp/10000,
+                     pluck.sus * 4, doneAction=2) * 0.3
 
     with SynthDef("spark") as synth:
         freq = instance('freq')
@@ -240,7 +240,7 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
     orient = SynthDef("orient")
     orient.defaults.update(room=10, verb=0.7)
     orient.osc = LFPulse.ar(orient.freq, 0.5, 0.25, 1/4) + \
-                            LFPulse.ar(orient.freq, 1, 0.1, 1/4)
+        LFPulse.ar(orient.freq, 1, 0.1, 1/4)
     orient.env = Env.perc()
     orient.add()
 
@@ -248,7 +248,7 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
     zap.defaults.update(room=0, verb=0)
     zap.amp = zap.amp / 10
     zap.osc = Saw.ar(zap.freq * [1, 1.01] + LFNoise2.ar(50).range(-2, 2)) + \
-                     VarSaw.ar(zap.freq + LFNoise2.ar(50).range(-2, 2), 1)
+        VarSaw.ar(zap.freq + LFNoise2.ar(50).range(-2, 2), 1)
     zap.env = Env.perc(atk=0.025, curve=-10)
     zap.add()
 
@@ -358,7 +358,7 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
     razz.freq = razz.freq + [0, 1]
     razz.rate = Lag.ar(K2A.ar(razz.freq), razz.rate)
     razz.osc = Saw.ar(razz.rate * [1, 1/2], [1, 1/3]) + \
-                      Saw.ar(razz.rate+LFNoise2.ar(4).range(0.5, 2.5), 1)
+        Saw.ar(razz.rate+LFNoise2.ar(4).range(0.5, 2.5), 1)
     razz.osc = BPF.ar(razz.osc, razz.freq * 2.5, 0.3)
     razz.osc = RLPF.ar(razz.osc, 1300, 0.78)
     razz.env = Env.perc(atk=0.125)
