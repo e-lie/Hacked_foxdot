@@ -9,7 +9,7 @@ SynthDef(\prof, {
 	//env = EnvGen.ar(envelope: Env.adsr(atk, decay, sus, rel, amp),gate: gate,doneAction: 2);
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = Mix(osc * filter * env);
-	osc = osc * amp * 0.8;
+	osc = osc * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

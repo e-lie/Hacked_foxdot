@@ -7,7 +7,7 @@ SynthDef.new(\hoover, {
     osc = { DelayN.ar(Saw.ar(freq * ExpRand(bw, 1 / bw)) + Saw.ar(freq * offnote * ExpRand(bw, 1 / bw)), 0.01, Rand(0, 0.01)) }.dup(18);
     osc = (Splay.ar(osc)).atan;
     env = Env.linen(atk, sus, rel, curve: \lin).kr(doneAction: 0);
-	osc = Mix(osc * env) * amp * 0.1;
+	osc = Mix(osc * env) * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 },

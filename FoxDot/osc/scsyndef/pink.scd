@@ -6,8 +6,7 @@ SynthDef.new(\pink, {
 	//osc = PinkNoise.ar() + PulseDPW(freq, freq, mul: 0.2);
 	osc = PinkNoise.ar();
 	env = EnvGen.ar(Env.new([1, 1], [1, 1]), doneAction: 0);
-	osc = (osc * env * amp);
-	osc = Mix(osc) * 0.25;
+	osc = Mix(osc) * env * amp * 0.25;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

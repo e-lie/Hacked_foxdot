@@ -12,7 +12,7 @@ SynthDef.new(\garfield, {
 	osc = Splay.ar(osc);
 	osc = Mix(osc);
 	osc = LeakDC.ar(Limiter.ar(osc * 0.08, 1));
-	osc = osc * env * amp * 0.2;
+	osc = osc * env * amp * 0.8;
 	osc = osc.tanh;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc);

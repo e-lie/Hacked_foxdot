@@ -7,7 +7,7 @@ SynthDef.new(\bphase, {
 	osc2 = SinOsc;
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \lin), doneAction:0);
 	osc = osc1.ar(osc2.kr(0.1,freq), freq/2 + osc2.kr(freq * 0.6, pi), pmindex, osc1.ar(4,2,1,0,osc1.kr(freq*0.02, 2, 1)), osc2.kr(0.1));
-	osc = Mix.ar(osc * env) * amp * 0.1;
+	osc = Mix.ar(osc * env) * amp * 0.2;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },

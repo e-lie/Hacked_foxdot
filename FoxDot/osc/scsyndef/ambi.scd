@@ -7,7 +7,7 @@ SynthDef.new(\ambi,{
 	osc=SinOsc.ar(freq + Rand(0.99,1.01), phase:Rand(0,2));
 	env = EnvGen.ar(Env([0,0.5 * amp, 0.5 * amp,0],[sus/4, sus, sus/4]));
 	filter = BHiPass.ar(osc, 200);
-	osc = osc * env * 0.2;
+	osc = osc * env * 0.28;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },
@@ -18,4 +18,3 @@ metadata: (
 	category: \category,
 	tags: [\tag, \tag]
 )).add;
-

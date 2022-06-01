@@ -12,7 +12,7 @@ SynthDef.new(\eeri, {
 	env = EnvGen.ar(Env(times: [(sus / 2), (sus / 2)],levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
 	osc = (osc * env);
 	// osc = DWGReverb3Band.ar(osc, 10);
-	osc = Mix(osc) * 1/16;
+	osc = Mix(osc) * 0.05;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

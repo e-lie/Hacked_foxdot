@@ -8,7 +8,7 @@ SynthDef.new(\fm, {
 	osc = osc + (Mix.arFill(7, { CombL.ar(osc, 0.005, 0.15, 0.15) })/2);
 	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \sin), doneAction: 0);
 	osc = (osc * env * amp);
-	osc = Mix(osc) * 1/32;
+	osc = Mix(osc) * 0.015;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

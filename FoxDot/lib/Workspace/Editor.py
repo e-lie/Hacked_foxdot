@@ -28,6 +28,7 @@ from .LineNumbers import LineNumbers
 from .MenuBar import MenuBar, PopupMenu
 from ..Code import write_to_file
 from ..Utils import get_pypi_version
+from .SampleChart import SampleChart
 
 from functools import partial
 from distutils.version import LooseVersion as VersionNumber
@@ -40,7 +41,7 @@ import socket
 from ..Code import execute
 from ..Settings import FONT, FOXDOT_ICON, FOXDOT_HELLO, SC3_PLUGINS, FOXDOT_CONFIG_FILE, ALPHA_VALUE, USE_ALPHA
 from ..Settings import MENU_ON_STARTUP, TRANSPARENT_ON_STARTUP, RECOVER_WORK, CHECK_FOR_UPDATE
-from ..Settings import PY_VERSION
+from ..Settings import PY_VERSION, FOXDOT_SND
 from ..ServerManager import TempoServer
 
 # App object
@@ -98,9 +99,9 @@ class workspace:
 
         self.true_fullscreen_toggled = BooleanVar()
         self.true_fullscreen_toggled.set(False)
-        
+
         # Boolean for beat counter
-        
+
         self.show_counter = BooleanVar()
         self.show_counter.set(False)
 
@@ -769,6 +770,15 @@ class workspace:
             print("Hmm... Looks like we couldn't open the directory but you can find the samples in {}".format(FOXDOT_SND))
 
         return
+
+    def open_samples_chart_app(self):
+        try:
+            sample_chart = SampleChart()
+        except OSError as e:
+            print(e)
+            print("Hmm... Looks like we couldn't open the chart app.")
+        return
+
 
     # Toggle console: Ctrl+#
     #-----------------------------
@@ -1777,11 +1787,11 @@ class workspace:
         return self.text.get("1.0", END).strip()
 
     def openhomepage(self):
-        webbrowser.open("http://www.foxdot.org/")
+        webbrowser.open("https://foxdot.org/")
         return
 
     def opendocumentation(self):
-        webbrowser.open("http://www.docs.foxdot.org/")
+        webbrowser.open("https://foxdot.org/docs/")
         return
 
     def set_temp_file(self, text):

@@ -15,7 +15,7 @@ SynthDef.new(\fmrhodes, {
     osc = Mix((osc3 * (1 - oscmix)) + (osc1 * oscmix)) * 0.08;
     osc = osc * (SinOsc.ar(lfospeed) * lfodepth + 1);
     env = EnvGen.ar(Env.asr(0, 1, 0.1), gate, doneAction: 0);
-	osc = osc * env * amp;
+	osc = osc * env * amp * 1.2;
     osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 },

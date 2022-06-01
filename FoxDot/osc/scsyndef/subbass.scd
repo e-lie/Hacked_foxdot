@@ -5,7 +5,6 @@ SynthDef.new(\subbass, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	freq = freq / 3;
-	amp = amp * 2;
     //A slightly rounded percussive envelope
 	env = Env.linen(atk, sus, rel, amp, [curve, -1 * curve]).kr(doneAction: 0);
 	//Input wave - To use SinOsc.ar, replace "iphase: 2" with "phase: 3pi/2"
@@ -25,7 +24,7 @@ SynthDef.new(\subbass, {
 	osc = Mix.ar([octave * blend * 0.4, in * (1 - blend)]);
 	osc = LeakDC.ar(osc);
 	osc = Limiter.ar(in: osc, level: 1);
-	osc = osc * env * amp * 0.2;
+	osc = osc * env * amp * 0.4;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

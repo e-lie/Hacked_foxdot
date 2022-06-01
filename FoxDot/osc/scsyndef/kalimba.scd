@@ -15,7 +15,7 @@ SynthDef.new(\kalimba, {
 		[0.8, 0.05, 0.07]],
 	PinkNoise.ar * EnvGen.ar(Env.perc(atk, 0.01))) * oscmix);
 	env = Env.linen(atk, sus, rel, curve:\sin).kr(doneAction:0);
-	osc = osc * env * amp * 0.15;
+	osc = osc * env * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 },

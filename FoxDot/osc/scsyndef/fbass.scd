@@ -16,7 +16,7 @@ SynthDef.new(\fbass, {
 	osc = CompanderD.ar(in: osc, thresh: 0.4, slopeBelow: 1, slopeAbove: 1/2.5);
 	osc = Mix.ar(osc.tanh);
 	osc = LeakDC.ar(osc);
-	osc = osc * env * amp;
+	osc = osc * env * amp * 0.7;
 	osc = Pan2.ar(osc, pan);
     ReplaceOut.ar(bus, osc);
 },

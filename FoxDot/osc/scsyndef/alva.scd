@@ -6,12 +6,11 @@ SynthDef.new(\alva, {
 	sus = sus * blur;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
-	osc = SinOsc.ar(freqenv, VarSaw.kr(0), 4) - SinOscFB.ar(freqenv2/0.2, fmod + 1, freq, 2);
+	osc = SinOsc.ar(freqenv, VarSaw.kr(0), mul: 1, add: 0.5) - SinOscFB.ar(freqenv2/0.2, fmod + 1, freq, 2);
 	env=EnvGen.ar(Env(times: [(sus * 0.25), (sus * 1)],levels: [0, amp, 0],curve: 'lin'), doneAction: 0);
-	osc=(osc * amp * env);
-	//osc = Mix(osc);
+	osc = Mix(osc * env);
 	osc = Limiter.ar(osc);
-	osc = Mix(osc) * 0.13;
+	osc = osc * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

@@ -12,7 +12,7 @@ SynthDef.new(\benoit, {
 	osc = (osc1 + osc2 + osc3 + (osc4 * 2))/2;
 	osc = RLPF.ar(osc, tracking, 1, 0.33);
 	osc = osc.tanh;
-	osc = osc * env * amp * 0.2;
+	osc = osc * env * amp * 0.45;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },

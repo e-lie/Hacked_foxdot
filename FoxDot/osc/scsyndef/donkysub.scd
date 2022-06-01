@@ -4,11 +4,10 @@ SynthDef.new(\donkysub, {
 	freq = freq + fmod;
 	freq = Line.ar(freq * slidefrom, freq * (1 + slide), sus);
 	freq = Vibrato.kr(freq, rate: vib);
-	amp = (amp * 6);
 	freq = (freq / (frate + 0.1));
-	osc = Ringz.ar(Impulse.ar(0), [freq, (freq + 2)], sus, amp);
-	env = EnvGen.ar(Env.asr(atk, sus, rel, curve: \sin), doneAction:0);
-	osc = osc * env * amp * 0.1;
+	osc = Ringz.ar(Impulse.ar(freq, mul: 0.02), [freq, (freq + 2)], sus, amp);
+	env = EnvGen.ar(Env.linen(atk, sus, rel, curve: \sin), doneAction:0);
+	osc = osc * env * amp ;
 	ReplaceOut.ar(bus, osc)
 },
 metadata: (

@@ -8,8 +8,8 @@ SynthDef.new(\spick, {
 	sus = (sus * 1.25);
 	osc = (LFPulse.ar(freq).distort + Impulse.ar((freq + 1)).tan);
 	env = EnvGen.ar(Env.perc(attackTime: atk, releaseTime: sus, level: 1, curve: 0), doneAction: 0);
-	osc = osc * env * amp;
-	osc = Mix(osc) * 0.1;
+	osc = Mix(osc);
+	osc = osc * env * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

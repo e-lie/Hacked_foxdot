@@ -1,5 +1,5 @@
 SynthDef(\hnoise, {
-	| bus=0, freq=800, gate=1, amp=1, atk=0.01 sus=1, fmod=0, pan=0, rel=0.9, room=0.5, rate=1|
+	|bus=0, freq=800, gate=1, amp=1, atk=0.01, sus=1, fmod=0, pan=0, rel=0.9, room=0.5, rate=1|
 	var env, osc, osc2, cenv;
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
@@ -14,9 +14,9 @@ SynthDef(\hnoise, {
 	osc = Mix([osc, osc2 * 1]);
 	osc = LeakDC.ar(CombC.ar(Mix.ar([osc,(osc2*LFNoise1.kr(0.01, 0.02).abs)]), 1, LFNoise1.kr(0.1).range(0.01, 0.6), 7, 1));
 	osc = LeakDC.ar(CombC.ar(osc, 1, SinOsc.kr(TRand.kr(0, 10)).range(0.0001, 2), 80));
-	osc = osc * env * amp;
-	//osc = Decimator.ar(osc);
-	osc = Normalizer.ar(osc) * 0.5;
+	osc = Decimator.ar(osc);
+	osc = Normalizer.ar(osc * env);
+	osc = osc  * amp * 0.2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

@@ -11,8 +11,8 @@ SynthDef(\mpluck, {
 	osc = SelectX.ar(0.5,[LPF.ar(osc_pluck,2500),osc_moog]);
 	env=EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc=((osc * XLine.kr(amp, (amp / 10000), (sus * 4), doneAction: 0)) * 1);
-	osc = Mix(osc) * 4;
-	osc = Pan2.ar(osc * env, pan);
+	osc = Mix(osc) * env * amp;
+	osc = Pan2.ar(osc , pan);
 	ReplaceOut.ar(bus, osc)
 	},
 metadata: (

@@ -1,11 +1,7 @@
 SynthDef.new(\cs80lead, {
-	//Standard Values
 	|bus = 0, freq = 440, amp = 1, gate = 1.0, pan = 0, fmod = 0,
-	//Amplitude Controls
 	atk = 0.3, sus = 0.8, rel = 1.0, dec = 0.8,
-	//Filter Controls
 	fatk = 0.75, fdec = 0.5, fsus = 0.8, frel = 1.0, cutoff = 200,
-	//Pitch Controls
 	dtune = 0.002, vibspeed = 4, vibdepth = 0.015, ratio = 0.8, glide = 0.15|
 	var env, fenv, vib, ffreq, osc;
 	freq = In.kr(bus, 1);
@@ -23,7 +19,7 @@ SynthDef.new(\cs80lead, {
 	//Sending it through an LPF: (Keep ffreq below nyquist!!)
 	ffreq = max(fenv * freq * 12, cutoff) + 100;
 	osc = LPF.ar(osc, ffreq);
-	osc = Mix(osc);
+	osc = Mix(osc) * amp * 2;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

@@ -1,7 +1,5 @@
 SynthDef(\epiano, {
-	//Standard values
 	|bus = 0, freq = 440, amp = 1, fmod = 0, atk = 0.1, sus = 1, rel = 0.3, pan = 0,
-	//These range from 0 to 1
 	tone = 0.5, hollowness = 0.02|
 	var hammer, osc, delay, tonefreq, env;
 	freq = In.kr(bus, 1);
@@ -17,7 +15,7 @@ SynthDef(\epiano, {
 	osc = HPF.ar(osc, hollowness.linlin(0, 1, 50, 1000));
 	osc = osc * env;
 	osc = Limiter.ar(osc);
-	osc = Mix(osc) * 0.5;
+	osc = Mix(osc);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

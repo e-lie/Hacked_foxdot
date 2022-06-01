@@ -1,5 +1,5 @@
-SynthDef(\sos,
-	{|amp=1, gate=1, rel=1,dur=8, bus=0, freq=200, freqs=240,pan=0, fmod=0, sus=1, vib=0|
+SynthDef(\sos, {
+	|amp=1, gate=1, rel=1,dur=8, bus=0, freq=200, freqs=240,pan=0, fmod=0, sus=1, vib=0|
     var osc1, env, osc, osc2;
     osc1 = VarSaw;
 	freqs = (Rand(60, 40)).midicps + SinOsc.ar(Rand(0, 8));
@@ -10,10 +10,9 @@ SynthDef(\sos,
 	osc2 = SinOscFB;
 	osc2 = RLPF.ar(BrownNoise.ar(1), Rand(200, 1600), 0.015,1) * 1;
 	osc = (osc + (osc2 * Rand(0, 0.01)))  * env;
-	// sig = Mix(sig) * 1;
-	// sig = LPF.ar(sig, 5000);
 	osc = BLowShelf.ar(osc, 60);
-	osc = osc * amp * 0.4;
+	osc = Mix(osc);
+	osc = osc * amp * 0.2;
 	osc = Pan2.ar(osc, pan).tanh;
 	ReplaceOut.ar(bus, osc)
 },

@@ -11,7 +11,7 @@ SynthDef.new(\bbass, {
 	osc = RLPF.ar(osc,(env*freq) + 1*freq * lfo.value.range(10/freq,5/freq), lfo.value.range(0.1,1));
 	osc = Splay.ar(osc, lfo.value.range(0,1));
 	envout = EnvGen.ar(Env.perc(level: amp, releaseTime: sus, attackTime: 0.02, curve: 'lin'), doneAction: 0);
-	osc = Mix(osc) * 0.02 * envout * amp;
+	osc = Mix(osc) * envout * amp * 0.1;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc);
 },

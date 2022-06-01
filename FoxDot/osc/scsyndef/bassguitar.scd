@@ -21,16 +21,9 @@ SynthDef.new(\bassguitar, {
 	freqArray = freqArray * freq;
 	ampArray = Array.fill(10, {arg i;
 		((1 - ((freqArray[i] - 19000)/1000).tanh)/2) *
-		sin(((i + 1) * pi) * pick) *
-		(
-			sin(pi * pickupPos * freqArray[i]/openFreq) *
-			(
-			    (
-					sin(constant * freqArray[i])/
-					(constant * freqArray[i])
-				) - cos(constant * freqArray[i])
-			)
-		)/(freqArray[i].pow(2))
+		sin(((i + 1) * pi) * pick) * (sin(pi * pickupPos * freqArray[i]/openFreq) * ((
+			sin(constant * freqArray[i])/(constant * freqArray[i])) - cos(constant *
+			freqArray[i])))/(freqArray[i].pow(2))
 	});
 	ampArray = ampArray * 2/(constant.pow(2));
 	exciter = Impulse.ar(0) * 1;
@@ -40,10 +33,10 @@ SynthDef.new(\bassguitar, {
 	osc = LPF.ar(in: osc, freq: 250);
 	mute = Env.new(levels: [1, 1, 0, 0], times: [rel+sus, 0.05, 0.01]).ar(doneAction: 2);
 	osc = LPF.ar(in: osc, freq: LinExp.ar(in: mute, srclo: 0, srchi: 1, dstlo: 20, dsthi: 20000));
-	osc = osc * amp;
 	osc = osc.tanh;
 	osc = LeakDC.ar(osc);
 	osc = Limiter.ar(osc);
+	osc = osc * amp * 0.4;
 	ReplaceOut.ar(bus, Pan2.ar(osc, pan));
 },
 metadata: (

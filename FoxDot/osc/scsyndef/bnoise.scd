@@ -13,7 +13,7 @@ SynthDef.new(\bnoise, {
 	osc = (osc * env);
 	osc = HPF.ar(osc, 40);
 	osc = LPF.ar(osc, 8000);
-	osc = Mix(osc) * 0.2;
+	osc = Mix(osc) * 0.12;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

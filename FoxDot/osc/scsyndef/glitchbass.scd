@@ -14,8 +14,8 @@ SynthDef.new(\glitchbass, {
 	osc = HPF.ar(osc, 80);
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	osc = BLowPass4.ar(osc,(cutoff*(env.squared))+200+freq,rq);
-	osc = osc * env * amp;
-	osc = Mix(osc) * 0.2;
+	osc = Mix(osc);
+	osc = osc * env * amp * 0.07;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

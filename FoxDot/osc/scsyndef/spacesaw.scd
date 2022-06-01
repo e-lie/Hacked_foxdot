@@ -1,9 +1,7 @@
 SynthDef.new(\spacesaw, {
 	// Standard Values
 	|bus=0, amp=1, gate=1, freq=100, fmod=0, pan=0, atk=0.25, sus=1, rel=0.3, crv= -4,
-	// Filter and Distortion Controls
 	filterlow=100, filterhigh=2000, rq=0.3, sidepreamp=2, midpreamp=1,
-	// Chorus and Mid/Side Controls (balance is 0 to 1 and monoSwitch is 0 or 1)
 	lfofreq=0.1, lfodepth=0.015, balance=0.5, monoswitch=0|
 	var env, lfo, leftIn, rightIn, mid, side, leftOut, rightOut, osc;
 	freq = In.kr(bus, 1);
@@ -31,7 +29,7 @@ SynthDef.new(\spacesaw, {
 	leftOut = mid + side;
 	rightOut = mid - side;
 	osc = Select.ar(which: monoswitch, array: [[leftOut, rightOut], Pan2.ar(leftOut, pan)]);
-	osc = osc * amp * 0.15;
+	osc = osc * amp * 0.8;
 	osc = Limiter.ar(osc);
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)

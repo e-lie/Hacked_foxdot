@@ -4,8 +4,8 @@ SynthDef.new(\chipsy, {
 	freq = In.kr(bus, 1);
 	freq = [freq, freq+fmod];
 	env = Env.linen(atk, sus, rel, curve:\lin).kr(doneAction: 0);
-	osc = Mix(LFPulse.ar(freq: freq * [1, offnote], iphase: 0.003, width: 0.5, mul:0.04)).tanh;
-	osc = osc * env * amp;
+	osc = Mix(LFPulse.ar(freq: freq * [1, offnote], iphase: 0.003, width: 0.5, mul:0.5)).tanh;
+	osc = osc * env * amp * 0.15;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus,osc)
 },

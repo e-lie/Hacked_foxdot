@@ -29,8 +29,8 @@ SynthDef.new(\faim2, {
 	osc = Limiter.ar(osc);
 	osc = osc.tanh;
     osc = osc * env * amp;
-	osc = Mix(osc) * 0.3;
-	osc = Pan2.ar(osc, pan).sum;
+	osc = Mix(osc) * 0.25;
+	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },
 metadata: (

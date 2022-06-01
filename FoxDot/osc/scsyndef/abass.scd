@@ -10,7 +10,8 @@ SynthDef.new(\abass, {
 	sig = sig + sig1;
 	sig = sig.fold2(SinOsc.kr(1/13).range(0.9,1));
 	sig = sig.wrap2(SinOsc.kr(1/14).range(0.9,1));
-	sig = LPF.ar(sig, 5500);
+	sig = LPF.ar(sig, 5500);return self
+
 	//sig = sig * 1;
 	sig = HPF.ar(sig, \hpf.kr(80));
 	sig = sig * EnvGen.ar(\iadsr.kr(Env.adsr(0.01,0.1,0.8,0.1)),\igate.kr(1),doneAction:0);
@@ -19,7 +20,7 @@ SynthDef.new(\abass, {
 	//add a ADSR envelope
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
 	sig = sig.tanh;
-	osc = Mix(sig) * 0.25;
+	osc = Mix(sig) * 0.12;
 	osc = Pan2.ar(osc * env , pan);
 	ReplaceOut.ar(bus, osc * amp)
 	},

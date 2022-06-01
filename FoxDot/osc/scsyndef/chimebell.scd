@@ -12,7 +12,7 @@ SynthDef.new(\chimebell, {
 			[1, 0.205, 1, 0.196, 0.339, 0.047, 0.058, 0.047] * t60     // ring times
 		], exciter,freqscale: freq, freqoffset: offnote);
 	DetectSilence.ar(osc, 0.001, 0.75, doneAction:0);
-	osc = Mix(osc) * 0.0001 * amp;
+	osc = Mix(osc) * 0.0006 * amp;
 	osc = Pan2.ar(osc,pan,amp);
 	Out.ar(bus,osc);
 },

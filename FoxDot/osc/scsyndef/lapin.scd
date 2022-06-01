@@ -27,9 +27,8 @@ SynthDef(\lapin, {
 		osc = AllpassN.ar(osc,d,d,5);
 	};
 	env = EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), sus - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
-	//osc = osc * amp * 0.35;
-	osc = osc * env * amp;
-	osc = Mix(osc) * 0.2;
+	osc = Mix(osc);
+	osc = osc * env * amp * 0.05;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 	},

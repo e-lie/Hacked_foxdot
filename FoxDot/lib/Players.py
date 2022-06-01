@@ -1,4 +1,4 @@
-"""    
+"""
     Players are what make FoxDot make music. They are similar in design to
     SuperCollider's `PDef` and `PBind` combo but with slicker syntax. FoxDot
     uses SuperCollider to *actually* make the sound and does so by triggering
@@ -41,7 +41,7 @@
     Play multiple pitches together by putting them in round brackets: ::
 
         p1 >> pads([0,2,4,(0,2,4)])
-    
+
     When you start FoxDot up, your clock is ticking at 120bpm and your player
     objects are all playing in the major scale. With 8 pitches in the major scale,
     the 0 refers to the first pitch and the 7 refers to the pitch one octave
@@ -88,7 +88,7 @@
 
     To play multiple patterns simultaneously, you can create a new `play` object. This
     is useful if you want to have different attributes for each player. ::
-        
+
         bd >> play("x( x)  ", dur=1)
         hh >> play("---[--]", dur=[1/2,1/2,1/4], rate=4)
         sn >> play("  o ", rate=(.9,1), pan=(-1,1))
@@ -118,7 +118,7 @@
     delay - A duration of time to wait before sending the information to SuperCollider (defaults to 0)
 
     sample - Special keyword for Sample Players; selects another audio file from the bank of samples for a sample character.
-    
+
 
 """
 
@@ -126,10 +126,12 @@ from __future__ import absolute_import, division, print_function
 
 import itertools
 
-from .Settings import SamplePlayer, LoopPlayer
-from .SCLang.SynthDef import SynthDefProxy, SynthDefs
+from .Settings import SamplePlayer, LoopPlayer, SYNTHDEF_DIR
+from .Code import WarningMsg, debug_stdout
+from .SCLang.SynthDef import SynthDefProxy, SynthDef, SynthDefs
 from .Effects import FxList
-from .Buffers import Samples
+from .Utils import stdout
+from .Buffers import Samples, SAMPLES_DB
 
 from .Code import WarningMsg
 from .Key import PlayerKey, NumberKey
@@ -218,9 +220,13 @@ class Rest(object):
 
 
 
+import os
+
+
 class EmptyPlayer(object):
     """ Place holder for Player objects created at run-time to reduce load time.
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -254,9 +260,9 @@ class Player(Repeatable):
     """
     FoxDot generates music by creating instances of `Player` and giving them instructions
     to follow. At startup FoxDot creates many instances of `Player` and assigns them to
-    any valid two character variable. This is so that when you start playing you don't 
+    any valid two character variable. This is so that when you start playing you don't
     have to worry about typing `myPlayer = Player()` and `myPlayer_2 = Player()` every
-    time you want to do something new. Of course there is nothing stopping you from 
+    time you want to do something new. Of course there is nothing stopping you from
     doing that if yo so wish.
 
     Instances of `Player` are given instructions to generate music using the `>>` syntax,
@@ -266,7 +272,7 @@ class Player(Repeatable):
     see more information about these in the `SCLang` module. Below describes how to assign
     a `SynthDefProxy` of the `SynthDef` `pads` to a `Player` instance called `p1`: ::
 
-        # Calling pads as if it were a function returns a 
+        # Calling pads as if it were a function returns a
         # pads SynthDefProxy object which is assigned to p1
         p1 >> pads()
 
@@ -371,7 +377,30 @@ class Player(Repeatable):
         self.isAlive = True
 
         # These dicts contain the attribute and modifier values that are sent to SuperCollider
+
         self.attr = {}
+
+        # These dict contains extra attributes of a SynthDef
+        self.extra_attr = {}
+
+        self.default_args = ('sus',
+                             'fmod',
+                             'pan',
+                             'rate',
+                             'amp',
+                             'midinote',
+                             'channel',
+                             'freq',
+                             'vib',
+                             'bus',
+                             'blur',
+                             'beat_dur',
+                             'atk',
+                             'decay',
+                             'rel',
+                             'peak',
+                             'level')
+
         self.modifier = Pattern()
         self.mod_data = 0
         self.filename = None
@@ -393,8 +422,13 @@ class Player(Repeatable):
 
     @classmethod
     def get_attributes(cls):
-        """ Returns a list of possible keyword arguments for FoxDot players and effects """
-        return cls.keywords + cls.base_attributes + cls.fx_attributes
+        """ Returns a list of possible keyword arguments for FoxDot players"""
+        return cls.keywords + cls.base_attributes
+
+    @classmethod
+    def get_fxs(cls):
+        """ Returns a list of possible keyword arguments for FoxDot effects """
+        return cls.fx_attributes
 
     @classmethod
     def Attributes(cls):
@@ -1198,7 +1232,9 @@ class Player(Repeatable):
             degree = kwargs.get("degree", event["degree"])
             octave = kwargs.get("oct", event["oct"])
             root = kwargs.get("root", event["root"])
+            sdb = kwargs.get("sdb", event["sdb"])
             scale = kwargs.get("scale", self.scale)
+
             if degree == None:
                 freq, midinote = None, None
             else:
@@ -1319,5 +1355,4 @@ class Player(Repeatable):
         elif self.bang_kwargs:
             bang = Bang(self, self.bang_kwargs)
         return self
-
 

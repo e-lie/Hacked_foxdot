@@ -5,8 +5,13 @@ SynthDef.new(\cluster, {
 	freq = [freq, freq+fmod];
 	sus = sus * blur;
 	env = Env.linen(attackTime:atk,sustainTime:sus,releaseTime:rel,curve:\lin).kr(doneAction:0);
+<<<<<<< HEAD
 	osc = Splay.ar(LeakDC.ar(CombN.ar(SinOsc.ar(1/para1,Spring.ar(LFPulse.ar(pstep), 4 / para1, [[0.5e-1, 1.4e-3]]) * LFTri.ar(freq, 0, 2pi, mult * pi), mul: 0.05), 2, 0, 2))).tanh;
 	osc = Mix(osc * env) * amp;
+=======
+	osc = Splay.ar(LeakDC.ar(CombN.ar(SinOsc.ar(1/para1,Spring.ar(LFPulse.ar(pstep), 4 / para1, [[0.5e-1, 1.4e-3]]) * LFTri.ar(freq, 0, 2pi, mult * pi), mul: 0.1), 2, 0, 2, mul: 2))).tanh;
+	osc = Mix(osc * env) * amp * 1.2;
+>>>>>>> BBScar/samples_database
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
 },

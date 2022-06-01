@@ -9,7 +9,7 @@ SynthDef.new(\donorgan,{
 	env = EnvGen.ar(Env.linen(atk, sus, rel), gate, doneAction: 0);
 	osc = VarSaw.ar(freq, iphase: 1, width: Rand(0.3, 0.5) ! 2, mul: 0.2);
 	filter = RLPF.ar(osc, cutoff, rq);
-	osc = Mix(osc * env ) * amp * 0.1;
+	osc = Mix(osc * env ) * amp * 0.5;
 	osc = Pan2.ar(osc,pan);
 	ReplaceOut.ar(bus,osc)
 },
