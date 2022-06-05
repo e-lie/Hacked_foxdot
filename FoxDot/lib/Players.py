@@ -303,6 +303,9 @@ class Player(Repeatable):
     required_keys = ("amp", "sus")
     internal_keywords = tuple(value for value in keywords if value != "degree")
 
+    # Number of beats of delay for update >> operation or setattr
+    update_delay = 0
+
     # Aliases
     alias = {"pitch": "degree", "char": "degree"}
     fx_attributes = FxList.all_kwargs()

@@ -422,7 +422,12 @@ else:
                    'tubularbell', 'tworgan', 'tworgan2', 'tworgan3', 'tworgan4',
                    'varicelle', 'vibass', 'video', 'vinsine', 'viola', 'virus',
                    'waves', 'windmaker', 'wobble', 'wobblebass', 'wsaw',
-                   'wsawbass', 'xylophone', 'hydra'
+                   'wsawbass', 'xylophone', 'hydra',
+                   'pluck', 'blip', 'spark', 'jbass', 'star', 'sitar', 'razz', 'swell', 'squish', 'donk', 'nylon',
+                   'harpy', 'karp', 'twang', 'snick', 'saw', 'pulse', 'bug', 'fuz', 'marimba', 'zap', 'orient',
+                   'creep', 'ripple', 'quin', 'soft', 'glass', 'feel', 'klank', 'scratch', 'dub', 'soprano',
+                   'gong', 'bell', 'charm', 'scatter', 'wave', 'crunch', 'dirt', 'growl', 'lazer', 'warsaw',
+                   'dab', 'noise',
                    ]
 
     for i in range(len(synths_list)):

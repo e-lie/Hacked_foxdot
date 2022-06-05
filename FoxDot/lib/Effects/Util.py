@@ -596,6 +596,10 @@ fx.add("osc = osc * EnvGen.ar(Env([0,1,0], [revatk,revsus], curve: 'welch'))")
 fx.add("osc = SelectX.ar(mix2, [dry, osc])")
 fx.save()
 
+fx = FxList.new('output','output', {'output': 0}, order=2)
+fx.doc("Output select Bus")
+fx.add("Out.ar(output, osc)")
+fx.save()
 
 In()
 Out()
@@ -746,10 +750,6 @@ Effect.server.setFx(FxList)
 # fx.add("Out.ar(3, Mix.ar(fxsig*fx2))")
 # fx.save()
 #
-# fx = FxList.new('output','output', {'output': 0}, order=2)
-# fx.doc("Output select Bus")
-# fx.add("Out.ar(output, osc)")
-# fx.save()
 
 
 # ### need the miSCellaneous Quark, install in SC
