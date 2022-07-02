@@ -5,7 +5,7 @@ import math
 from FoxDot import Pvar, player_method, PWhite, linvar, inf, Clock, TimeVar, var, expvar, sinvar, Pattern, xvar, yvar
 
 
-def interpolate(start, end, step=7, go_back=True):
+def interpolate(start, end, step=7, go_back=False):
     if len(start) == 1 and len(end) > 1:
         start = [start[0]] * len(end)
     if len(end) == 1 and len(start) > 1:
@@ -33,7 +33,7 @@ def interpolate(start, end, step=7, go_back=True):
 
 interp = interpolate
 
-def interpvar(start, end, total_dur=None, step=6, dur=1, go_back=True):
+def interpvar(start, end, total_dur=None, step=6, dur=1, go_back=False):
     if total_dur is not None:
         step = (total_dur - 2) // 2
         dur = 1
@@ -41,6 +41,39 @@ def interpvar(start, end, total_dur=None, step=6, dur=1, go_back=True):
 
 
 Pvi = interpvar
+
+def interP(start, end, repeat=1, step=6):
+    res = Pattern([])
+    for pattern in interpolate(start, end, step, go_back=True):
+        for i in range(repeat):
+            res = res | pattern
+    return res
+
+def interPBof2(start, end, repeat=1, step=6, go_back=True):
+    res = Pattern([])
+    for pattern in interpolate(start, end, step, go_back):
+        for i in range(repeat):
+            res = res | pattern
+    pprint(res)
+    if not go_back:
+        for i in range(10):
+            res = res | Pattern(end)
+        total_dur = sum(res)
+        print(total_dur)
+        return Pvar([res, end], [int(total_dur)-1, inf], start=Clock.mod(4))
+    else:
+        return res
+
+# def interPBof(start, end, step=6, total_dur=None,  dur=4, go_back=False):
+#     if total_dur is not None:
+#         step = (total_dur - 2) // 2
+#         dur = 4
+#     patterns = interpolate(start, end, step, go_back)
+#     if not go_back:
+#         res = Pvar(patterns, [dur]*(len(patterns)-1) + [inf], start=Clock.now())
+#     else:
+#         res = Pvar(patterns, [dur], start=Clock.now())
+#     return res
 
 
 def zipvar(duration_pattern_list):
