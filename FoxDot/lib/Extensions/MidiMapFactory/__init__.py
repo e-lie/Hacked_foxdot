@@ -15,13 +15,14 @@ class MidiMapFactory:
             result = cls.threesquare_midimap() | midi_map
         else:
             result = cls.linear_midimap()
+            result = result | {'default': 2, ' ': -200, '.': -200}
         return result
 
     @classmethod
     def linear_midimap(cls):
         lowcase = list(range(97, 123))
         upcase = list(range(65, 91))
-        base_midi_map = {'default': 2, ' ': -1}
+        base_midi_map = {'default': 2, ' ': -200, '.': -200}
         for i in range(52):
             if i % 2 == 0:
                 base_midi_map[chr(lowcase[i//2])] = i
@@ -33,7 +34,7 @@ class MidiMapFactory:
     def threesquare_midimap(cls):
         lowcase = list(range(97, 123))
         upcase = list(range(65, 91))
-        base_midi_map = {'default': 2, ' ': -1}
+        base_midi_map = {'default': 2, ' ': -200, '.':-200 }
         for i in range(16):
             base_midi_map[chr(lowcase[i])] = i
         for i in range(16):
