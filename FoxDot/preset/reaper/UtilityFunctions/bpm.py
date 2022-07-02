@@ -1,5 +1,5 @@
-from FoxDot import Clock, nextBar
-from FoxDot.lib.Extensions.ReaperIntegration import project
+from FoxDot import Clock, nextBar, inf, linvar
+from ..Instruments import project
 
 def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
     Clock.bpm = bpm

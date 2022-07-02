@@ -1,11 +1,13 @@
 
-from FoxDot.lib.Extensions.ReaperIntegration import project, ReaperInstrumentFactory
+from FoxDot.lib.Extensions.ReaperIntegration import init_reapy_project, ReaperInstrumentFactory
 
 from .Presets import presets
 from FoxDot import Clock, Scale
 from functools import partial
 
 Clock.midi_nudge = 0
+
+project = init_reapy_project()
 
 reaper = ReaperInstrumentFactory(presets, project)
 

@@ -9,12 +9,15 @@ from FoxDot.lib.Extensions.DynamicReaperParams import ReaProject, ReaTrack
 
 #project = None
 
-#try:
-project = ReaProject(Clock)
-pass
-# except Exception as err:
-#     output = err.message if hasattr(err, 'message') else err
-#     print("Error scanning and initializing Reaper project: {output} -> skipping Reaper integration".format(output=output))
+def init_reapy_project():
+    try:
+        import reapy
+        project = ReaProject(Clock, reapy)
+
+    except Exception as err:
+        output = err.message if hasattr(err, 'message') else err
+        print("Error scanning and initializing Reaper project: {output} -> skipping Reaper integration".format(output=output))
+    return project
 
 class ReaperInstrumentFactory:
 

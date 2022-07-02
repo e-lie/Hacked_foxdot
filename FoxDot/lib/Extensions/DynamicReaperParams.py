@@ -3,7 +3,6 @@ from typing import Tuple, Union, Optional, Dict, List
 
 from FoxDot.lib.TimeVar import TimeVar
 from pprint import pformat
-import reapy
 
 class ReaTrackType(Enum):
     INSTRUMENT = 1
@@ -47,7 +46,7 @@ class ReaSend(ReaParam):
         return "<ReaSend {}>".format(self.name)
 
 class ReaTrack(object):
-    def __init__(self, clock, track: reapy.Track, name: str, type: ReaTrackType, reaproject):
+    def __init__(self, clock, track, name: str, type: ReaTrackType, reaproject):
         self._clock = clock
         self.track = track
         self.reaproject = reaproject
@@ -142,7 +141,7 @@ class ReaFX(object):
 
 
 class ReaFXGroup(ReaFX):
-    def __init__(self, fxs: List[reapy.FX], name, indexes:List[int]):
+    def __init__(self, fxs, name, indexes:List[int]):
         self.fxs = fxs
         self.name = name
         self.indexes = indexes
@@ -152,7 +151,7 @@ class ReaFXGroup(ReaFX):
             snake_name = make_snake_name(param.name)
             self.reaparams[snake_name] = ReaParam(name=snake_name, value=param.real, index=index)
 
-    def add_fx(self, fx:reapy.FX, index):
+    def add_fx(self, fx, index):
         self.fxs.append(fx)
         self.indexes.append(index)
 
@@ -173,10 +172,11 @@ class ReaFXGroup(ReaFX):
 
 
 class ReaProject(object):
-    def __init__(self, clock):
+    def __init__(self, clock, reapylib):
         self._clock = clock
-        self.reapy_project = reapy.Project()
+        self.reapy_project = reapylib.Project()
         self.reatracks = {}
+        self.reapylib = reapylib
         self.instrument_tracks = []
         self.bus_tracks = []
         self.reapy_access_tasks = []
@@ -184,7 +184,7 @@ class ReaProject(object):
         self.reapy_task_execute_freq = 0.1
         self.reapy_results_by_id = {}
         self.currently_processing_tasks = False
-        with reapy.inside_reaper():
+        with reapylib.inside_reaper():
             for index, track in enumerate(self.reapy_project.tracks):
                 snake_name: str = make_snake_name(track.name)
                 reatrack = ReaTrack(self._clock, track, name=snake_name, type=ReaTrackType.INSTRUMENT, reaproject=self)
@@ -211,7 +211,7 @@ class ReaProject(object):
     def execute_reapy_tasks(self):
         if not self.currently_processing_tasks:
             self.currently_processing_tasks = True
-            with reapy.inside_reaper():
+            with self.reapylib.inside_reaper():
                 while self.reapy_access_tasks:
                     task: ReaTask = self.reapy_access_tasks.pop(0)
                     if task.type == "set":
