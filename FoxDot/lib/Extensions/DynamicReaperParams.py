@@ -113,6 +113,7 @@ class ReaFX(object):
         self.name = name
         self.index = index
         self.reaparams: Dict[str, ReaParam] = {}
+        self.reaparams['on'] = ReaParam(name='on', value=fx.is_enabled, index=-1)
         for index, param in enumerate(fx.params):
             snake_name = make_snake_name(param.name)
             self.reaparams[snake_name] = ReaParam(name=snake_name, value=param.real, index=index)
@@ -130,8 +131,14 @@ class ReaFX(object):
         self.reaparams[name].value = value
 
     def set_param_direct(self, name, value):
-        id = self.reaparams[name].index
-        self.fx.params[id] = float(value)
+        if name == "on":
+            if not value:
+                self.fx.disable()
+            else:
+                self.fx.enable()
+        else:
+            id = self.reaparams[name].index
+            self.fx.params[id] = float(value)
 
 
 class ReaFXGroup(ReaFX):
@@ -140,6 +147,7 @@ class ReaFXGroup(ReaFX):
         self.name = name
         self.indexes = indexes
         self.reaparams: Dict[str, ReaParam] = {}
+        self.reaparams['on'] = ReaParam(name='on', value=fxs[0].is_enabled, index=-1)
         for index, param in enumerate(fxs[0].params):
             snake_name = make_snake_name(param.name)
             self.reaparams[snake_name] = ReaParam(name=snake_name, value=param.real, index=index)
@@ -152,9 +160,16 @@ class ReaFXGroup(ReaFX):
         return "<ReaFXGroup {}>".format(self.name)
 
     def set_param_direct(self, name, value):
-        id = self.reaparams[name].index
-        for fx in self.fxs:
-            fx.params[id] = float(value)
+        if name == "on":
+            for fx in self.fxs:
+                if not value:
+                    fx.disable()
+                else:
+                    fx.enable()
+        else:
+            id = self.reaparams[name].index
+            for fx in self.fxs:
+                fx.params[id] = float(value)
 
 
 class ReaProject(object):
@@ -217,7 +232,7 @@ def get_reaper_object_and_param_name(track: ReaTrack, param_fullname: str, quiet
     Choose usecase (parameter kind : track param like vol, send amount or fx param) depending on parameter name.
     """
     reaper_object, param_name = None, None
-    # Param concern current track
+    # Param concern current track (it is a reaper send)
     if param_fullname in track.reaparams.keys():
         reaper_object = track
         return reaper_object, param_fullname
@@ -239,20 +254,20 @@ def get_reaper_object_and_param_name(track: ReaTrack, param_fullname: str, quiet
 
 
 def set_reaper_param(track: ReaTrack, full_name, value, update_freq=0.05):
-    # fx can point to a fx or a track (self) -> (when param is vol or pan)
+    # rea_object can point to a fx or a track (self) -> (when param is vol or other send)
     rea_object, name = get_reaper_object_and_param_name(track, full_name)
+
+    # If object not found abort
     if rea_object is None or name is None:
         return
-    if name == "on":
-        # TODO: wrong way to do fx disabling this doesn't work -> put it in set_param_direct method
-        def fx_enable(rea_object, name, value):
-            if not value:
-                rea_object.disable()
-            else:
-                rea_object.enable()
-            return
-        track._clock.schedule(fx_enable, beat=None, args=[rea_object, name, value])
-    elif isinstance(value, TimeVar) and name != 'on':
+
+    # If we set an fx param turn the fx on
+    if isinstance(rea_object, ReaFX) or isinstance(rea_object, ReaFXGroup):
+        if name != 'on':
+            track.reaproject.add_reapy_task(ReaTask("set", rea_object, 'on', True))
+
+    # handle switching between time varying (setup recursion loop to update value in the future) or non varying params (normal float)
+    if isinstance(value, TimeVar) and name != 'on':
         # to update a time varying param and tell the preceding recursion loop to stop
         # we switch between two timevar state old and new alternatively 'timevar1' and 'timevar2'
         if rea_object.reaparams[name].state != ReaParamState.VAR1:
