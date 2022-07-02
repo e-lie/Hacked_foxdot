@@ -1,5 +1,5 @@
 
-from FoxDot import Clock, linvar, inf, player_method
+from FoxDot import Clock, linvar, sinvar, PWhite, PRand, inf, player_method
 from FoxDot.lib.Extensions.DynamicReaperParams import ReaTrack
 
 @player_method
@@ -33,6 +33,16 @@ def fadeinout(self, dur=8, outdur=16, ivol=0, mvol=1, fvol=0):
     else:
         self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
     return self
+
+@player_method
+def faderand(self, length=8):
+    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
+        self.vol = sinvar([0] | PWhite(.2,1.2)[:length-1], [8] | PRand(1,4)[:length-1]*4, start=Clock.mod(4))
+    else:
+        self.amplify = sinvar([0] | PWhite(.2,1.2)[:length-1], [8] | PRand(1,4)[:length-1]*4, start=Clock.mod(4))
+    return self
+    
+
 
 def fadein(dur=8, fvol=1, ivol=0):
     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
