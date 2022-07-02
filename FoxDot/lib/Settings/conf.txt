@@ -1,14 +1,13 @@
 # Settings
 # ------------------
 ADDRESS='localhost'
-PORT=57110
+PORT=57112
 PORT2=57120
 FONT='Consolas'
 SUPERCOLLIDER=""
 BOOT_ON_STARTUP=False
 SC3_PLUGINS=True
 MAX_CHANNELS=2
-SDB=1
 SAMPLES_DIR=""
 SAMPLES_DB=0
 GET_SC_INFO=True
@@ -40,8 +39,6 @@ strings='#eae02a'
 dollar='#ec4e20'
 arrow='#eae02a'
 players='#ec4e20'
-<<<<<<< HEAD
-=======
 
 # Category colours
 # ------------------
@@ -68,4 +65,3 @@ loops='#1e1e19'
 default='#b2b2b2'
 text1='#ffffff'
 text2='#000000'
->>>>>>> BBScar/samples_database
