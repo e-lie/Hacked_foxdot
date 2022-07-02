@@ -399,7 +399,8 @@ if len(os.path.realpath(FOXDOT_ROOT + "/osc/scsyndef")) == 0:
 
 else:
     # SynthDefs read from file
-    synths_list = ['play1', 'play2', 'abass', 'acidbass', 'alva', 'ambi', 'angel', 'angst', 'bass',
+    synths_list = ['play1', 'play2', 'hydra', 'video',
+                    'abass', 'acidbass', 'alva', 'ambi', 'angel', 'angst', 'bass',
                    'bassguitar', 'bbass', 'bchaos', 'bellmod', 'benoit', 'birdy',
                    'blips', 'bnoise', 'borgan', 'bounce', 'bphase', 'brass', 'brown',
                    'chimebell', 'chipsy', 'click', 'clip', 'cluster', 'combs',
@@ -420,9 +421,9 @@ else:
                    'steeldrum', 'strings', 'subbass', 'subbass2', 'supersaw',
                    'tb303', 'total', 'tremsynth', 'tribell', 'tritri', 'triwave',
                    'tubularbell', 'tworgan', 'tworgan2', 'tworgan3', 'tworgan4',
-                   'varicelle', 'vibass', 'video', 'vinsine', 'viola', 'virus',
+                   'varicelle', 'vibass', 'vinsine', 'viola', 'virus',
                    'waves', 'windmaker', 'wobble', 'wobblebass', 'wsaw',
-                   'wsawbass', 'xylophone', 'hydra',
+                   'wsawbass', 'xylophone', 
                    'pluck', 'blip', 'spark', 'jbass', 'star', 'sitar', 'razz', 'swell', 'squish', 'donk', 'nylon',
                    'harpy', 'karp', 'twang', 'snick', 'saw', 'pulse', 'bug', 'fuz', 'marimba', 'zap', 'orient',
                    'creep', 'ripple', 'quin', 'soft', 'glass', 'feel', 'klank', 'scratch', 'dub', 'soprano',
