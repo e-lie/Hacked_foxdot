@@ -6,6 +6,7 @@ from __future__ import absolute_import, division, print_function
 
 from random import choice, shuffle
 from copy import deepcopy
+from .Rest import *
 
 from .Operations import *
 from ..Utils import *
@@ -316,7 +317,26 @@ class metaPattern(object):
             return other.__radd__(self)
         return PAdd(self, other)
 
-    def __radd__(self, other):  
+    @classmethod
+    def mimov(cls, pattern, qties):
+        """Transform a duration pattern by slightly moving one stroke
+        Used to introduce microrythmic shift to existing rythms"""
+        res = list(pattern)
+        while len(qties) > len(res):
+            res += list(pattern)
+        for i, qty in enumerate(qties):
+            if i == 0 and qty > 0:
+                res[0] -= qty
+                res = [Rest(qty)] + res
+            else:
+                res[i] += qty
+                res[i - 1] -= qty
+        return Pattern(res)
+
+    def __lshift__(self, qties):
+        return self.__class__.mimov(self, qties)
+
+    def __radd__(self, other):
         if isinstance(other, GeneratorPattern):
             return other.__add__(self)
         return PAdd(self, other)
