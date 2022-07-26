@@ -10,10 +10,10 @@ from FoxDot.lib.Extensions.DynamicReaperParams import ReaProject, ReaTrack
 #project = None
 
 def init_reapy_project():
+    project = None
     try:
         import reapy
         project = ReaProject(Clock, reapy)
-
     except Exception as err:
         output = err.message if hasattr(err, 'message') else err
         print("Error scanning and initializing Reaper project: {output} -> skipping Reaper integration".format(output=output))
@@ -23,12 +23,12 @@ class ReaperInstrumentFactory:
 
     def __init__(self, presets: Mapping, project: ReaProject) -> None:
         self._presets = presets
-        self._project = project
+        self._reaproject = project
 
     def create_instruc(self, *args, **kwargs):
-        """handle exceptions gracefully especially if corresponding track does not exist in Live"""
+        """handle exceptions gracefully especially if corresponding track does not exist in Reaper"""
         try:
-            result = ReaperInstrumentFacade(Clock, self._project, self._presets, *args, **kwargs)
+            result = ReaperInstrumentFacade(self._reaproject, self._presets, *args, **kwargs)
             return result.out
         except Exception as err:
             output = err.message if hasattr(err, 'message') else err
@@ -36,13 +36,13 @@ class ReaperInstrumentFactory:
             return None
 
     def instruments_to_instanciate(self):
-        rproject: ReaProject = self._project
+        #rproject: ReaProject = self._reaproject
         instrument_dict = {}
 
-        for reatrack in rproject.bus_tracks:
+        for reatrack in self._reaproject.bus_tracks:
             instrument_dict[reatrack.name[1:]] = self.create_instruc(track_name=reatrack.name, midi_channel=-1)
 
-        for i, track in enumerate(rproject.instrument_tracks):
+        for i, track in enumerate(self._reaproject.instrument_tracks):
             instrument_kwargs = {
                 "track_name": track.name,
                 "midi_channel": i + 1,
@@ -51,6 +51,8 @@ class ReaperInstrumentFactory:
 
         return instrument_dict
 
+    def add_instrument(self, name):
+        return self.create_instruc(track_name='chan1', midi_channel=1)
 
 @player_method
 def setp(self, param_dict):

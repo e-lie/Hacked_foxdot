@@ -188,7 +188,7 @@ class MidiOut(SynthDefProxy):
         SynthDefProxy.__init__(self, self.__class__.__name__, degree, kwargs)
 
 
-class AbletonOut(MidiOut):
+class ReaperInstrument(MidiOut):
     """SynthDef proxy to handle MIDI + PyLive/LiveOSC integration"""
     def __init__(self, degree=0, **kwargs):
         if isinstance(degree, str) and "midi_map" not in kwargs.keys():

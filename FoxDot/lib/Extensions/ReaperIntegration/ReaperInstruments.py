@@ -1,19 +1,23 @@
 from FoxDot.lib.Extensions.MidiMapFactory import MidiMapFactory
 from FoxDot.lib.Extensions.DynamicReaperParams import get_reaper_object_and_param_name, set_reaper_param, split_param_name
-from FoxDot.lib.Midi import AbletonOut
+from FoxDot.lib.Midi import ReaperInstrument
 from FoxDot.lib.Patterns import Pattern
 
 
 class ReaperInstrumentFacade:
 
-    def __init__(self, clock, reaproject, presets, track_name, midi_channel, midi_map=None, sus=None):
+    def __init__(self, reaproject, presets, track_name, midi_channel, midi_map=None, sus=None,
+                 create_instrument=False, instrument_name=None, instrument_slug=None,
+                 instrument_preset=None, instrument_params=None, scan_all_params=True):
 
-        self._clock = clock
+        #self._clock = clock
         self._reaproject = reaproject
         self._presets = presets
         self._reatrack = reaproject.get_track(track_name)
         self._midi_channel = midi_channel
         self._sus = sus
+        if create_instrument:
+            self._reatrack.add_fx(instrument_slug, instrument_preset, instrument_name, instrument_params, scan_all_params)
 
     def apply_all_existing_reaper_params(self, reatrack, param_dict, remaining_param_dict={}, runtime_kwargs={}):
         """ This function :
@@ -48,7 +52,8 @@ class ReaperInstrumentFacade:
         for fx_name in self._reatrack.reafxs.keys():
             preset_name = fx_name + "_default"
             #by default all fxs are off
-            config_defaults[fx_name+'_on'] = False
+            if 'fx_reset' in kwargs and kwargs['fx_reset']:
+                config_defaults[fx_name+'_on'] = False
             if preset_name in self._presets.keys():
                 config_defaults = config_defaults | self._presets[preset_name]
 
@@ -65,7 +70,7 @@ class ReaperInstrumentFacade:
         sus = Pattern(sus) if sus is not None else Pattern(dur)-0.03
 
 
-        return AbletonOut(
+        return ReaperInstrument(
             reatrack=self._reatrack,
             channel=self._midi_channel - 1,
             sus=sus,

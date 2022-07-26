@@ -1,9 +1,9 @@
 from FoxDot import Clock, nextBar, inf, linvar
-from ..Instruments import project
+from ..Instruments import reaproject
 
 def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
     Clock.bpm = bpm
-    project.bpm = bpm
+    reaproject.bpm = bpm
 
     @nextBar()
     def nudging():
@@ -13,7 +13,7 @@ def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
 
 def change_bpm2(bpm, midi_nudge=True, nudge_base=0.35):
     Clock.bpm = bpm
-    project.bpm = bpm
+    reaproject.bpm = bpm
 
     @nextBar()
     def nudging2():
