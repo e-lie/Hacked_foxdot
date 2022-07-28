@@ -1,8 +1,28 @@
-a1 >> play("<X-><..o.>", krush=0, comp=0, octer=0, octersub=4, octersubsub=4, sample_atk=0, comp_above=0.8, comp_below=0.2)
+from FoxDot.preset import *
 
-a2 >> blip(PWalk(8), oct=5, squiz=0, position=0, triode=2, krush=2.8, kutoff=8400).unison(3)
+p1 >> play("-", dur=cascara << (P[0] | PWhite(-.05, .05)[:9]))
 
+p2 >> play("T", dur=clave23 << (P[0] | PWhite(-.05, .05)[:4]))
 
-a3 >> moogpluck(PWalk(8), oct=(3,[4,5]), dur=1/2)
+p3 >> play("VT", dur=P[.5]<<[0,-.25,0,.05])
 
-print(SynthDefs)
+p3
+pr
+
+print(chan1)
+
+del chan1_facade
+
+print(chan1_facade)
+
+reaproject.reatracks["chan1"].add_fx('vital', 'darkpass', 'darkpass', {"Macro 1":"rm"}, False)
+print(reaproject.reatracks["chan1"].reafxs['darkpass'].reaparams['rm'])
+
+darkpass_facade = reaper_instrument_factory.create_instrument(track_name='chan1', midi_channel=1, create_instrument=True, instrument_name='darkpass', instrument_slug='vital', instrument_preset='darkpass', instrument_params={"Macro 1":"rm", "Macro 4":"reverb"}, scan_all_params=False)
+
+darkpass = darkpass_facade.out
+
+p1 >> darkpass([0,1,-2,2,-2], oct=4, dur=clave23, darkpass_reverb=linvar([0,1],8), darkpass_rm=sinvar([0,1],4)).stop()
+
+darkpass = None
+darkpass_facade = None

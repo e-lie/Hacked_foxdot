@@ -71,7 +71,7 @@ class ReaTrack(object):
                 reafx = ReaFX(fx, snake_name, index)
                 self.reafxs[snake_name] = reafx
             elif isinstance(self.reafxs[snake_name], ReaFXGroup):
-                self.reafxs[snake_name].add_fx(fx, index)
+                self.reafxs[snake_name].add_fx_to_group(fx, index)
             else:
                 old_reafx = self.reafxs[snake_name]
                 reafxgroup = ReaFXGroup([old_reafx.fx, fx], snake_name, [old_reafx.index, index])
@@ -80,7 +80,7 @@ class ReaTrack(object):
     def __repr__(self):
         return "<ReaTrack {} - {}>".format(self.name, pformat(self.reafxs))
 
-    def add_fx(self, fx_slug: str, fx_preset_name: str=None, fx_name: str=None, fx_param_alias_dict: Dict={}, scan_all_params=True):
+    def create_reafx(self, fx_slug: str, fx_preset_name: str=None, fx_name: str=None, fx_param_alias_dict: Dict={}, scan_all_params=True):
         if fx_name is None:
             fx_name = make_snake_name(fx_slug)
         if not self.reafxs and self.firstfx is None:
@@ -93,6 +93,11 @@ class ReaTrack(object):
             if fx_preset_name is not None:
                 fx.preset = fx_preset_name
                 self.preset = fx_preset_name
+            return reafx
+
+    def delete_reafx(self, fx_index, reafx_name):
+        self.track.fxs[fx_index].delete()
+        del self.reafxs[reafx_name]
 
     def get_param(self, full_name):
         if full_name in self.reaparams.keys():
@@ -139,12 +144,16 @@ class ReaFX(object):
                     param_reaper_name = param.name
                 self.reaparams[param_alias] = ReaParam(name=param_alias, value=param.real, index=index, reaper_name=param_reaper_name)
         else:
-            for index, param_name in enumerate(param_alias_dict.keys()):
+            for param_name in param_alias_dict.keys():
+            #selected_params = [param for param in fx.params if param.name in param_alias_dict.keys()]
+            #for index, param in enumerate(selected_params):
                 try:
+                    #param_name = param.name
                     param = fx.params[param_name]
+                    #if param_name in param_alias_dict.keys():
                     param_alias = make_snake_name(param_alias_dict[param_name])
                     param_reaper_name = param.name
-                    self.reaparams[param_alias] = ReaParam(name=param_alias, value=param.real, index=index,
+                    self.reaparams[param_alias] = ReaParam(name=param_alias, value=param.real, index=param.index,
                                                            reaper_name=param_reaper_name)
                 except:
                     print(f"Param with name {param_name} does not exist in Reaper FX {name}")
@@ -161,6 +170,21 @@ class ReaFX(object):
     def set_param(self, name, value):
         self.reaparams[name].value = value
 
+#    def set_param_direct(self, name, value):
+#        if name == "on":
+#            if not value:
+#                self.fx.disable()
+#            else:
+#                self.fx.enable()
+#        else:
+#            reaper_name = self.reaparams[name].reaper_name
+#            try:
+#                self.fx.params[reaper_name] = float(value)
+#                print(f"set param direct: {name} {reaper_name} {value}")
+#            except:
+#                print(f"error set param direct: {name} {reaper_name} {value}")
+
+
     def set_param_direct(self, name, value):
         if name == "on":
             if not value:
@@ -168,9 +192,8 @@ class ReaFX(object):
             else:
                 self.fx.enable()
         else:
-            reaper_name = self.reaparams[name].reaper_name
-            print(f"set param direct: {name} {reaper_name} {value}")
-            self.fx.params[reaper_name] = float(value)
+            id = self.reaparams[name].index
+            self.fx.params[id] = float(value)
 
 
 class ReaFXGroup(ReaFX):
@@ -184,7 +207,7 @@ class ReaFXGroup(ReaFX):
             snake_name = make_snake_name(param.name)
             self.reaparams[snake_name] = ReaParam(name=snake_name, value=param.real, index=index)
 
-    def add_fx(self, fx, index):
+    def add_fx_to_group(self, fx, index):
         self.fxs.append(fx)
         self.indexes.append(index)
 
@@ -286,7 +309,7 @@ def get_reaper_object_and_param_name(track: ReaTrack, param_fullname: str, quiet
     return reaper_object, param_name
 
 
-def set_reaper_param(track: ReaTrack, full_name, value, update_freq=0.05):
+def set_reaper_param(track: ReaTrack, full_name, value, update_freq=.1):
     # rea_object can point to a fx or a track (self) -> (when param is vol or other send)
     rea_object, name = get_reaper_object_and_param_name(track, full_name)
 

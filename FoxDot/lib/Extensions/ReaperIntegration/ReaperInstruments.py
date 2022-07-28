@@ -14,10 +14,22 @@ class ReaperInstrumentFacade:
         self._reaproject = reaproject
         self._presets = presets
         self._reatrack = reaproject.get_track(track_name)
+        self.track_name = track_name
+        try:
+            self._reafx_instrument = self._reatrack.reafxs[track_name]
+        except:
+            pass
         self._midi_channel = midi_channel
         self._sus = sus
         if create_instrument:
-            self._reatrack.add_fx(instrument_slug, instrument_preset, instrument_name, instrument_params, scan_all_params)
+            self._reafx_instrument = self._reatrack.create_reafx(instrument_slug, instrument_preset, instrument_name, instrument_params, scan_all_params)
+
+    def __del__(self):
+        try:
+            self._reatrack.delete_reafx(self._reafx_instrument.fx.index, self._reafx_instrument.name)
+        except:
+            print(f"Error deleting fx bound to ReaperInstrumentFace")
+
 
     def apply_all_existing_reaper_params(self, reatrack, param_dict, remaining_param_dict={}, runtime_kwargs={}):
         """ This function :
@@ -33,7 +45,7 @@ class ReaperInstrumentFacade:
         for param_fullname, value in param_dict.items():
             rea_object, name = get_reaper_object_and_param_name(reatrack, param_fullname)
             if rea_object is not None:  # means param exists in reaper
-                set_reaper_param(reatrack, param_fullname, value, update_freq=0.05)
+                set_reaper_param(reatrack, param_fullname, value, update_freq=.1)
             else:
                 remaining_param_dict[param_fullname] = value
 

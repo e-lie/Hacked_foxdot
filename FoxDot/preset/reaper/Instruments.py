@@ -13,8 +13,9 @@ reaper_instrument_factory = ReaperInstrumentFactory(presets, reaproject)
 
 reaper_instruments = reaper_instrument_factory.instruments_to_instanciate()
 
-for key, value in reaper_instruments.items():
-    globals()[key] = value
+for key, instrument_facade in reaper_instruments.items():
+    globals()[key+'_facade'] = instrument_facade
+    globals()[key] = instrument_facade.out
 
 try:
     marimba = partial(mallets1, marimba_on=True, midi_map={' ':-200, '.': -200})
@@ -78,12 +79,12 @@ except:
     print("Error while initializing some instrument")
 
 
-# mixer = ab.create_instruc(track_name="mixer", midi_channel=-1)
+# mixer = ab.create_instrument(track_name="mixer", midi_channel=-1)
 #
-# sends = ab.create_instruc(track_name="sends", midi_channel=-1, set_defaults=False)
+# sends = ab.create_instrument(track_name="sends", midi_channel=-1, set_defaults=False)
 #
 #
-# metronome = ab.create_instruc(
+# metronome = ab.create_instrument(
 #     track_name="metronome",
 #     midi_channel=16,
 #     set_defaults=False,
@@ -95,7 +96,7 @@ except:
 #
 # # Channel 1
 #
-# kit808 = ab.create_instruc(
+# kit808 = ab.create_instrument(
 #     track_name="kit808",
 #     midi_channel=1,
 #     scale=Scale.chromatic,
@@ -105,7 +106,7 @@ except:
 #     dur=1 / 2,
 # )
 #
-# kicker = ab.create_instruc(
+# kicker = ab.create_instrument(
 #     track_name="kicker",
 #     midi_channel=1,
 #     config={"root": 0},
@@ -115,7 +116,7 @@ except:
 #     dur=1,
 # )
 #
-# kitdatai = ab.create_instruc(
+# kitdatai = ab.create_instrument(
 #     track_name="kitdatai",
 #     midi_channel=1,
 #     config={"root": 0},
@@ -127,7 +128,7 @@ except:
 #
 # # Channel 2
 #
-# kitcuba = ab.create_instruc(
+# kitcuba = ab.create_instrument(
 #     track_name="_2",
 #     midi_channel=2,
 #     oct=3,
@@ -143,7 +144,7 @@ except:
 #     scale=Scale.chromatic,
 # )
 #
-# jazzkit = ab.create_instruc(
+# jazzkit = ab.create_instrument(
 #     track_name="_2",
 #     midi_channel=2,
 #     oct=3,
@@ -159,7 +160,7 @@ except:
 #     scale=Scale.chromatic,
 # )
 #
-# reaktorkit = ab.create_instruc(
+# reaktorkit = ab.create_instrument(
 #     track_name="_2",
 #     midi_channel=2,
 #     oct=3,
@@ -175,7 +176,7 @@ except:
 #     scale=Scale.chromatic,
 # )
 #
-# harshkit = ab.create_instruc(
+# harshkit = ab.create_instrument(
 #     track_name="_2",
 #     midi_channel=2,
 #     oct=3,
@@ -193,7 +194,7 @@ except:
 #
 # # Channel 6
 #
-# crubass = ab.create_instruc(
+# crubass = ab.create_instrument(
 #     track_name="_6",
 #     midi_channel=6,
 #     oct=3,
@@ -207,7 +208,7 @@ except:
 # )
 #
 #
-# tb303 = ab.create_instruc(
+# tb303 = ab.create_instrument(
 #     track_name="_6",
 #     midi_channel=6,
 #     oct=4,
@@ -219,7 +220,7 @@ except:
 #     },
 # )
 #
-# ubass = ab.create_instruc(
+# ubass = ab.create_instrument(
 #     track_name="_6",
 #     midi_channel=6,
 #     oct=4,
@@ -232,7 +233,7 @@ except:
 #
 # # Channel 7
 #
-# crubass_2 = ab.create_instruc(
+# crubass_2 = ab.create_instrument(
 #     track_name="_7",
 #     midi_channel=7,
 #     oct=4,
@@ -244,7 +245,7 @@ except:
 #     | rndp(crubassp, 12),
 # )
 #
-# tb303_2 = ab.create_instruc(
+# tb303_2 = ab.create_instrument(
 #     track_name="_7",
 #     midi_channel=7,
 #     oct=4,
@@ -257,7 +258,7 @@ except:
 #
 # # Channel 8
 #
-# piano = ab.create_instruc(
+# piano = ab.create_instrument(
 #     track_name="_8",
 #     midi_channel=8,
 #     oct=5,
@@ -267,7 +268,7 @@ except:
 #     },
 # )
 #
-# danceorg = ab.create_instruc(
+# danceorg = ab.create_instrument(
 #     track_name="_8",
 #     midi_channel=8,
 #     oct=5,
@@ -277,7 +278,7 @@ except:
 #     },
 # )
 #
-# kora = ab.create_instruc(
+# kora = ab.create_instrument(
 #     track_name="_4",
 #     midi_channel=4,
 #     oct=5,
@@ -286,7 +287,7 @@ except:
 #     },
 # )
 #
-# strings = ab.create_instruc(
+# strings = ab.create_instrument(
 #     track_name="_9",
 #     midi_channel=9,
 #     oct=5,
@@ -296,7 +297,7 @@ except:
 #     },
 # )
 #
-# owstr = ab.create_instruc(
+# owstr = ab.create_instrument(
 #     track_name="_9",
 #     midi_channel=9,
 #     oct=5,
@@ -306,7 +307,7 @@ except:
 #     },
 # )
 #
-# balafon = ab.create_instruc(
+# balafon = ab.create_instrument(
 #     track_name="_10",
 #     midi_channel=10,
 #     oct=5,
@@ -316,7 +317,7 @@ except:
 #     },
 # )
 #
-# bells = ab.create_instruc(
+# bells = ab.create_instrument(
 #     track_name="_10",
 #     midi_channel=10,
 #     oct=5,
