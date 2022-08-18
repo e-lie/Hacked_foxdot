@@ -24,22 +24,18 @@ class ReaperInstrumentFactory:
     def __init__(self, presets: Mapping, project: ReaProject) -> None:
         self._presets = presets
         self._reaproject = project
+        self.used_track_indexes = []
 
     def create_instrument(self, *args, **kwargs):
         """handle exceptions gracefully especially if corresponding track does not exist in Reaper"""
         try:
             return ReaperInstrumentFacade(self._reaproject, self._presets, *args, **kwargs)
-            #return result.out
         except Exception as err:
             output = err.message if hasattr(err, 'message') else err
             print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
             return None
 
-    #def delete_instrument(self, *args, **kwargs):
-    #    pass
-
     def instruments_to_instanciate(self):
-        #rproject: ReaProject = self._reaproject
         instrument_dict = {}
 
         for reatrack in self._reaproject.bus_tracks:
@@ -54,8 +50,22 @@ class ReaperInstrumentFactory:
 
         return instrument_dict
 
-    def add_instrument(self, name):
-        return self.create_instrument(track_name='chan1', midi_channel=1)
+    def add_instrument(self, name, plugin_name, preset=None, params={}, scan_all_params=False):
+        free_indexes = [index for index in range(1,17) if index not in self.used_track_indexes]
+        free_index = free_indexes[0]
+        if preset is None:
+            preset = name
+        self.used_track_indexes.append(free_index)
+        return self.create_instrument(
+            track_name='chan'+str(free_index),
+            midi_channel=free_index,
+            create_instrument=True,
+            instrument_name=name,
+            plugin_name=plugin_name,
+            plugin_preset=preset,
+            instrument_params=params,
+            scan_all_params=scan_all_params
+        )
 
 @player_method
 def setp(self, param_dict):

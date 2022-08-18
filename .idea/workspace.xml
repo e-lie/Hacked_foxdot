@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97858a5-5732-4f64-8e53-a30589d451de" name="Changes" comment="add preset rythmic pattern">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" afterDir="false" />

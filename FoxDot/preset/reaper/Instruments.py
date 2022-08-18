@@ -1,4 +1,4 @@
-
+from typing import Dict, List
 from FoxDot.lib.Extensions.ReaperIntegration import init_reapy_project, ReaperInstrumentFactory
 
 from .Presets import presets
@@ -9,9 +9,19 @@ Clock.midi_nudge = 0
 
 reaproject = init_reapy_project()
 
-reaper_instrument_factory = ReaperInstrumentFactory(presets, reaproject)
+reainstru_factory = ReaperInstrumentFactory(presets, reaproject)
 
-reaper_instruments = reaper_instrument_factory.instruments_to_instanciate()
+reaper_instruments = reainstru_factory.instruments_to_instanciate()
+
+def newintru(name:str, plugin_name:str, plugin_preset:str=None, params:Dict={}, effects:List=[], scan_all_params:bool=False):
+    instrument_facade = reainstru_factory.add_instrument(name, plugin_name, plugin_preset, params, scan_all_params)
+    for effect_config in effects:
+        if isinstance(effect_config, dict):
+            instrument_facade.add_effect_plugin(**effect_config)
+        elif isinstance(effect_config, list):
+            instrument_facade.add_effect_plugin(*effect_config)
+    return instrument_facade.out
+
 
 for key, instrument_facade in reaper_instruments.items():
     globals()[key+'_facade'] = instrument_facade

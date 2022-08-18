@@ -80,19 +80,19 @@ class ReaTrack(object):
     def __repr__(self):
         return "<ReaTrack {} - {}>".format(self.name, pformat(self.reafxs))
 
-    def create_reafx(self, fx_slug: str, fx_preset_name: str=None, fx_name: str=None, fx_param_alias_dict: Dict={}, scan_all_params=True):
-        if fx_name is None:
-            fx_name = make_snake_name(fx_slug)
+    def create_reafx(self, plugin_name: str, plugin_preset: str=None, reafx_name: str=None, param_alias_dict: Dict={}, scan_all_params=False):
+        if reafx_name is None:
+            reafx_name = make_snake_name(plugin_name)
         if not self.reafxs and self.firstfx is None:
-            self.firstfx = fx_name
+            self.firstfx = reafx_name
         # add fx in last position : the index is len of the fx list - 1
         with self.reaproject.reapylib.inside_reaper():
-            fx = self.track.add_fx(fx_slug)
-            reafx = ReaFX(fx, fx_name, len(self.reafxs.keys())-1, fx_param_alias_dict, scan_all_params)
-            self.reafxs[fx_name] = reafx
-            if fx_preset_name is not None:
-                fx.preset = fx_preset_name
-                self.preset = fx_preset_name
+            fx = self.track.add_fx(plugin_name)
+            if plugin_preset is not None: # plugin preset in reaper has to be applied first (before ReaFX obj creation) as it changes existing parameters
+                fx.preset = plugin_preset
+                self.preset = plugin_preset
+            reafx = ReaFX(fx, reafx_name, len(self.reafxs.keys()) - 1, param_alias_dict, scan_all_params)
+            self.reafxs[reafx_name] = reafx
             return reafx
 
     def delete_reafx(self, fx_index, reafx_name):
@@ -157,6 +157,7 @@ class ReaFX(object):
                                                            reaper_name=param_reaper_name)
                 except:
                     print(f"Param with name {param_name} does not exist in Reaper FX {name}")
+                    print(f"Existing params : {[param.name for param in fx.params]}")
 
     def __repr__(self):
         return "<ReaFX {}>".format(self.name)
@@ -240,6 +241,7 @@ class ReaProject(object):
         self.reapy_task_execute_freq = 0.1
         self.reapy_results_by_id = {}
         self.currently_processing_tasks = False
+        self.clearing_task_queue = False
         with reapylib.inside_reaper():
             for index, track in enumerate(self.reapy_project.tracks):
                 snake_name: str = make_snake_name(track.name)
@@ -256,8 +258,13 @@ class ReaProject(object):
     def get_track(self, track_name):
         return self.reatracks[track_name]
 
+    def clear_tasks(self, value=True):
+        self.clearing_task_queue = value
+        #self._clock.future(4, self.clear_tasks, args=[False])  # add autodeactivation
+        self.reapy_access_tasks = []
+
     def add_reapy_task(self, task: ReaTask):
-        if len(self.reapy_access_tasks) < self.reapy_access_queue_size:
+        if len(self.reapy_access_tasks) < self.reapy_access_queue_size and not self.clearing_task_queue:
             self.reapy_access_tasks.append(task)
             if not self.currently_processing_tasks:
                 self._clock.future(self.reapy_task_execute_freq, self.execute_reapy_tasks, args=[])
@@ -274,7 +281,8 @@ class ReaProject(object):
                         task.reaper_object.set_param_direct(task.param_name, task.param_value)
                         task.reaper_object.set_param(task.param_name, task.param_value)
             self.currently_processing_tasks = False
-            self._clock.future(self.reapy_task_execute_freq, self.execute_reapy_tasks, args=[])
+            if not self.clearing_task_queue:
+                self._clock.future(self.reapy_task_execute_freq, self.execute_reapy_tasks, args=[])
 
     def timevar_update_loop(self, rea_object, name, value, state, update_freq):
         if rea_object.reaparams[name].state == state:
