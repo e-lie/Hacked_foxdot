@@ -26,7 +26,14 @@ class ReaperInstrumentFactory:
         self._reaproject = project
         self.used_track_indexes = []
 
-    def create_instrument(self, *args, **kwargs):
+    def update_used_track_indexes(self):
+        for i in range(16):
+            if len(self._reaproject.reatracks["chan"+str(i+1)].reafxs) != 0 and i+1 not in self.used_track_indexes:
+                self.used_track_indexes.append(i+1)
+            elif i+1 in self.used_track_indexes and len(self._reaproject.reatracks["chan"+str(i+1)].reafxs) == 0:
+                self.used_track_indexes = [index for index in self.used_track_indexes if index != i+1]
+
+    def create_instrument_facade(self, *args, **kwargs):
         """handle exceptions gracefully especially if corresponding track does not exist in Reaper"""
         try:
             return ReaperInstrumentFacade(self._reaproject, self._presets, *args, **kwargs)
@@ -35,19 +42,21 @@ class ReaperInstrumentFactory:
             print("Error creating instruc {name}: {output} -> skipping".format(name=kwargs["track_name"], output=output))
             return None
 
-    def instruments_to_instanciate(self):
+    def create_all_facades_from_reaproject_tracks(self):
         instrument_dict = {}
-
         for reatrack in self._reaproject.bus_tracks:
-            instrument_dict[reatrack.name[1:]] = self.create_instrument(track_name=reatrack.name, midi_channel=-1)
+            instrument_dict[reatrack.name[1:]] = self.create_instrument_facade(track_name=reatrack.name, midi_channel=-1)
 
         for i, track in enumerate(self._reaproject.instrument_tracks):
+            if len(track.reafxs.values()) > 0:
+                instrument_name = list(track.reafxs.values())[0].name # first fx is the usually the synth/instrument that give the name
+            else:
+                instrument_name = track.name # if not exist, use the less interesting track name (chan2...)
             instrument_kwargs = {
                 "track_name": track.name,
                 "midi_channel": i + 1,
             }
-            instrument_dict[track.name] = self.create_instrument(**instrument_kwargs)
-
+            instrument_dict[instrument_name] = self.create_instrument_facade(**instrument_kwargs)
         return instrument_dict
 
     def add_instrument(self, name, plugin_name, preset=None, params={}, scan_all_params=False):
@@ -56,7 +65,7 @@ class ReaperInstrumentFactory:
         if preset is None:
             preset = name
         self.used_track_indexes.append(free_index)
-        return self.create_instrument(
+        return self.create_instrument_facade(
             track_name='chan'+str(free_index),
             midi_channel=free_index,
             create_instrument=True,

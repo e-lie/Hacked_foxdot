@@ -4,7 +4,6 @@
     <list default="true" id="c97858a5-5732-4f64-8e53-a30589d451de" name="Changes" comment="add preset rythmic pattern">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FoxDot/preset/reaper/Instruments.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/preset/reaper/Instruments.py" afterDir="false" />
@@ -551,11 +550,6 @@
           <option name="timeStamp" value="46" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/FoxDot/preset/reaper/UtilityFunctions/bpm.py</url>
-          <line>4</line>
-          <option name="timeStamp" value="47" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/FoxDot/preset/common/ParamMatrix.py</url>
           <line>153</line>
           <option name="timeStamp" value="67" />
@@ -571,14 +565,24 @@
           <option name="timeStamp" value="79" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/FoxDot/lib/TempoClock.py</url>
-          <line>383</line>
-          <option name="timeStamp" value="83" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/FoxDot/lib/Midi.py</url>
           <line>194</line>
           <option name="timeStamp" value="96" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py</url>
+          <line>394</line>
+          <option name="timeStamp" value="110" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py</url>
+          <line>395</line>
+          <option name="timeStamp" value="111" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py</url>
+          <line>385</line>
+          <option name="timeStamp" value="112" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
