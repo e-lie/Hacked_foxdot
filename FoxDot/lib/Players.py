@@ -126,12 +126,10 @@ from __future__ import absolute_import, division, print_function
 
 import itertools
 
-from .Settings import SamplePlayer, LoopPlayer, SYNTHDEF_DIR
-from .Code import WarningMsg, debug_stdout
-from .SCLang.SynthDef import SynthDefProxy, SynthDef, SynthDefs
+from .Settings import SamplePlayer, LoopPlayer
+from .SCLang.SynthDef import SynthDefProxy, SynthDefs
 from .Effects import FxList
-from .Utils import stdout
-from .Buffers import Samples, SAMPLES_DB
+from .Buffers import Samples
 
 from .Code import WarningMsg
 from .Key import PlayerKey, NumberKey
@@ -146,11 +144,8 @@ from .Bang import Bang
 
 from .TimeVar import TimeVar
 
-from .Extensions.DynamicReaperParams import ReaTrack, set_reaper_param, get_reaper_param, get_reaper_object_and_param_name
-
-
-
-import os
+from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaProject import get_reaper_object_and_param_name, set_reaper_param, get_reaper_param
+from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaTrack import ReaTrack
 
 
 class EmptyPlayer(object):

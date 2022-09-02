@@ -1,6 +1,7 @@
 
 from FoxDot import Clock, linvar, sinvar, PWhite, PRand, inf, player_method
-from FoxDot.lib.Extensions.DynamicReaperParams import ReaTrack
+from FoxDot.lib import ReaTrack
+
 
 @player_method
 def fadein(self, dur=8, fvol=1, ivol=0):

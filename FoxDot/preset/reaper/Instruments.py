@@ -11,7 +11,11 @@ reaproject = init_reapy_project()
 reainstru_factory = ReaperInstrumentFactory(presets, reaproject)
 reaper_instruments = reainstru_factory.create_all_facades_from_reaproject_tracks()
 
-def newintru(name:str, plugin_name:str, plugin_preset:str=None, params:Dict={}, effects:List=[], scan_all_params:bool=False):
+def newintru(name:str, plugin_name:str=None, plugin_preset:str=None, params:Dict={}, effects:List=[], scan_all_params:bool=False):
+    if plugin_name is None:
+        plugin_name = name
+    if not params:
+        scan_all_params = True
     instrument_facade = reainstru_factory.add_instrument(name, plugin_name, plugin_preset, params, scan_all_params)
     for effect_config in effects:
         if isinstance(effect_config, dict):

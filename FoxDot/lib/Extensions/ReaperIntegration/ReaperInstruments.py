@@ -1,12 +1,12 @@
 from FoxDot.lib.Extensions.MidiMapFactory import MidiMapFactory
-from FoxDot.lib.Extensions.DynamicReaperParams import get_reaper_object_and_param_name, set_reaper_param, split_param_name
+from FoxDot import get_reaper_object_and_param_name, set_reaper_param
+from FoxDot.lib.Extensions.ReaperIntegrationLib.functions import split_param_name
 from FoxDot.lib.Midi import ReaperInstrument
 from FoxDot.lib.Patterns import Pattern
 from typing import Dict
 
 
 class ReaperInstrumentFacade:
-
     def __init__(self, reaproject, presets, track_name, midi_channel, midi_map=None, sus=None,
                  create_instrument=False, instrument_name=None, plugin_name=None,
                  plugin_preset=None, instrument_params=None, scan_all_params=True):
@@ -25,7 +25,7 @@ class ReaperInstrumentFacade:
         if create_instrument:
             self._reafx_instrument = self._reatrack.create_reafx(plugin_name, plugin_preset, instrument_name, instrument_params, scan_all_params)
 
-    def add_effect_plugin(self, plugin_name:str, effect_name:str=None, plugin_preset:str=None, effect_params:Dict={}, scan_all_params:bool=False):
+    def add_effect_plugin(self, plugin_name:str, effect_name:str=None, plugin_preset:str=None, effect_params:Dict={}, scan_all_params:bool=True):
         self._reatrack.create_reafx(plugin_name, plugin_preset, effect_name, effect_params, scan_all_params)
 
 

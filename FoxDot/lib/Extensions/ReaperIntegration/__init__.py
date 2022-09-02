@@ -5,9 +5,8 @@ from pprint import pprint
 from FoxDot.lib import Clock, player_method
 
 from .ReaperInstruments import ReaperInstrumentFacade
-from FoxDot.lib.Extensions.DynamicReaperParams import ReaProject, ReaTrack
-
-#project = None
+from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaProject import ReaProject
+from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaTrack import ReaTrack
 
 def init_reapy_project():
     project = None
