@@ -5,6 +5,11 @@ import math
 from FoxDot import Pvar, player_method, PWhite, linvar, inf, Clock, TimeVar, var, expvar, sinvar, Pattern, xvar, yvar
 
 
+@player_method
+def generic_fadeout(self, dur=8, ivol=1, fvol=0):
+    self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+    return self
+
 def interpolate(start, end, step=7, go_back=False):
     if len(start) == 1 and len(end) > 1:
         start = [start[0]] * len(end)

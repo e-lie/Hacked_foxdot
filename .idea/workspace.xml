@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97858a5-5732-4f64-8e53-a30589d451de" name="Changes" comment="add preset rythmic pattern">
+      <change afterPath="$PROJECT_DIR$/FoxDot/preset/common/FrenchAliasesLearningUtils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FoxDot/preset/common/UtilityFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/preset/common/UtilityFunctions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FoxDot/preset/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/preset/common/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -582,7 +586,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReapyExtensions.py</url>
-          <line>37</line>
+          <line>41</line>
           <option name="timeStamp" value="113" />
         </line-breakpoint>
       </breakpoints>
