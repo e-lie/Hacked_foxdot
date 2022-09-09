@@ -2,22 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97858a5-5732-4f64-8e53-a30589d451de" name="Changes" comment="add preset rythmic pattern">
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReaFX.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReaParam.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReaProject.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReaTaskQueue.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReaTrack.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/ReapyExtensions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegrationLib/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/DynamicReaperParams.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/ReaperInstruments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Extensions/ReaperIntegration/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Players.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Players.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/lib/Workspace/tmp/tempfile.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/preset/reaper/Instruments.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/preset/reaper/Instruments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FoxDot/preset/reaper/UtilityFunctions/fadein_out.py" beforeDir="false" afterPath="$PROJECT_DIR$/FoxDot/preset/reaper/UtilityFunctions/fadein_out.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
