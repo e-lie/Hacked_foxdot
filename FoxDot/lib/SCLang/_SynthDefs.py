@@ -4,6 +4,8 @@ from ..Settings import *
 from .SCLang import *
 from .SynthDef import SynthDef, SampleSynthDef, FileSynthDef
 
+from functools import partial
+
 from . import Env
 
 # Sample Player
@@ -17,6 +19,8 @@ with SampleSynthDef("play2") as play:
     play.osc = PlayBuf.ar(2, play.buf, BufRateScale.ir(
         play.buf) * play.rate, startPos=BufSampleRate.kr(play.buf) * play.pos)
     play.osc = play.osc * play.amp
+
+kicker = partial(play, output=(12,14))
 
 # Synth Players
 
