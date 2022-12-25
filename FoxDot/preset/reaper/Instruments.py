@@ -1,17 +1,19 @@
 from typing import Dict, List
 from FoxDot.lib.Extensions.ReaperIntegration import init_reapy_project, ReaperInstrumentFactory
 
-from .Presets import presets
+#from .Presets import presets
 from FoxDot import Clock, Scale
 from functools import partial
 
 Clock.midi_nudge = 0
 
+old_style_presets = {}
+
 reaproject = init_reapy_project()
-reainstru_factory = ReaperInstrumentFactory(presets, reaproject)
+reainstru_factory = ReaperInstrumentFactory(old_style_presets, reaproject)
 reaper_instruments = reainstru_factory.create_all_facades_from_reaproject_tracks()
 
-def newintru(name:str, plugin_name:str=None, plugin_preset:str=None, params:Dict={}, effects:List=[], scan_all_params:bool=False):
+def newintru(name:str, plugin_name:str=None, effects:List=[], plugin_preset:str=None, params:Dict={}, scan_all_params:bool=False):
     if plugin_name is None:
         plugin_name = name
     if not params:
@@ -28,6 +30,8 @@ def newintru(name:str, plugin_name:str=None, plugin_preset:str=None, params:Dict
 for key, instrument_facade in reaper_instruments.items():
     globals()[key+'_facade'] = instrument_facade
     globals()[key] = instrument_facade.out
+
+
 
 #
 # try:
