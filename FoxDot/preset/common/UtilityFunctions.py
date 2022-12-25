@@ -2,7 +2,63 @@
 from copy import Error
 
 import math
-from FoxDot import Pvar, player_method, PWhite, linvar, inf, Clock, TimeVar, var, expvar, sinvar, Pattern, xvar, yvar
+from FoxDot import Player, Group, Pvar, player_method, PWhite, linvar, inf, Clock, TimeVar, var, expvar, sinvar, Pattern, xvar, yvar
+
+def switch(player_running, new_player, dur=8):
+    player_running.fadeout(dur)
+    new_player.fadein(dur)
+
+def create_group(group_name, *args):
+    """
+    create_group("keys", "key1", "key2", "key3")
+    create_group("pads") # -> create pad1 to pad5
+    """
+    if not args and group_name[-1] == 's':
+        args = [group_name[:-1]+str(i) for i in range(1,6)]
+    for player_name in args:
+        globals()[player_name] = Player()
+    globals()[group_name] = Group(*[globals()[player_name] for player_name in args])
+
+def grc(rythm, groove):
+    """
+    b1 >> blip(0, dur=grc([2,1,2,2,3], [.4,.3,.3]))
+    b1 >> blip(0, dur=grc([2,1,2,2,3], P[.4,.3,.3] << [0,0.02,0]))
+    """
+    rythm = list(rythm)
+    groove = list(groove)
+    dur_sum = sum(rythm)
+    lcm = math.lcm(len(groove), dur_sum)
+    groove *= lcm // len(groove)
+    rythm *= lcm // dur_sum
+    res = []
+    index = 0
+    # print(f"{rythm} - {dur_sum}")
+    while True:
+        # print(f"len ry:{len(rythm)} len gro:{len(groove)}")
+        if len(groove) == 0:
+            break
+        current_rythm = rythm[index%len(rythm)]
+        current_dur = 0
+        for i in range(current_rythm):
+            current_dur += groove.pop(0)
+        index += 1
+        res.append(current_dur)
+    # print(res)
+    return res
+
+def PEu(nb_strokes, total, shift=0, base_dur=.5):
+    res = []
+    accu = 0
+    Peu = PEuclid(nb_strokes, total)
+    for e in Peu[1:]|Peu[0]:
+        accu += base_dur
+        if e == 1:
+            res.append(accu)
+            accu = 0
+    if shift > 0:
+        res = [Rest(base_dur*shift)]+res[:shift]+res[:-shift]
+        res[-1] -= base_dur
+    return P[res]
 
 
 @player_method
