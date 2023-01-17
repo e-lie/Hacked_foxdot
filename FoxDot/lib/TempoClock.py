@@ -604,6 +604,8 @@ class TempoClock(object):
         
         self.ticking = True
 
+
+
         self.polled = False
 
         while self.ticking:
@@ -617,6 +619,7 @@ class TempoClock(object):
                 # Do the work in a thread
 
                 if len(self.current_block):
+
 
                     threading.Thread(target=self.__run_block, args=(self.current_block, beat)).start()
 

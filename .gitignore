@@ -24,7 +24,9 @@ TODO.txt
 
 autodoc.py
 
-snd/**
+FoxDot/snd
+
+*.wav
 
 
 

@@ -8,13 +8,14 @@ with open("README.md", "r") as f:
 with open("FoxDot/lib/.version", "r") as f:
     version = f.read()
 
-setup(name='FoxDot',
+setup(name='flowdot',
       version=version,
       description='Live coding music with SuperCollider',
-      author='Ryan Kirkbride',
-      author_email='ryan@foxdot.org',
+      author='Jules Cipher',
+      author_email='eliegavoty@free.fr',
       license='cc-by-sa-4.0',
-      url='http://foxdot.org/',
+      url='http://eliegavoty.xyz/',
+      dependency_links=['https://github.com/bdyetton/LinkToPy'],
       packages=['FoxDot',
                 'FoxDot.lib',
                 'FoxDot.lib.Code',
