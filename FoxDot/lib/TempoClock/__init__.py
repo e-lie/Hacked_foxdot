@@ -54,13 +54,22 @@ from ..TimeVar import TimeVar
 from ..Midi import MidiIn, MIDIDeviceNotFound
 from ..ServerManager import TempoClient, ServerManager
 from ..Settings import CPU_USAGE
-from .SchedulingQueue import Queue, SoloPlayer, History, ScheduleError, Wrapper
+from .EventQueue import Queue, SoloPlayer, History, Wrapper
 
 import time
 from traceback import format_exc as error_stack
 
 import sys
 import threading
+
+
+class ScheduleError(Exception):
+    def __init__(self, item):
+        self.type = str(type(item))[1:-1]
+
+    def __str__(self):
+        return "Could not schedule object of {}".format(self.type)
+
 
 class TempoClock(object):
 

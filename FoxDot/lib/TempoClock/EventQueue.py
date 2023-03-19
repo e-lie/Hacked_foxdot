@@ -289,11 +289,3 @@ class SoloPlayer:
 
     def __ne__(self, other):
         return (other not in self.data) if self.data else True
-
-
-class ScheduleError(Exception):
-    def __init__(self, item):
-        self.type = str(type(item))[1:-1]
-
-    def __str__(self):
-        return "Could not schedule object of {}".format(self.type)
