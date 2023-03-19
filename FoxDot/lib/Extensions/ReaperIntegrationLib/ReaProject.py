@@ -1,6 +1,7 @@
 from typing import Tuple, Optional, Union
 
 from FoxDot.lib.TimeVar import TimeVar
+from FoxDot.lib.Patterns import Pattern
 from .ReaFX import ReaFX, ReaFXGroup
 from .ReaParam import ReaParamState
 from .ReaTrack import ReaTrack
@@ -119,8 +120,20 @@ def set_reaper_param(track: ReaTrack, full_name, value, update_freq=.1):
         # to switch back to non varying value use the state normal to make the recursion loop stop
         def normal_value_update(rea_object, name, value):
             rea_object.reaparams[name].state = ReaParamState.NORMAL
-            rea_object.set_param(name, float(value))
-            track.reaproject.task_queue.add_task(ReaTask("set", rea_object, name, float(value)))
+            try:
+                rea_object.set_param(name, float(value))
+                track.reaproject.task_queue.add_task(ReaTask("set", rea_object, name, float(value)))
+            except:
+                print(f'Failure doing a normal value update from {name} with {value} of type {type(value)}')
+                # if isinstance(value, Pattern):
+                #     print('Trying update with first element of the pattern !')
+                #     try:
+                #         value = value[0]
+                #         rea_object.set_param(name, float(value))
+                #         track.reaproject.task_queue.add_task(ReaTask("set", rea_object, name, float(value)))
+                #     except:
+                #         print("Failed again")
+
         # beat=None means schedule for the next bar
         track._clock.schedule(normal_value_update, beat=None, args=[rea_object, name, value])
 

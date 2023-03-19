@@ -44,7 +44,8 @@ class TaskQueue(object):
             else:
                 print("Queue is inactive")
         else:
-            print("Maximum reapy tasks in queue reached")
+            print(f"Maximum reapy tasks in queue reached, can't add {task.param_name} update : {self.size} - {len(self.queue)}")
+            self.queue = []
 
     def execute_tasks(self):
         if not self.currently_processing_tasks and self.is_active:
@@ -52,6 +53,7 @@ class TaskQueue(object):
             with self.reapylib.inside_reaper():
                 while self.queue:
                     task: ReaTask = self.queue.pop(0)
+                    # print(f"poping {task.param_name} update")
                     if task.type == "set":
                         task.reaper_object.set_param_direct(task.param_name, task.param_value)
                         task.reaper_object.set_param(task.param_name, task.param_value)

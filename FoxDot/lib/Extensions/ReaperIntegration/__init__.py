@@ -24,6 +24,7 @@ class ReaperInstrumentFactory:
         self._presets = presets
         self._reaproject = project
         self.used_track_indexes = []
+        self.instru_facades = []
 
     def update_used_track_indexes(self):
         for i in range(16):
@@ -75,6 +76,20 @@ class ReaperInstrumentFactory:
             scan_all_params=scan_all_params,
             is_chain=is_chain
         )
+    
+    def add_chains(*args, scan_all_params=True, is_chain=True):
+        facades = []
+        # args[0] is self is the instru factory
+        selff = args[0]
+        for chain in args[1:]:
+            try:
+                facade = selff.add_instrument(chain, chain, scan_all_params=scan_all_params, is_chain=is_chain)
+            except e:
+                print(f"Error adding chain {chain}: {e}")
+            if facade:
+                facades.append(facade)
+        selff.instru_facades += facades
+        return tuple([facade.out for facade in facades])
 
 @player_method
 def setp(self, param_dict):
