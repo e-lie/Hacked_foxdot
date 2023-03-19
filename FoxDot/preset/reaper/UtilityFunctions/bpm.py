@@ -1,5 +1,5 @@
 from FoxDot import Clock, nextBar, inf, linvar
-from ..Instruments import reaproject
+from ..Presets import reaproject
 
 def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
     Clock.bpm = bpm
