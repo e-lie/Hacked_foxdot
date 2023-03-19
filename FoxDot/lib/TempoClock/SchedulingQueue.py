@@ -1,5 +1,14 @@
-from types import FunctionType
-from . import Code
+import inspect
+import sys
+
+from types import FunctionType, MethodType
+
+from ..Repeat import MethodCall
+from ..Players import Player
+from ..Patterns import asStream
+from ..Utils import modi
+from .. import Code
+
 
 class Queue(object):
     """Queue to store the event elocks to send to SuperCollider"""

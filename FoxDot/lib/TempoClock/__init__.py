@@ -48,26 +48,19 @@
 
 from __future__ import absolute_import, division, print_function
 
-from types import FunctionType, MethodType
 
-from .Players import Player
-from .Repeat import MethodCall
-from .Patterns import asStream
-from .TimeVar import TimeVar
-from .Midi import MidiIn, MIDIDeviceNotFound
-from .Utils import modi
-from .ServerManager import TempoClient, ServerManager, RequestTimeout
-from .Settings import CPU_USAGE, CLOCK_LATENCY
-from .SchedulingQueue import Queue
+from ..Players import Player
+from ..TimeVar import TimeVar
+from ..Midi import MidiIn, MIDIDeviceNotFound
+from ..ServerManager import TempoClient, ServerManager
+from ..Settings import CPU_USAGE
+from .SchedulingQueue import Queue, SoloPlayer, History, ScheduleError, Wrapper
 
 import time
-from fractions import Fraction
 from traceback import format_exc as error_stack
 
 import sys
 import threading
-import inspect
-
 
 class TempoClock(object):
 
@@ -212,12 +205,9 @@ class TempoClock(object):
         bpm_start_beat = next_bar
 
         def func():
-            if self.espgrid is not None:
-                self.espgrid.set_tempo(bpm)
-            else:
-                object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
-                self.last_now_call = self.bpm_start_time = bpm_start_time
-                self.bpm_start_beat = bpm_start_beat
+            object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
+            self.last_now_call = self.bpm_start_time = bpm_start_time
+            self.bpm_start_beat = bpm_start_beat
         # Give next bar value to bpm_start_beat
         self.schedule(func, next_bar, is_priority=True)
         return bpm_start_beat, bpm_start_time
@@ -305,8 +295,6 @@ class TempoClock(object):
         """ Returns the current beats per minute as a floating point number """
         if isinstance(self.bpm, TimeVar):
             bpm_val = self.bpm.now(self.beat)
-        elif self.midi_clock:
-            bpm_val = self.midi_clock.bpm
         else:
             bpm_val = self.bpm
         return float(bpm_val)
@@ -536,7 +524,7 @@ class TempoClock(object):
         return Wrapper(self, obj, dur, args)
 
     def players(self, ex=[]):
-        return [p for p in self.playing if p not in exclude]
+        return [p for p in self.playing if p not in ex]
 
     # Every n beats, do...
 
@@ -571,6 +559,4 @@ class TempoClock(object):
         #     if hasattr(item, 'stop'):
         #         item.stop()
         self.playing = []
-        if self.espgrid is not None:
-            self.schedule(self._espgrid_update_tempo)
         return
