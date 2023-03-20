@@ -51,8 +51,7 @@ from __future__ import absolute_import, division, print_function
 
 from ..Players import Player
 from ..TimeVar import TimeVar
-from ..Midi import MidiIn, MIDIDeviceNotFound
-from ..ServerManager import TempoClient, ServerManager
+from ..ServerManager import ServerManager
 from ..Settings import CPU_USAGE
 from .EventQueue import Queue, SoloPlayer, History, Wrapper
 
@@ -75,7 +74,6 @@ class TempoClock(object):
 
     tempo_server = None
     tempo_client = None
-    waiting_for_sync = False
 
     def __init__(self, bpm=120.0, meter=(4, 4)):
 
@@ -113,6 +111,7 @@ class TempoClock(object):
         # Can be configured
         self.latency_values = [0.25, 0.5, 0.75]
         self.latency = 0.25  # Time between starting processing osc messages and sending to server
+
         self.nudge = 0.0  # If you want to synchronise with something external, adjust the nudge
         self.hard_nudge = 0.0
 
@@ -171,46 +170,6 @@ class TempoClock(object):
     def add_method(cls, func):
         setattr(cls, func.__name__, func)
 
-    def start_tempo_server(self, serv, **kwargs):
-        """ Starts listening for FoxDot clients connecting over a network. This uses
-            a TempoClient instance from ServerManager.py """
-        self.tempo_server = serv(self, **kwargs)
-        self.tempo_server.start()
-        return
-
-    def kill_tempo_server(self):
-        """ Kills the tempo server """
-        if self.tempo_server is not None:
-            self.tempo_server.kill()
-        return
-
-    def flag_wait_for_sync(self, value):
-        self.waiting_for_sync = bool(value)
-
-    def connect(self, ip_address, port=57999):
-        try:
-            self.tempo_client = TempoClient(self)
-            self.tempo_client.connect(ip_address, port)
-            self.tempo_client.send(["request"])
-            self.flag_wait_for_sync(True)
-        except ConnectionRefusedError as e:
-            print(e)
-        pass
-
-    def kill_tempo_client(self):
-        if self.tempo_client is not None:
-            self.tempo_client.kill()
-
-    def update_tempo_now(self, bpm):
-        """ emergency override for updating tempo"""
-        self.last_now_call = self.bpm_start_time = time.time()
-        self.bpm_start_beat = self.now()
-        object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
-
-    def set_tempo(self, bpm, override=False):
-        """ Short-hand for update_tempo and update_tempo_now """
-        return self.update_tempo_now(bpm) if override else self.update_tempo(bpm)
-
     def update_tempo(self, bpm):
         """ Schedules the bpm change at the next bar, returns the beat and start time of the next change """
         try:
@@ -223,40 +182,13 @@ class TempoClock(object):
         bpm_start_beat = next_bar
 
         def func():
-            object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
+            object.__setattr__(self, "bpm", bpm)
             self.last_now_call = self.bpm_start_time = bpm_start_time
             self.bpm_start_beat = bpm_start_beat
         # Give next bar value to bpm_start_beat
         self.schedule(func, next_bar, is_priority=True)
         return bpm_start_beat, bpm_start_time
 
-    def update_tempo_from_connection(
-        self, bpm, bpm_start_beat, bpm_start_time, schedule_now=False
-    ):
-        """ Sets the bpm externally from another connected instance of FoxDot """
-        def func():
-            self.last_now_call = self.bpm_start_time = self.get_time_at_beat(bpm_start_beat)
-            self.bpm_start_beat = bpm_start_beat
-            object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
-        # Might be changing immediately
-        if schedule_now:
-            func()
-        else:
-            self.schedule(func, is_priority=True)
-        return
-
-    def update_network_tempo(self, bpm, start_beat, start_time):
-        """ Updates connected FoxDot instances (client or servers) tempi """
-        json_value = self._convert_bpm_json(bpm)
-        # If this is a client, send info to server
-        if self.tempo_client is not None:
-            self.tempo_client.update_tempo(json_value, start_beat, start_time)
-        # If this is a server, send info to clients
-        if self.tempo_server is not None:
-            self.tempo_server.update_tempo(
-                None, json_value, start_beat, start_time
-            )
-        return
 
     def swing(self, amount=0.1):
         """ Sets the nudge attribute to var([0, amount * (self.bpm / 120)],1/2)"""
@@ -332,24 +264,6 @@ class TempoClock(object):
             t = self.bpm_start_time + self.beat_dur(beat - self.bpm_start_beat)
         return t
 
-    def sync_to_midi(self, port=0, sync=True):
-        """ If there is an available midi-in device sending MIDI Clock messages,
-            this attempts to follow the tempo of the device. Requies rtmidi """
-        try:
-            if sync:
-                self.midi_clock = MidiIn(port)
-            elif self.midi_clock:
-                self.midi_clock.close()
-                self.midi_clock = None
-        except MIDIDeviceNotFound as e:
-            print("{}: No MIDI devices found".format(e))
-        return
-
-    def debug(self, on=True):
-        """ Toggles debugging information printing to console """
-        self.debugging = bool(on)
-        return
-
     def set_time(self, beat):
         """ Set the clock time to 'beat' and update players in the clock """
         self.start_time = time.time()
@@ -368,29 +282,6 @@ class TempoClock(object):
         # self.hard_nudge = time2 - (time1 + latency)
         self.hard_nudge = time1 - time2 - latency
         return
-
-    def _convert_bpm_json(self, bpm):
-        if isinstance(bpm, (int, float)):
-            return float(bpm)
-        elif isinstance(bpm, TimeVar):
-            return bpm.json_value()
-
-    def json_bpm(self):
-        """ Returns the bpm in a data type that can be sent over json"""
-        return self._convert_bpm_json(self.bpm)
-
-    def get_sync_info(self):
-        """ Returns information for synchronisation across multiple FoxDot instances. To be 
-            stored as a JSON object with a "sync" header """
-        data = {
-            "sync":
-                {
-                    "bpm_start_time": float(self.bpm_start_time),
-                    "bpm_start_beat": float(self.bpm_start_beat),
-                    "bpm": self.json_bpm(),
-                }
-        }
-        return data
 
     def _now(self):
         """ If the bpm is an int or float, use time since the last bpm change to calculate what the current beat is. 
@@ -544,8 +435,6 @@ class TempoClock(object):
 
     def stop(self):
         self.ticking = False
-        self.kill_tempo_server()
-        self.kill_tempo_client()
         self.clear()
         return
 
