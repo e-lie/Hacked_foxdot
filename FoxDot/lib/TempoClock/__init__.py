@@ -109,7 +109,6 @@ class TempoClock(object):
         self.now_flag = False
 
         # Can be configured
-        self.latency_values = [0.25, 0.5, 0.75]
         self.latency = 0.25  # Time between starting processing osc messages and sending to server
 
         self.nudge = 0.0  # If you want to synchronise with something external, adjust the nudge
@@ -119,8 +118,7 @@ class TempoClock(object):
         self.bpm_start_beat = 0
 
         # The duration to sleep while continually looping
-        self.sleep_values = [0.01, 0.001, 0.0001]
-        self.sleep_time = self.sleep_values[CPU_USAGE]
+        self.sleep_time = 0.0001
         self.midi_nudge = 0
 
         # Debug
@@ -135,7 +133,7 @@ class TempoClock(object):
     def __setattr__(self, attr, value):
         if attr == "bpm" and self.__setup:
             # Schedule for next bar
-            start_beat, start_time = self.update_tempo(value)
+            start_beat, start_time = self.update_bpm(value)
         elif attr == "midi_nudge" and self.__setup:
             # Adjust nudge for midi devices
             self.server.set_midi_nudge(value)
@@ -157,7 +155,12 @@ class TempoClock(object):
     def __contains__(self, item):
         return item in self.items
 
-    from ._time_beat_getters import set_cpu_usage, set_latency, seconds_to_beats, beats_to_seconds, beat_dur, bar_length, bars
+    from ._time_beat_getters import (seconds_to_beats, beats_to_seconds, beat_dur,
+                                     bar_length, bars,
+                                     get_elapsed_beats_from_last_bpm_change,
+                                     get_elapsed_seconds_from_last_bpm_change,
+                                     get_time, get_bpm,
+                                     get_time_at_beat, get_latency)
     from ._utility_methods import swing, every, shift
     # from ._a import *
 
@@ -201,7 +204,7 @@ class TempoClock(object):
         cls.server = server
         return
 
-    def update_tempo(self, bpm):
+    def update_bpm(self, bpm):
         """ Schedules the bpm change at the next bar, returns the beat and start time of the next change """
         try:
             assert bpm > 0, "Tempo must be a positive number"
@@ -220,40 +223,7 @@ class TempoClock(object):
         self.schedule(func, next_bar, is_priority=True)
         return bpm_start_beat, bpm_start_time
 
-    def get_bpm(self):
-        """ Returns the current beats per minute as a floating point number """
-        if isinstance(self.bpm, TimeVar):
-            bpm_val = self.bpm.now(self.beat)
-        else:
-            bpm_val = self.bpm
-        return float(bpm_val)
-
-    def get_latency(self):
-        """ Returns self.latency (which is in seconds) as a fraction of a beat """
-        return self.seconds_to_beats(self.latency)
-
-    def get_elapsed_beats_from_last_bpm_change(self):
-        """ Returns the number of beats that *should* have elapsed since the last tempo change """
-        return float(
-            self.get_elapsed_seconds_from_last_bpm_change() *
-            (self.get_bpm() / 60)
-        )
-
-    def get_elapsed_seconds_from_last_bpm_change(self):
-        """ Returns the time since the last change in bpm """
-        return self.get_time() - self.bpm_start_time
-
-    def get_time(self):
-        """ Returns current machine clock time with nudges values added """
-        return time.time() + float(self.nudge) + float(self.hard_nudge)
-
-    def get_time_at_beat(self, beat):
-        """ Returns the time that the local computer's clock will be at 'beat' value """
-        if isinstance(self.bpm, TimeVar):
-            t = self.get_time() + self.beat_dur(beat - self.now())
-        else:
-            t = self.bpm_start_time + self.beat_dur(beat - self.bpm_start_beat)
-        return t
+ 
 
     def set_time(self, beat):
         """ Set the clock time to 'beat' and update players in the clock """

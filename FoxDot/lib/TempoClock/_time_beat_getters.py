@@ -1,15 +1,37 @@
+def get_bpm(self):
+    """ Returns the current beats per minute as a floating point number """
+    if isinstance(self.bpm, TimeVar):
+        bpm_val = self.bpm.now(self.beat)
+    else:
+        bpm_val = self.bpm
+    return float(bpm_val)
 
-def set_cpu_usage(self, value):
-    """ Sets the `sleep_time` attribute to values based on desired high/low/medium cpu usage """
-    assert 0 <= value <= 2
-    self.sleep_time = self.sleep_values[value]
-    return
+def get_latency(self):
+    """ Returns self.latency (which is in seconds) as a fraction of a beat """
+    return self.seconds_to_beats(self.latency)
 
-def set_latency(self, value):
-    """ Sets the `latency` attribute to values based on desired high/low/medium latency """
-    assert 0 <= value <= 2
-    self.latency = self.latency_values[value]
-    return
+def get_elapsed_beats_from_last_bpm_change(self):
+    """ Returns the number of beats that *should* have elapsed since the last tempo change """
+    return float(
+        self.get_elapsed_seconds_from_last_bpm_change() *
+        (self.get_bpm() / 60)
+    )
+
+def get_elapsed_seconds_from_last_bpm_change(self):
+    """ Returns the time since the last change in bpm """
+    return self.get_time() - self.bpm_start_time
+
+def get_time(self):
+    """ Returns current machine clock time with nudges values added """
+    return time.time() + float(self.nudge) + float(self.hard_nudge)
+
+def get_time_at_beat(self, beat):
+    """ Returns the time that the local computer's clock will be at 'beat' value """
+    if isinstance(self.bpm, TimeVar):
+        t = self.get_time() + self.beat_dur(beat - self.now())
+    else:
+        t = self.bpm_start_time + self.beat_dur(beat - self.bpm_start_beat)
+    return t
 
 def bar_length(self):
     """ Returns the length of a bar in terms of beats """

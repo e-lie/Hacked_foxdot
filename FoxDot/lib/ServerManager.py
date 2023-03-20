@@ -860,14 +860,14 @@ class TempoServer(ThreadedServer):
         self.server_thread.start()
         return
 
-    def update_tempo(self, source, bpm, bpm_start_beat, bpm_start_time):
+    def update_bpm(self, source, bpm, bpm_start_beat, bpm_start_time):
         """ Sends information  to all connected peers about changing tempo """
         for peer in self.peers:
             if peer is not source:
-                peer.update_tempo(bpm, bpm_start_beat, bpm_start_time)
+                peer.update_bpm(bpm, bpm_start_beat, bpm_start_time)
         # Update the master clock tempo if receiving from another peer
         if source is not None:
-            self.metro.update_tempo_from_connection(bpm, bpm_start_beat, bpm_start_time)
+            self.metro.update_bpm_from_connection(bpm, bpm_start_beat, bpm_start_time)
         return
 
     def kill(self):
@@ -925,7 +925,7 @@ class RequestHandler(socketserver.BaseRequestHandler):
 
                 elif "new_bpm" in data:
 
-                    self.master.update_tempo(self, **data["new_bpm"])
+                    self.master.update_bpm(self, **data["new_bpm"])
 
                 elif "latency":
 
@@ -939,7 +939,7 @@ class RequestHandler(socketserver.BaseRequestHandler):
         self.master.peers.remove(self)
         return 0
 
-    def update_tempo(self, bpm, bpm_start_beat, bpm_start_time):
+    def update_bpm(self, bpm, bpm_start_beat, bpm_start_time):
 
         data = {
             "new_bpm" :
@@ -1067,16 +1067,16 @@ class TempoClient:
                     if key in data["sync"]:
                         object.__setattr__(self.metro, key, data["sync"][key])
 
-                self.metro.update_tempo_from_connection(**data["sync"])
+                self.metro.update_bpm_from_connection(**data["sync"])
 
                 self.metro.flag_wait_for_sync(False)
             
             elif "new_bpm" in data:
 
-                self.metro.update_tempo_from_connection(**data["new_bpm"])
+                self.metro.update_bpm_from_connection(**data["new_bpm"])
         return
 
-    def update_tempo(self, bpm, bpm_start_beat, bpm_start_time):
+    def update_bpm(self, bpm, bpm_start_beat, bpm_start_time):
         """ Sends data to other connected FoxDot instances to update their tempo """
         data = {
             "new_bpm" :
