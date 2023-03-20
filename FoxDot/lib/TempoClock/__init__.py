@@ -131,7 +131,32 @@ class TempoClock(object):
         # If one object is going to be played
         self.solo = SoloPlayer()
         self.thread = threading.Thread(target=self.run)
+    
 
+    def __setattr__(self, attr, value):
+        if attr == "bpm" and self.__setup:
+            # Schedule for next bar
+            start_beat, start_time = self.update_tempo(value)
+        elif attr == "midi_nudge" and self.__setup:
+            # Adjust nudge for midi devices
+            self.server.set_midi_nudge(value)
+            object.__setattr__(self, "midi_nudge", value)
+        else:
+            self.__dict__[attr] = value
+        return
+
+    def __str__(self):
+        return str(self.queue)
+
+    def __iter__(self):
+        for x in self.queue:
+            yield x
+
+    def __len__(self):
+        return len(self.queue)
+
+    def __contains__(self, item):
+        return item in self.items
 
     @classmethod
     def set_server(cls, server):
@@ -175,28 +200,12 @@ class TempoClock(object):
     def kill_tempo_client(self):
         if self.tempo_client is not None:
             self.tempo_client.kill()
-        return
-
-    def __str__(self):
-        return str(self.queue)
-
-    def __iter__(self):
-        for x in self.queue:
-            yield x
-
-    def __len__(self):
-        return len(self.queue)
-
-    def __contains__(self, item):
-        return item in self.items
 
     def update_tempo_now(self, bpm):
         """ emergency override for updating tempo"""
         self.last_now_call = self.bpm_start_time = time.time()
         self.bpm_start_beat = self.now()
         object.__setattr__(self, "bpm", self._convert_json_bpm(bpm))
-        # self.update_network_tempo(bpm, start_beat, start_time) -- updates at the bar...
-        return
 
     def set_tempo(self, bpm, override=False):
         """ Short-hand for update_tempo and update_tempo_now """
@@ -266,18 +275,6 @@ class TempoClock(object):
         """ Sets the `latency` attribute to values based on desired high/low/medium latency """
         assert 0 <= value <= 2
         self.latency = self.latency_values[value]
-        return
-
-    def __setattr__(self, attr, value):
-        if attr == "bpm" and self.__setup:
-            # Schedule for next bar
-            start_beat, start_time = self.update_tempo(value)
-        elif attr == "midi_nudge" and self.__setup:
-            # Adjust nudge for midi devices
-            self.server.set_midi_nudge(value)
-            object.__setattr__(self, "midi_nudge", value)
-        else:
-            self.__dict__[attr] = value
         return
 
     def bar_length(self):
