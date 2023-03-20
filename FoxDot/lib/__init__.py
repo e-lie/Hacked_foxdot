@@ -206,6 +206,5 @@ PatternMethods = Pattern.get_methods()
 PatternTypes = functions(Patterns.Sequences)
 
 # Start
-
-Clock.start()
+Clock.start_thread()
 

@@ -72,8 +72,7 @@ class TimeVar(object):
         # If the clock is not ticking, start it
 
         if self.metro.ticking == False:
-
-            self.metro.start()
+            self.metro.start_thread()
 
     def json_value(self):
         """ Returns data about this TimeVar that can be sent over a network as JSON  """
