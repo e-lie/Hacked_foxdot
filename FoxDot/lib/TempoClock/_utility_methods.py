@@ -18,5 +18,5 @@ def every(self, n, cmd, args=()):
 
 def shift(self, n):
     """ Offset the clock time """
-    self.beat += n
+    self.beat_count += n
     return

@@ -800,7 +800,7 @@ class Player(Repeatable):
             self.metro.schedule(self, self.event_index)
         return self
 
-    def get_timestamp(self, beat=None):
+    def get_timestamp(self, beat_count=None):
         if beat is not None:
             timestamp = self.metro.osc_message_time() - self.metro.beat_dur(self.metro.now() - beat)
         else:

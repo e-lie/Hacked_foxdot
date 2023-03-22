@@ -1,7 +1,11 @@
+import time
+
+from ..TimeVar import TimeVar
+
 def get_bpm(self):
     """ Returns the current beats per minute as a floating point number """
     if isinstance(self.bpm, TimeVar):
-        bpm_val = self.bpm.now(self.beat)
+        bpm_val = self.bpm.now(self.beat_count)
     else:
         bpm_val = self.bpm
     return float(bpm_val)

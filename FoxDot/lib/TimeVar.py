@@ -219,17 +219,17 @@ class TimeVar(object):
         """ Returns val as modified by its dependencies """
         return self.evaluate(val, self.dependency)
 
-    def get_current_time(self, beat=None):
+    def get_current_time(self, beat_count=None):
         """ Returns the current beat value """
         # Return elapsed time in seconds if get_seconds flag is True
         if self.get_seconds is True:
             return float(self.metro.time)
         # Else return the beat
-        if beat is None:
-            beat = self.metro.now()
+        if beat_count is None:
+            beat_count = self.metro.now()
         if self.bpm is not None:
-            beat *= (self.bpm / float(self.metro.bpm))
-        return float(beat)
+            beat_count *= (self.bpm / float(self.metro.bpm))
+        return float(beat_count)
 
     def now(self, time=None):
         """ Returns the value currently represented by this TimeVar """

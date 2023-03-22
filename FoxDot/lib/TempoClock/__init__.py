@@ -22,7 +22,7 @@
 
     To stop the clock from scheduling further events, use the `Clock.clear()` method, which is
     bound to the shortcut key, `Ctrl+.`. You can schedule non-player objects in the clock by
-    using `Clock.schedule(func, beat, args, kwargs)`. By default `beat` is set to the next
+    using `Clock.schedule(func, beat_count, args, kwargs)`. By default `beat` is set to the next
     bar in the clock, but you use `Clock.now() + n` or `Clock.next_bar() + n` to schedule a function
     in the future at a specific time. 
 
@@ -52,7 +52,6 @@ from __future__ import absolute_import, division, print_function
 from ..Players import Player
 from ..TimeVar import TimeVar
 from ..ServerManager import ServerManager
-from ..Settings import CPU_USAGE
 from .EventQueue import Queue, History, Wrapper
 from .SoloPlayer import SoloPlayer
 
@@ -84,9 +83,10 @@ class TempoClock(object):
         self.largest_sleep_time = 0
         self.last_block_dur = 0.0
 
-        self.beat = float(0)  # Beats elapsed
-        self.last_now_call = float(0)
+        self.beat_count = 0.0  # Beats elapsed
         self.ticking = True
+
+        self.last_now_call = 0.0
 
         # Player Objects stored here
         self.playing = []
@@ -180,20 +180,18 @@ class TempoClock(object):
         self.ticking = True
         self.polled = False
         while self.ticking:
-            beat = self._now()  # get current time
-            if self.queue.after_next_event(beat):
+            self.update_beat_count()  # get current time
+            if self.queue.after_next_event(self.beat_count):
                 self.current_block = self.queue.pop()
                 # Do the work in a thread
                 if len(self.current_block):
                     threading.Thread(
                         target=self.__run_block,
-                        args=(self.current_block, beat)
+                        args=(self.current_block, self.beat_count)
                     ).start()
             if self.sleep_time > 0:
                 time.sleep(self.sleep_time)
         return
-
-    
 
     @classmethod
     def set_server(cls, server):
@@ -224,42 +222,39 @@ class TempoClock(object):
         return bpm_start_beat, bpm_start_time
 
  
+    # def set_time(self, beat):
+    #     """ Set the clock time to 'beat' and update players in the clock """
+    #     self.start_time = time.time()
+    #     self.queue.clear()
+    #     self.beat_count = beat
+    #     self.bpm_start_beat = beat
+    #     self.bpm_start_time = self.start_time
+    #     # self.time = time() - self.start_time
+    #     for player in self.playing:
+    #         player(count=True)
 
-    def set_time(self, beat):
-        """ Set the clock time to 'beat' and update players in the clock """
-        self.start_time = time.time()
-        self.queue.clear()
-        self.beat = beat
-        self.bpm_start_beat = beat
-        self.bpm_start_time = self.start_time
-        # self.time = time() - self.start_time
-        for player in self.playing:
-            player(count=True)
-        return
 
     def calculate_nudge(self, time1, time2, latency):
         """ Approximates the nudge value of this TempoClock based on the machine time.time()
             value from another machine and the latency between them """
         # self.hard_nudge = time2 - (time1 + latency)
         self.hard_nudge = time1 - time2 - latency
-        return
 
-    def _now(self):
+    def update_beat_count(self):
         """ If the bpm is an int or float, use time since the last bpm change to calculate what the current beat is. 
-            If the bpm is a TimeVar, increase the beat counter by time since last call to _now()"""
+            If the bpm is a TimeVar, increase the beat counter by time since last call to update_beat_count()"""
         if isinstance(self.bpm, (int, float)):
-            self.beat = self.bpm_start_beat + self.get_elapsed_beats_from_last_bpm_change()
+            self.beat_count = self.bpm_start_beat + self.get_elapsed_beats_from_last_bpm_change()
         else:
             now = self.get_time()
-            self.beat += (now - self.last_now_call) * (self.get_bpm() / 60)
+            self.beat_count += (now - self.last_now_call) * (self.get_bpm() / 60)
             self.last_now_call = now
-        return self.beat
 
     def now(self):
         """ Returns the total elapsed time (in beats as opposed to seconds) """
-        if self.ticking is False:  # Get the time w/o latency if not ticking
-            self.beat = self._now()
-        return float(self.beat)
+        if self.ticking is False:  # Get the time without latency if not ticking
+            self.update_beat_count()
+        return float(self.beat_count)
 
     def mod(self, beat, t=0):
         """ Returns the next time at which `Clock.now() % beat` will equal `t` """
@@ -288,7 +283,7 @@ class TempoClock(object):
         """ Start recursive call to adjust hard-nudge values """
         return self.schedule(self._adjust_hard_nudge)
 
-    def __run_block(self, block, beat):
+    def __run_block(self, block, beat_count):
         """ Private method for calling all the items in the queue block.
             This means the clock can still 'tick' while a large number of
             events are activated  """
@@ -296,7 +291,7 @@ class TempoClock(object):
         # `beat` is the actual beat this is happening, `block.beat` is the desired time. Adjust
         # the osc_message_time accordingly if this is being called late
         block.time = self.osc_message_time(
-        ) - self.beat_dur(float(beat) - block.beat)
+        ) - self.beat_dur(float(beat_count) - block.beat_count)
         for item in block:
             # The item might get called by another item in the queue block
             output = None
@@ -311,12 +306,11 @@ class TempoClock(object):
         # Send all the message to supercollider together
         block.send_osc_messages()
         # Store the osc messages -- future idea
-        # self.history.add(block.beat, block.osc_messages)
-        return
+        # self.history.add(block.beat_count, block.osc_messages)
 
 
-    def schedule(self, obj, beat=None, args=(), kwargs={}, is_priority=False):
-        """ TempoClock.schedule(callable, beat=None)
+    def schedule(self, obj, beat_count=None, args=(), kwargs={}, is_priority=False):
+        """ TempoClock.schedule(callable, beat_count=None)
             Add a player / event to the queue """
         # Make sure the object can actually be called
         try:
@@ -327,27 +321,27 @@ class TempoClock(object):
         if self.ticking == False:
             self.start_thread()
         # Default is next bar
-        if beat is None:
-            beat = self.next_bar()
+        if beat_count is None:
+            beat_count = self.next_bar()
         # Keep track of objects in the Clock
         if obj not in self.playing and isinstance(obj, Player):
             self.playing.append(obj)
         if obj not in self.items:
             self.items.append(obj)
         # Add to the queue
-        self.queue.add(obj, beat, args, kwargs, is_priority)
+        self.queue.add(obj, beat_count, args, kwargs, is_priority)
         # block.time = self.osc_message_accum
-        return
+
 
     def future(self, dur, obj, args=(), kwargs={}):
         """ Add a player / event to the queue `dur` beats in the future """
         self.schedule(obj, self.now() + dur, args, kwargs)
-        return
+
 
     def next_bar(self):
         """ Returns the beat value for the start of the next bar """
-        beat = self.now()
-        return beat + (self.meter[0] - (beat % self.meter[0]))
+        beat_count = self.now()
+        return beat_count + (self.meter[0] - (beat_count % self.meter[0]))
 
     def next_event(self):
         """ Returns the beat index for the next event to be called """
@@ -371,4 +365,3 @@ class TempoClock(object):
         #     if hasattr(item, 'stop'):
         #         item.stop()
         self.playing = []
-        return

@@ -20,8 +20,8 @@ class Queue(object):
         return "\n".join([str(item) for item in self.data]
                         ) if len(self.data) > 0 else "[]"
 
-    def add(self, item, beat, args=(), kwargs={}, is_priority=False):
-        """ Adds a callable object to the queue at a specified beat, args and kwargs for the
+    def add(self, item, beat_count, args=(), kwargs={}, is_priority=False):
+        """ Adds a callable object to the queue at a specified beat_count, args and kwargs for the
             callable object must be in a list and dict.
         """
         # item must be callable to be schedule, so check args and kwargs are appropriate for it
@@ -36,9 +36,9 @@ class Queue(object):
                     del kwargs[key]
         # If the new event is before the next scheduled event,
         # move it to the 'front' of the queue
-        if self.before_next_event(beat):
+        if self.before_next_event(beat_count):
             self.data.append(
-                QueueBlock(self, item, beat, args, kwargs, is_priority)
+                QueueBlock(self, item, beat_count, args, kwargs, is_priority)
             )
             block = self.data[-1]
         else:
@@ -47,18 +47,18 @@ class Queue(object):
             # need to be careful in case self.data changes size
             for block in self.data:
                 # If another event is happening at the same time, schedule together
-                if beat == block.beat:
+                if beat_count == block.beat_count:
                     block.add(item, args, kwargs, is_priority)
                     break
                 # If the event is later than the next event, schedule it here
-                if beat > block.beat:
+                if beat_count > block.beat_count:
                     try:
                         i = self.data.index(block)
                     except ValueError:
                         i = 0
                     self.data.insert(
                         i,
-                        QueueBlock(self, item, beat, args, kwargs, is_priority)
+                        QueueBlock(self, item, beat_count, args, kwargs, is_priority)
                     )
                     block = self.data[i]
                     break
@@ -78,20 +78,20 @@ class Queue(object):
     def next(self):
         if len(self.data) > 0:
             try:
-                return self.data[-1].beat
+                return self.data[-1].beat_count
             except IndexError:
                 pass
         return sys.maxsize
 
-    def before_next_event(self, beat):
+    def before_next_event(self, beat_count):
         try:
-            return beat < self.data[-1].beat
+            return beat_count < self.data[-1].beat_count
         except IndexError:
             return True
 
-    def after_next_event(self, beat):
+    def after_next_event(self, beat_count):
         try:
-            return beat >= self.data[-1].beat
+            return beat_count >= self.data[-1].beat_count
         except IndexError:
             return False
 
@@ -131,7 +131,7 @@ class QueueBlock(object):
         self.clock = clock
         self.server = self.clock.get_server()
         self.metro = self.clock.get_clock()
-        self.beat = t
+        self.beat_count = t
         self.time = 0
         self.add(obj, args, kwargs, is_priority)
 
@@ -144,7 +144,7 @@ class QueueBlock(object):
         return
 
     def __repr__(self):
-        return "{}: {}".format(self.beat, self.players())
+        return "{}: {}".format(self.beat_count, self.players())
 
     def add(self, obj, args=(), kwargs={}, is_priority=False):
         """ Adds a callable object to the QueueBlock """
@@ -227,7 +227,7 @@ class History(object):
     """
     def __init__(self):
         self.data = []
-    def add(self, beat, osc_messages):
+    def add(self, beat_count, osc_messages):
         self.data.append(osc_messages)
 
 
