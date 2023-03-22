@@ -322,7 +322,7 @@ def reload(self):
 def only(self):
     """ Stops all players except this one """
     for player in list(self.metro.playing):
-        if player is not self:
+        if player is not self and not player.always_on:
             player.stop()
     return self
 
@@ -335,6 +335,9 @@ def solo(self, action=1):
         self.metro.solo.reset()
     elif action == 1:
         self.metro.solo.set(self)
+        for player in self.metro.playing:
+            if player.always_on:
+                self.metro.solo.add(player)
     elif action == 2:
         pass
     return self

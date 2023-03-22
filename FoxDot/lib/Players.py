@@ -260,6 +260,8 @@ class Player(Repeatable):
         self.synthdef = None
         self.id = name
 
+        self.always_on = False
+
         #self.current_event_size   = 0
         #self.current_event_length = 0
         #self.current_event_depth  = 0

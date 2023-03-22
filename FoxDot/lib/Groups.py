@@ -25,8 +25,9 @@ class Group:
             self.__class__.metro = Player.metro
         if arg:
             self.metro.solo.set(self.players[0])
-            for player in self.players[1:]:
-                self.metro.solo.add(player)
+            for player in self.metro.playing:
+                if player.always_on or player in self.players[1:]:
+                    self.metro.solo.add(player)
         else:
             self.metro.solo.reset()
         return self
@@ -35,6 +36,8 @@ class Group:
         if self.metro is None:
             self.__class__.metro = Player.metro
         for player in list(self.metro.playing):
+            if player.always_on:
+                continue
             if player not in self.players:
                 player.stop()
         return self
