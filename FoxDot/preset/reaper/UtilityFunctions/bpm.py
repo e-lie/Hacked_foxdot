@@ -14,7 +14,7 @@ def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
 def change_bpm2(bpm, midi_nudge=True, nudge_base=0.35):
     Clock.bpm = bpm
     reaproject.bpm = bpm
-
+    
     @nextBar()
     def nudging2():
         if midi_nudge:
