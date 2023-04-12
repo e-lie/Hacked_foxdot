@@ -267,7 +267,7 @@ def ampfadeout(self, dur=4, iamp=.8, famp=0):
 @player_method
 def sampfadeout(self, dur=16, iamp=.8, famp=0):
     for player in list(self.metro.playing):
-        if player is not self:
+        if player is not self and not player.always_on:
             player.ampfadeout(dur, iamp, famp)
     return self
 
@@ -328,6 +328,30 @@ def hexa_panning_beta(value):
         pan = -1
     return {"output": output, "pan": pan}
 
+def quadri_panning_beta(value):
+    value = value % 4
+    # continous panning between front speakers
+    output = 2
+    pan = 0
+    if value >= 0 and value <= 1:
+        output = 2
+        pan = value * 2 - 1
+    # brutal jump to rear right speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 1 and value < 2:
+        output = 4
+        pan = -1
+    # continuous panning between rear right speakers
+    elif value >= 2 and value <= 3:
+        output = 4
+        pan = (value-2) * 2 - 1
+    # brutal jump to rear left speaker because there no way to make continuous transition
+    # without left right independant volume
+    elif value > 3 and value < 4:
+        output = 2
+        pan = -1
+    return {"output": output, "pan": pan}
+
 def hexa_panning_beta_old(value): # for interleaved speakers (less intuitive)
     value = value % 6
     # continous panning between front speakers
@@ -371,6 +395,24 @@ def hexa_panning_timevar_beta(entry: TimeVar):
         pan = var(values=pan_values, dur=entry.dur, start=entry.start_time)
     return {"output": output, "pan": pan}
 
+def quadri_panning_timevar_beta(entry: TimeVar):
+    output = 2
+    pan = 0
+    output_values = []
+    pan_values = []
+    for value in entry.values:
+        output_values.append(quadri_panning_beta(value)["output"])
+        pan_values.append(quadri_panning_beta(value)["pan"])
+        output = var(values=output_values, dur=entry.dur, start=entry.start_time)
+    if isinstance(entry, linvar):
+        pan = linvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, sinvar):
+        pan = sinvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, expvar):
+        pan = expvar(values=pan_values, dur=entry.dur, start=entry.start_time)
+    elif isinstance(entry, TimeVar) and not isinstance(entry, Pvar):
+        pan = var(values=pan_values, dur=entry.dur, start=entry.start_time)
+    return {"output": output, "pan": pan}
 
 def hexa_panning_simple_pattern(entry: Pattern):
     output_pattern = []
@@ -381,16 +423,25 @@ def hexa_panning_simple_pattern(entry: Pattern):
     result = {"output": output_pattern, "pan": pan_pattern}
     return result
 
+def quadri_panning_simple_pattern(entry: Pattern):
+    output_pattern = []
+    pan_pattern = []
+    for value in entry:
+        output_pattern.append(quadri_panning_beta(value)["output"])
+        pan_pattern.append(quadri_panning_beta(value)["pan"])
+    result = {"output": output_pattern, "pan": pan_pattern}
+    return result
+
 @player_method
 def mpan(self, entry):
     if isinstance(entry, TimeVar):
-        res = hexa_panning_timevar_beta(entry)
+        res = quadri_panning_timevar_beta(entry)
         self.pan = res["pan"]
         self.output = res["output"]
         return self
     elif not hasattr(entry, '__iter__') or isinstance(entry, tuple):
         entry = Pattern(entry)
-    res = hexa_panning_simple_pattern(entry)
+    res = quadri_panning_simple_pattern(entry)
     self.pan = res["pan"]
     self.output = res["output"]
     return self
@@ -403,7 +454,7 @@ def mpan(entry):
     return hexa_panning_simple_pattern(entry)
 
 
-def surround_panning(position=0, distance=1):
+def surround_panning_6(position=0, distance=1):
     position = (position + 4) % 6  # first speaker is at 240 degree (fifth speaker => 4 counting from 0)
     degree = -1 * position / 6.0 * 360
     surx = math.cos(math.radians(degree))
@@ -413,8 +464,18 @@ def surround_panning(position=0, distance=1):
     surx = distance * 1 / 2 * surx + .5
     return {"sur_x": surx, "sur_y": sury}
 
+def surround_panning_4(position=0, distance=1):
+    position = (position + 2.5) % 4  # first speaker is at 240 degree (fifth speaker => 4 counting from 0)
+    degree = -1 * position / 4.0 * 360
+    surx = math.cos(math.radians(degree))
+    sury = math.sin(math.radians(degree))
+    # the circle is at center .5/.5 and r = distance/2
+    sury = distance * 1 / 2 * sury + .5
+    surx = distance * 1 / 2 * surx + .5
+    return {"sur_x": surx, "sur_y": sury}
 
-def surpan(position, distance=1):
+
+def surpan6(position, distance=1):
     if isinstance(position, linvar):
         values = [ (value % 6) * 60 for value in position.values ]
         print(values)
@@ -423,17 +484,34 @@ def surpan(position, distance=1):
         sury = distance * 1 / 2 * sury + .5
         surx = distance * 1 / 2 * surx + .5
     elif isinstance(position, TimeVar):
-        xy_values = [surround_panning(pos, distance) for pos in position.values]
+        xy_values = [surround_panning_6(pos, distance) for pos in position.values]
         surx = var(values=[elem["sur_x"] for elem in xy_values], dur=position.dur, start=position.start_time)
         sury = var(values=[elem["sur_y"] for elem in xy_values], dur=position.dur, start=position.start_time)
     else:
-        surx = surround_panning(position, distance)["sur_x"]
-        sury = surround_panning(position, distance)["sur_y"]
+        surx = surround_panning_6(position, distance)["sur_x"]
+        sury = surround_panning_6(position, distance)["sur_y"]
+    return {"sur_x": surx, "sur_y": sury}
+
+def surpan4(position, distance=1):
+    if isinstance(position, linvar):
+        values = [ (value % 4) * 90 for value in position.values ]
+        print(values)
+        surx = xvar(values=values, dur=position.dur, start=position.start_time)
+        sury = yvar(values=values, dur=position.dur, start=position.start_time)
+        sury = distance * 1 / 2 * sury + .5
+        surx = distance * 1 / 2 * surx + .5
+    elif isinstance(position, TimeVar):
+        xy_values = [surround_panning_4(pos, distance) for pos in position.values]
+        surx = var(values=[elem["sur_x"] for elem in xy_values], dur=position.dur, start=position.start_time)
+        sury = var(values=[elem["sur_y"] for elem in xy_values], dur=position.dur, start=position.start_time)
+    else:
+        surx = surround_panning_4(position, distance)["sur_x"]
+        sury = surround_panning_4(position, distance)["sur_y"]
     return {"sur_x": surx, "sur_y": sury}
 
 @player_method
 def span(self, position, distance=1):
-    res = surpan(position, distance)
+    res = surpan4(position, distance)
     self.sur_x = res["sur_x"]
     self.sur_y = res["sur_y"]
     return self
