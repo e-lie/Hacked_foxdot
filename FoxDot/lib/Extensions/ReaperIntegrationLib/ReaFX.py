@@ -82,7 +82,10 @@ class ReaFX(object):
                 self.fx.enable()
         else:
             id = self.reaparams[name].index
-            self.fx.params[id] = float(value)
+            try:
+                self.fx.params[id] = float(value)
+            except:
+                print(f"reafx {self.name} doesn't seem to work anymore")
 
 
 class ReaFXGroup(ReaFX):
@@ -113,4 +116,7 @@ class ReaFXGroup(ReaFX):
         else:
             id = self.reaparams[name].index
             for fx in self.fxs:
-                fx.params[id] = float(value)
+                try:
+                    fx.params[id] = float(value)
+                except:
+                    print(f"reafx {self.name} doesn't seem to work anymore")

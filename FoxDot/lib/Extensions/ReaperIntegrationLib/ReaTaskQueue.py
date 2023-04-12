@@ -17,7 +17,8 @@ class TaskQueue(object):
     """
     def __init__(self, clock, reapylib):
         self.queue = []
-        self.size = 200
+        self.task_counter_dict = {}
+        self.max_amount_of_same_task = 200
         self.clock = clock
         self.is_active = False
         self.reapylib = reapylib
@@ -36,16 +37,18 @@ class TaskQueue(object):
 
 
     def add_task(self, task: ReaTask):
-        if len(self.queue) < self.size:
+        if f"{task.reaper_object.name}_{task.param_name}" not in self.task_counter_dict.keys():
+            self.task_counter_dict[f"{task.reaper_object.name}_{task.param_name}"] = 0
+        if self.task_counter_dict[f"{task.reaper_object.name}_{task.param_name}"] < self.max_amount_of_same_task:
             if self.is_active:
                 self.queue.append(task)
+                self.task_counter_dict[f"{task.reaper_object.name}_{task.param_name}"] += 1
                 if not self.currently_processing_tasks:
                     self.clock.future(self.task_execution_freq, self.execute_tasks, args=[])
             else:
                 print("Queue is inactive")
         else:
-            print(f"Maximum reapy tasks in queue reached, can't add {task.param_name} update : {self.size} - {len(self.queue)}")
-            self.queue = []
+            print(f"Maximum reapy task instances for this param {task.reaper_object.name} _ {task.param_name} update : {self.max_amount_of_same_task}")
 
     def execute_tasks(self):
         if not self.currently_processing_tasks and self.is_active:
@@ -53,6 +56,7 @@ class TaskQueue(object):
             with self.reapylib.inside_reaper():
                 while self.queue:
                     task: ReaTask = self.queue.pop(0)
+                    self.task_counter_dict[f"{task.reaper_object.name}_{task.param_name}"] -= 1
                     # print(f"poping {task.param_name} update")
                     if task.type == "set":
                         task.reaper_object.set_param_direct(task.param_name, task.param_value)
