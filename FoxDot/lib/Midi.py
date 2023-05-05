@@ -195,7 +195,7 @@ class ReaperInstrument(MidiOut):
             raise Exception("No midi map defined to translate playstring")
         MidiOut.__init__(self, degree, **kwargs)
 
-midi = MidiOut  # experimental alias
+# midi = MidiOut  # experimental alias
 # Midi information exceptions
 
 
