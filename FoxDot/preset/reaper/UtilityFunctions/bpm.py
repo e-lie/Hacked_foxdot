@@ -1,15 +1,17 @@
 from FoxDot import Clock, nextBar, inf, linvar
 from ..Presets import reaproject
 
-def change_bpm(bpm, midi_nudge=True, nudge_base=0.72):
+# def change_bpm(bpm, midi_nudge=False, nudge_base=0.72):
+#     Clock.bpm = bpm
+#     reaproject.bpm = bpm
+#     @nextBar()
+#     def nudging():
+#         if midi_nudge:
+#             Clock.midi_nudge = 60 / bpm - nudge_base
+
+def change_bpm(bpm):
     Clock.bpm = bpm
     reaproject.bpm = bpm
-
-    @nextBar()
-    def nudging():
-        if midi_nudge:
-            Clock.midi_nudge = 60 / bpm - nudge_base
-
 
 def change_bpm2(bpm, midi_nudge=True, nudge_base=0.35):
     Clock.bpm = bpm
@@ -22,6 +24,11 @@ def change_bpm2(bpm, midi_nudge=True, nudge_base=0.35):
 
 def bpm_to(bpm, dur=8):
     Clock.bpm = linvar([Clock.bpm, bpm], [dur,inf], start=Clock.mod(4))
+    @nextBar(dur)
+    def adjust_reaper_bpm():
+        reaproject.bpm = bpm
+        
+
 
 def bpm_to_fadesc(bpm, sc_player, dur=8):
     old_bpm = Clock.bpm

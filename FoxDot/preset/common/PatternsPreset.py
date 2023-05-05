@@ -32,20 +32,6 @@ pan_rotations = {
     "drot32" : P[range(32)]/32*6,
 }
 
-# panning rotation using linvar for use with span method
-def srot(duration=16, number_of_channels=4):
-    if isinstance(duration, int):
-        return  linvar(P[0, .99]*number_of_channels, [duration, 0])
-    elif isinstance(duration, (Pattern, list)):
-        return linvar(P[0, .99]*number_of_channels, [duration, 0])
-
-# panning rotation using pattern rather than vars for use with mpan
-def mrot(duration=16, number_of_channels=4):
-    if isinstance(duration, int):
-        return P[range(duration)]/duration*number_of_channels
-    elif isinstance(duration, (Pattern, list)):
-        return PTri(duration)/sum(duration)*number_of_channels
-
 pauses = {
     "pa16" : var([1, 0], [12, 4]),
     "pa16_2" : var([1, 0, 1], [6, 4, 6]),

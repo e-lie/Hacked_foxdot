@@ -21,11 +21,6 @@ def arrêter():
         Clock.clear()
     Clock.schedule(stopp, beat_count=Clock.next_bar()+8)
 
-@player_method
-def pause(self, longueur=4, total=8, decalage=0):
-    self.amplify = var([1,0,1], [decalage, longueur, total-decalage-longueur])
-    return self
-
 
 batterie = play
 
