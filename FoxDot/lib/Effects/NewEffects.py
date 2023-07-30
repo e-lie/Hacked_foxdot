@@ -17,7 +17,7 @@ class _Effect:
 
     def __call__(self, order=0):
         def decorator(effect):
-            effect_data = inspect.getargspec(
+            effect_data = inspect.getfullargspec(
                 effect)  # Original args and defaults
 
             # Get filename from function name
