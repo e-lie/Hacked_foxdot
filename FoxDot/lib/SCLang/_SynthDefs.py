@@ -432,7 +432,7 @@ else:
                    'harpy', 'karp', 'twang', 'snick', 'saw', 'pulse', 'bug', 'fuz', 'marimba', 'zap', 'orient',
                    'creep', 'ripple', 'quin', 'soft', 'glass', 'feel', 'klank', 'scratch', 'dub', 'soprano',
                    'gong', 'bell', 'charm', 'scatter', 'wave', 'crunch', 'dirt', 'growl', 'lazer', 'warsaw',
-                   'dab', 'noise',
+                   'dab', 'noise', 'murph',
                    ]
 
     for i in range(len(synths_list)):

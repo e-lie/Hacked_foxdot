@@ -12,11 +12,4 @@ SynthDef.new(\bass, {
 	osc = Mix(osc) * 0.05;
 	osc = Pan2.ar(osc, pan);
 	ReplaceOut.ar(bus, osc)
-},
-metadata: (
-	credit: "Credit",
-	modified_by: "Modifier",
-	decription: "Description",
-	category: \category,
-	tags: [\tag, \tag]
-)).add;
+}.add;
