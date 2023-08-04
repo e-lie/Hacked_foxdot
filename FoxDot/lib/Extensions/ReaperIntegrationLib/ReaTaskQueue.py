@@ -61,6 +61,8 @@ class TaskQueue(object):
                     if task.type == "set":
                         task.reaper_object.set_param_direct(task.param_name, task.param_value)
                         task.reaper_object.set_param(task.param_name, task.param_value)
+                    elif task.type == "set_bpm":
+                        task.reaper_object.reapy_project.bpm = task.param_value
             self.currently_processing_tasks = False
             #if self.is_active:
             self.clock.future(self.task_execution_freq, self.execute_tasks, args=[])

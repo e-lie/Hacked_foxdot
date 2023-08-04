@@ -1,5 +1,5 @@
 from FoxDot import Clock, nextBar, inf, linvar
-from ..Presets import reaproject
+from ..Presets import reaproject, ReaTask
 
 # def change_bpm(bpm, midi_nudge=False, nudge_base=0.72):
 #     Clock.bpm = bpm
@@ -11,11 +11,13 @@ from ..Presets import reaproject
 
 def change_bpm(bpm):
     Clock.bpm = bpm
-    reaproject.bpm = bpm
+    @nextBar()
+    def change_bpm_reaper():
+        reaproject.task_queue.add_task(ReaTask("set_bpm", reaproject, "bpm", float(bpm)))
 
 def change_bpm2(bpm, midi_nudge=True, nudge_base=0.35):
     Clock.bpm = bpm
-    reaproject.bpm = bpm
+    reaproject.reapy_project.bpm = bpm
     
     @nextBar()
     def nudging2():

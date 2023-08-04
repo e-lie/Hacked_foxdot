@@ -16,6 +16,7 @@ class ReaProject(object):
         self.reapy_project = reapylib.Project()
         self.reatracks = {}
         self.reapylib = reapylib
+        self.name = self.reapy_project.name
         self.instrument_tracks = []
         self.bus_tracks = []
         self.task_queue = TaskQueue(clock, reapylib)

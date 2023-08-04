@@ -7,6 +7,7 @@ from FoxDot.lib import Clock, player_method
 from .ReaperInstruments import ReaperInstrumentFacade
 from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaProject import ReaProject
 from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaTrack import ReaTrack
+from FoxDot.lib.Extensions.ReaperIntegrationLib.ReaTaskQueue import ReaTask
 
 def init_reapy_project():
     project = None
