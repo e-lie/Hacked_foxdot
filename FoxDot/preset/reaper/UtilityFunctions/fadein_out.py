@@ -1,54 +1,48 @@
 
-from FoxDot import Clock, linvar, sinvar, PWhite, PRand, inf, player_method
+from FoxDot import Clock, linvar, sinvar, PWhite, PRand, inf, player_method, nextBar
 from FoxDot.lib import ReaTrack
 
 
 @player_method
-def fadein(self, dur=8, fvol=1, ivol=0):
+def fade(self, dur=8, fvol=1, ivol=None, autostop=True):
     if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
         if ivol == None:
-            ivol = self.vol
+            ivol = float(self.vol)
         self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+        @nextBar(dur+1)
+        def static_final_value():
+            if fvol == 0 and autostop:
+                self.stop()
+            else:
+                self.vol = fvol
     else:
-        if ivol == None:
-            ivol = self.amplify
-        self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+        self.ampfade(dur=dur, famp=fvol, iamp=ivol, autostop=autostop)
     return self
 
 @player_method
-def fadeout(self, dur=8, fvol=0, ivol=None):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
-        if ivol == None:
-            ivol = self.vol
-        self.vol = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
-    else:
-        if ivol == None:
-            ivol = self.amplify
-        self.amplify = linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))
+def fadein(self, dur=8, fvol=1, ivol=0, autostop=True):
+    self.fade(dur=dur, fvol=fvol, ivol=ivol, autostop=autostop)
     return self
 
 @player_method
-def fadeoutin(self, dur=8, outdur=16, mvol=0, fvol=1, ivol=None):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
-        if ivol == None:
-            ivol = self.vol
-        self.vol = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
-    else:
-        if ivol == None:
-            ivol = self.amplify
-        self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+def fadeout(self, dur=8, fvol=0, ivol=None, autostop=True):
+    self.fade(dur=dur, fvol=fvol, ivol=ivol, autostop=autostop)
     return self
 
 @player_method
-def fadeinout(self, dur=8, outdur=16, mvol=1, fvol=0, ivol=None):
-    if "reatrack" in self.attr.keys() and isinstance(self.attr["reatrack"][0], ReaTrack):
-        if ivol == None:
-            ivol = self.vol
-        self.vol = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
-    else:
-        if ivol == None:
-            ivol = self.amplify
-        self.amplify = linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))
+def fadeoutin(self, dur=32, outdur=16, mvol=0, fvol=1, ivol=None):
+    self.fade(dur=dur/2, fvol=mvol, ivol=ivol, autostop=False)
+    @nextBar(dur/2+1)
+    def refadein():
+        self.fade(dur=dur/2, ivol=None, fvol=fvol)
+    return self
+
+@player_method
+def fadeinout(self, dur=32, outdur=16, mvol=1, fvol=0, ivol=None):
+    self.fade(dur=dur/2, fvol=mvol, ivol=ivol, autostop=False)
+    @nextBar(dur/2+1)
+    def refadein():
+        self.fade(dur=dur/2, ivol=None, fvol=fvol)
     return self
 
 
@@ -60,25 +54,21 @@ def faderand(self, length=8):
         self.amplify = sinvar([0] | PWhite(.2,1.2)[:length-1], [8] | PRand(1,4)[:length-1]*4, start=Clock.mod(4))
     return self
     
-# def fadein(dur=8, fvol=1, ivol=0):
-#     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
-
-# def fadeout(dur=8, ivol=1, fvol=0):
-#     return {"vol": linvar([ivol, fvol], [dur, inf], start=Clock.mod(4))}
-
-# def fadeoutin(dur=8, outdur=16, ivol=1, mvol=0, fvol=1):
-#     return {"vol": linvar([ivol, mvol, mvol, fvol], [dur, outdur, dur, inf], start=Clock.mod(4))}
-
 @player_method
-def sfadeout(self, dur=16, fvol=0, ivol=None):
+def sfade(self, dur=16, fvol=0, ivol=None, autostop=True):
     for player in list(self.metro.playing):
         if player is not self:
-            player.fadeout(dur, ivol, fvol)
+            player.fadeout(dur, ivol, fvol, autostop)
     return self
 
 @player_method
-def sfadein(self, dur=16, fvol=1, ivol=None):
-    for player in list(self.metro.playing):
-        if player is not self:
-            player.fadein(dur, fvol, ivol)
+def sfadeout(self, dur=16, fvol=0, ivol=None, autostop=True):
+    sfade(dur,fvol, ivol, autostop)
     return self
+
+@player_method
+def sfadein(self, dur=16, fvol=1, ivol=None, autostop=True):
+    sfade(dur,fvol, ivol, autostop)
+    return self
+
+

@@ -20,8 +20,11 @@ def create_group(group_name, *args):
     globals()[group_name] = Group(*[globals()[player_name] for player_name in args])
 
 @player_method
-def pause(self, longueur=4, total=8, decalage=0):
-    self.amplify = var([1,0,1], [decalage, longueur, total-decalage-longueur])
+def pause(self, longueur=4, total=8, decalage=0, smooth=0):
+    if smooth == 0:
+        self.amplify = var([1,0,1], [decalage, longueur, total-decalage-longueur])
+    else:
+        self.amplify = linvar([1,0,0,0,1,1], [decalage, smooth*longueur, longueur-smooth*longueur, smooth*longueur, total-decalage-longueur-smooth*longueur])
     return self
 
 
