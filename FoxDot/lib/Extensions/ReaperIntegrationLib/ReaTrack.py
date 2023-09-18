@@ -3,7 +3,7 @@ from pprint import pformat
 from typing import Dict
 
 from .ReaFX import ReaFX, ReaFXGroup
-from .ReaParam import ReaSend
+from .ReaParam import ReaSend, ReaSendTreeNode
 from .functions import make_snake_name, split_param_name
 from .ReapyExtensions import add_fx_chain
 
@@ -22,15 +22,21 @@ class ReaTrack(object):
         self.firstfx = None
         self.preset = None
         self.reaparams: Dict[str, ReaSend] = {}
+        self.send_tree = None
+
+        
         self.init_reatrack()
 
     def init_reatrack(self):
-        for index, send in enumerate(self.track.sends):
-            name = make_snake_name(send.dest_track.name)#[1:] # to remove the _ of bux track name
-            if name == "chan1":
-                self.reaparams["vol"] = ReaSend(name=name, index=index, value=send.volume*2)
-            else:
-                self.reaparams[name] = ReaSend(name=name, index=index, value=send.volume)
+        if len(self.track.sends) == 1:
+            self.reaparams["vol"] = ReaSend(name="vol", index=0, value=self.track.sends[0].volume*2)
+        elif len(self.track.sends) > 1:
+            nb_sends = len(self.track.sends)
+            self.send_tree = ReaSendTreeNode(self.track.sends[:nb_sends-nb_sends//2],self.track.sends[nb_sends-nb_sends//2:])
+            self.reaparams["vol"] = self.send_tree
+            self.reaparams["smix"] = self.send_tree
+            self.reaparams["smix1"] = self.send_tree
+            self.reaparams["smix2"] = self.send_tree
 
         preceding_fx_name = None
         for index, fx in enumerate(self.track.fxs):
@@ -48,6 +54,8 @@ class ReaTrack(object):
                     self.replace_fx_with_fxgroup_in_dict(self.reafxs, index, snake_name, fx) # if not replace fx with a group of two instances
             preceding_fx_name = snake_name
 
+
+
     def replace_fx_with_fxgroup_in_dict(self, fx_dict, index, snake_name, fx):
         old_reafx = fx_dict[snake_name]
         fx_dict[snake_name] = ReaFXGroup([old_reafx.fx, fx], snake_name, [old_reafx.index, index])
@@ -58,7 +66,7 @@ class ReaTrack(object):
 
         for index, send in enumerate(self.track.sends):
             name = make_snake_name(send.dest_track.name)#[1:]
-            if name == "chan1":
+            if index == 0:
                 if "vol" not in self.reaparams.keys():
                     new_reaparams_dict["vol"] = ReaSend(name=name, index=index, value=send.volume * 2)
                 else:
@@ -158,8 +166,27 @@ class ReaTrack(object):
         self.reaparams[name].value = value
 
     def set_param_direct(self, name, value):
-        value = value/2 if name =="vol" else value
-        param = self.reaparams[name]
-        self.track.sends[param.index].volume = 5*float(value)**2.5 # convert vol logarithmic value to linear 0 -> 1 value
+        if self.send_tree == None:
+            self.reaparams[name].set_value(self.track, value)
+        else:
+            if name == "vol":
+                self.send_tree.set_value(self.track, value)
+            elif name.startswith('smix'):
+                current_tree_node = self.send_tree
+                node_index_digits = name[4:]
+                for n in node_index_digits:
+                    # try:
+                    if int(n) == 1:
+                        current_tree_node = current_tree_node.child1
+                    elif int(n) == 2:
+                        current_tree_node = current_tree_node.child2
+                    else:
+                        raise Exception("SendTree node doesn't exist or index is malformed (correct form looks like 21, 1 or 2122)")
+                    # except:
+                        # print("problem finding reasendtree node ")
+                current_tree_node.set_mix(self.track, value)
+                
+                    
+
 
 
