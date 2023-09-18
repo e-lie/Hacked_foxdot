@@ -58,12 +58,12 @@ def faderand(self, length=8):
 def sfade(self, dur=16, fvol=0, ivol=None, autostop=True):
     for player in list(self.metro.playing):
         if player is not self:
-            player.fadeout(dur, ivol, fvol, autostop)
+            player.fade(dur=dur, ivol=ivol, fvol=fvol, autostop=autostop)
     return self
 
 @player_method
 def sfadeout(self, dur=16, fvol=0, ivol=None, autostop=True):
-    sfade(dur,fvol, ivol, autostop)
+    self.sfade(dur=dur, fvol=fvol, ivol=ivol, autostop=autostop)
     return self
 
 @player_method
