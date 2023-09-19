@@ -29,14 +29,14 @@ class ReaTrack(object):
 
     def init_reatrack(self):
         if len(self.track.sends) == 1:
-            self.reaparams["vol"] = ReaSend(name="vol", index=0, value=self.track.sends[0].volume*2)
+            self.reaparams["vol"] = ReaSend(name="vol", index=0, value=self.track.sends[0].volume)
         elif len(self.track.sends) > 1:
             nb_sends = len(self.track.sends)
             self.send_tree = ReaSendTreeNode(self.track.sends[:nb_sends-nb_sends//2],self.track.sends[nb_sends-nb_sends//2:])
-            self.reaparams["vol"] = self.send_tree
-            self.reaparams["smix"] = self.send_tree
-            self.reaparams["smix1"] = self.send_tree
-            self.reaparams["smix2"] = self.send_tree
+            self.reaparams["vol"] = ReaSend(name="vol", index=0, value=self.track.sends[0].volume)
+            self.reaparams["smix"] = ReaSend(name="smix", index=0, value=self.track.sends[0].volume)
+            self.reaparams["smix1"] = ReaSend(name="smix1", index=0, value=self.track.sends[0].volume)
+            self.reaparams["smix2"] = ReaSend(name="smix2", index=0, value=self.track.sends[0].volume)
 
         preceding_fx_name = None
         for index, fx in enumerate(self.track.fxs):
@@ -159,34 +159,26 @@ class ReaTrack(object):
         return result
 
     def set_param(self, name, value):
-        # if name == "mixer":
-        #     name = "vol"
-        # name = "vol" if name =="mixer" else name
-        # value = value/2 if name =="vol" else value
-        self.reaparams[name].value = value
-
-    def set_param_direct(self, name, value):
         if self.send_tree == None:
-            self.reaparams[name].set_value(self.track, value)
+            self.reaparams[name].value = value
         else:
             if name == "vol":
-                self.send_tree.set_value(self.track, value)
+                self.send_tree.set_node_volume(value)
             elif name.startswith('smix'):
                 current_tree_node = self.send_tree
                 node_index_digits = name[4:]
                 for n in node_index_digits:
-                    # try:
                     if int(n) == 1:
                         current_tree_node = current_tree_node.child1
                     elif int(n) == 2:
                         current_tree_node = current_tree_node.child2
                     else:
                         raise Exception("SendTree node doesn't exist or index is malformed (correct form looks like 21, 1 or 2122)")
-                    # except:
-                        # print("problem finding reasendtree node ")
-                current_tree_node.set_mix(self.track, value)
+                current_tree_node.set_node_mix(value)
                 
                     
-
-
-
+    def set_param_direct(self, name, value):
+        if self.send_tree == None:
+            self.reaparams[name].set_value(self.track, value)
+        else:
+            self.send_tree.update_reapy_sends(self.track)

@@ -20,9 +20,9 @@ class ReaSend(ReaParam):
     def set_value(self, track, value):
         # use value /2 to have vol 1 <=> not max but 0 Db
         # Plus convert vol logarithmic value to linear 0 -> 1 value
+        # track.sends[self.index].volume = 5*float(self.value/2)**2.5 ### outdated but keep the method here
         self.value = value
-        # track.sends[self.index].volume = 5*float(self.value/2)**2.5
-        track.sends[self.index].volume = self.value
+        track.sends[self.index].volume = float(self.value)
 
     def __repr__(self):
         return f"<ReaSend idx: {self.index} - {self.value}>"
@@ -53,41 +53,35 @@ class ReaSendTreeNode(ReaParam):
                 children2=children2[len(children2)-len(children2)//2:],
             )
 
-    def set_value(self, track, value):
+    def update_reapy_sends(self, track):
+        # Recursively set child 1 vol
+        if isinstance(self.child1, ReaSendTreeNode):
+            self.child1.update_reapy_sends(track)
+        elif isinstance(self.child1, ReaSend): # child1 is a reapy send from self.track.sends
+            self.child1.set_value(track, self.value*(1-self.mix))
+        # Recursively set child 2 vol
+        if isinstance(self.child2, ReaSendTreeNode):
+            self.child2.update_reapy_sends(track)
+        elif isinstance(self.child2, ReaSend): # child1 is a reapy send from self.track.sends
+            self.child2.set_value(track, self.value*self.mix)
+
+    def set_node_volume(self, value):
         self.value = value
         # Recursively set child 1 vol
         if isinstance(self.child1, ReaSendTreeNode):
-            self.child1.set_value(track, self.value*(1-self.mix))
-        elif isinstance(self.child1, ReaSend): # child1 is a reapy send from self.track.sends
-            self.child1.set_value(track, self.value*(1-self.mix))
-        else:
-            raise Exception("Problem with the built ReaSendTree")
+            self.child1.set_node_volume(self.value*(1-self.mix))
         # Recursively set child 2 vol
         if isinstance(self.child2, ReaSendTreeNode):
-            self.child2.set_value(track, self.value*self.mix)
-        elif isinstance(self.child2, ReaSend): # child1 is a reapy send from self.track.sends
-            self.child2.set_value(track, self.value*self.mix)
-        else:
-            raise Exception("Problem with the built ReaSendTree")
+            self.child2.set_node_volume(self.value*self.mix)
 
-    def set_mix(self, track, value):
+    def set_node_mix(self, value):
         self.mix = value
         # Recursively set child 1 vol
         if isinstance(self.child1, ReaSendTreeNode):
-            self.child1.set_value(track, self.value*(1-self.mix))
-        elif isinstance(self.child1, ReaSend): # child1 is a reapy send from self.track.sends
-            self.child1.set_value(track, self.value*(1-self.mix))
-        else:
-            raise Exception("Problem with the built ReaSendTree")
+            self.child1.set_node_volume(self.value*(1-self.mix))
         # Recursively set child 2 vol
         if isinstance(self.child2, ReaSendTreeNode):
-            self.child2.set_value(track, self.value*self.mix)
-        elif isinstance(self.child2, ReaSend): # child1 is a reapy send from self.track.sends
-            self.child2.set_value(track, self.value*self.mix)
-        else:
-            raise Exception("Problem with the built ReaSendTree")
-
-
+            self.child2.set_node_volume(self.value*self.mix)
 
     def __repr__(self):
         return f"<ReaSendTreeNode vol{self.value} - mix{self.mix} - {self.child1} - {self.child2}>"

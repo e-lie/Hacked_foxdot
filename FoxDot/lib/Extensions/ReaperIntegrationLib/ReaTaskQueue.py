@@ -8,6 +8,9 @@ class ReaTask(object):
         self.param_name = param_name
         self.param_value = param_value
         self.result = None
+    
+    def __repr__(self):
+        return f"<ReaTask {self.type} - {self.reaper_object} - {self.param_name} - {self.param_value}>"
 
 
 class TaskQueue(object):
@@ -57,14 +60,12 @@ class TaskQueue(object):
                 while self.queue:
                     task: ReaTask = self.queue.pop(0)
                     self.task_counter_dict[f"{task.reaper_object.name}_{task.param_name}"] -= 1
-                    # print(f"poping {task.param_name} update")
                     if task.type == "set":
                         task.reaper_object.set_param_direct(task.param_name, task.param_value)
                         task.reaper_object.set_param(task.param_name, task.param_value)
                     elif task.type == "set_bpm":
                         task.reaper_object.reapy_project.bpm = task.param_value
             self.currently_processing_tasks = False
-            #if self.is_active:
             self.clock.future(self.task_execution_freq, self.execute_tasks, args=[])
 
     def timevar_update_loop(self, rea_object, name, value, state, update_freq):

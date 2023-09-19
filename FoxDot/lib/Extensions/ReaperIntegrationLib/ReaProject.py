@@ -126,16 +126,6 @@ def set_reaper_param(track: ReaTrack, full_name, value, update_freq=.1):
                 track.reaproject.task_queue.add_task(ReaTask("set", rea_object, name, float(value)))
             except:
                 print(f'Failure doing a normal value update from {name} with {value} of type {type(value)}')
-                # if isinstance(value, Pattern):
-                #     print('Trying update with first element of the pattern !')
-                #     try:
-                #         value = value[0]
-                #         rea_object.set_param(name, float(value))
-                #         track.reaproject.task_queue.add_task(ReaTask("set", rea_object, name, float(value)))
-                #     except:
-                #         print("Failed again")
-
-        # beat_count=None means schedule for the next bar
         track._clock.schedule(normal_value_update, beat_count=None, args=[rea_object, name, value])
 
 
