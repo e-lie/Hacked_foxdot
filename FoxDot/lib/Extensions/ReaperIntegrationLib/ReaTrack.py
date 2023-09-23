@@ -27,7 +27,7 @@ class ReaTrack(object):
     def init_reatrack(self):
         for index, send in enumerate(self.track.sends):
             name = make_snake_name(send.dest_track.name)#[1:] # to remove the _ of bux track name
-            if name == "chan1":
+            if index == 0:
                 self.reaparams["vol"] = ReaSend(name=name, index=index, value=send.volume*2)
             else:
                 self.reaparams[name] = ReaSend(name=name, index=index, value=send.volume)

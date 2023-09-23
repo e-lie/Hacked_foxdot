@@ -1,4 +1,4 @@
-from FoxDot.preset.common import *
+++++from FoxDot.preset.common import *
 
 joueur1 >> batterie("X-")
 
