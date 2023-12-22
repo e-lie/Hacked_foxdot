@@ -60,15 +60,24 @@ class ReaperInstrumentFactory:
             instrument_dict[instrument_name] = self.create_instrument_facade(**instrument_kwargs)
         return instrument_dict
 
-    def add_instrument(self, name, plugin_name, preset=None, params={}, scan_all_params=True, is_chain=True):
-        free_indexes = [index for index in range(1,17) if index not in self.used_track_indexes]
-        free_index = free_indexes[0]
+    def add_instrument(self, name, plugin_name, track_name=None, preset=None, params={}, scan_all_params=True, is_chain=True):
+        midi_channel = -1
+        if track_name is None:
+            free_indexes = [index for index in range(1,17) if index not in self.used_track_indexes]
+            free_index = free_indexes[0]
+            midi_channel = free_index
+            self.used_track_indexes.append(free_index)
+            track_name='chan'+str(free_index)
+        elif track_name[:4] == 'chan':
+            try:
+                midi_channel = int(track_name[4:6])
+            except Exception:
+                midi_channel = int(track_name[4:5])
         if preset is None:
             preset = name
-        self.used_track_indexes.append(free_index)
         return self.create_instrument_facade(
-            track_name='chan'+str(free_index),
-            midi_channel=free_index,
+            track_name=track_name,
+            midi_channel=midi_channel,
             create_instrument=True,
             instrument_name=name,
             plugin_name=plugin_name,
@@ -85,12 +94,20 @@ class ReaperInstrumentFactory:
         for chain in args[1:]:
             try:
                 facade = selff.add_instrument(chain, chain, scan_all_params=scan_all_params, is_chain=is_chain)
-            except e:
+            except Exception as e:
                 print(f"Error adding chain {chain}: {e}")
             if facade:
                 facades.append(facade)
         selff.instru_facades += facades
         return tuple([facade.out for facade in facades])
+
+    def instanciate(selff, track_name, chain_name, scan_all_params=True, is_chain=True):
+        try:
+            facade_obj = selff.add_instrument(chain_name, chain_name, track_name=track_name, scan_all_params=scan_all_params, is_chain=is_chain)
+            return facade_obj.out
+        except Exception as e:
+            print(f"Error adding chain {chain_name}: {e}")
+            return None
 
 @player_method
 def setp(self, param_dict):
