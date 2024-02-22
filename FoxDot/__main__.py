@@ -14,6 +14,7 @@ from __future__ import absolute_import, division, print_function
 from .lib import FoxDotCode, handle_stdin
 
 import argparse
+import asyncio
 
 parser = argparse.ArgumentParser(
     prog="FoxDot", 
@@ -67,7 +68,8 @@ if args.pipe:
 
     # Just take commands from the CLI
 
-    handle_stdin()
+    #handle_stdin()
+    asyncio.run(handle_stdin())
 
 else:
 

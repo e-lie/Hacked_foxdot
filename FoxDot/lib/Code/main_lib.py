@@ -6,6 +6,8 @@ import os.path
 import time
 from traceback import format_exc as error_stack
 from types import CodeType, FunctionType
+import asyncio
+from aioconsole import ainput
 
 try:
 
@@ -215,17 +217,27 @@ def get_input():
 
     return "\n".join(text)
 
-def handle_stdin():
+async def handle_stdin():
     """ When FoxDot is run with the --pipe added, this function
         is called and continuosly   """
 
     load_startup_file()
 
+    tours = 0
+
     while True:
-
+        text = ''
+        tours += 1
+        print(tours)
+        with open('/tmp/foxdotcode.txt', 'r+') as input_file:
+            text = str(input_file.read())
+            input_file.seek(0)
+            input_file.write('')
+            input_file.truncate()
+            print(text)
         try:
-
-            text = get_input()
+            if text == '':
+                text = get_input()
 
             execute(text, verbose=False, verbose_error=True)
 
