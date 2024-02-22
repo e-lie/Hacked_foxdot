@@ -8,6 +8,7 @@ from traceback import format_exc as error_stack
 from types import CodeType, FunctionType
 import asyncio
 from aioconsole import ainput
+import aiofiles
 
 try:
 
@@ -217,29 +218,30 @@ def get_input():
 
     return "\n".join(text)
 
+async def read_file_code():
+    text = ''
+    async with aiofiles.open('/tmp/foxdotcode.txt', 'r+') as input_file:
+        text = await input_file.read()
+        await input_file.seek(0)
+        await input_file.write('')
+        await input_file.truncate()
+    return text
+
+
 async def handle_stdin():
     """ When FoxDot is run with the --pipe added, this function
         is called and continuosly   """
 
     load_startup_file()
 
-    tours = 0
-
     while True:
-        text = ''
-        tours += 1
-        print(tours)
-        with open('/tmp/foxdotcode.txt', 'r+') as input_file:
-            text = str(input_file.read())
-            input_file.seek(0)
-            input_file.write('')
-            input_file.truncate()
-            print(text)
         try:
-            if text == '':
-                text = get_input()
-
-            execute(text, verbose=False, verbose_error=True)
+            texxt = await read_file_code()
+            text = await ainput()
+            if text:
+                execute(text, verbose=False, verbose_error=True)
+            if texxt:
+                execute(texxt, verbose=False, verbose_error=True)
 
         except(EOFError, KeyboardInterrupt):
 
