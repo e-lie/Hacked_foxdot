@@ -225,7 +225,32 @@ async def read_file_code():
         await input_file.seek(0)
         await input_file.write('')
         await input_file.truncate()
-    return text
+        print(f"Contenu du fichier : {text}")
+    #return text
+
+
+async def read_stdin_code():
+    loop = asyncio.get_running_loop()
+
+    # Crée un futur pour attendre l'entrée de l'utilisateur
+    future = loop.create_future()
+
+    # Callback pour définir le résultat du futur lorsque l'entrée est disponible
+    def stdin_callback():
+        line = sys.stdin.readline()
+        future.set_result(line)
+
+    # Ajoute le callback au loop pour écouter l'entrée standard
+    loop.add_reader(sys.stdin.fileno(), stdin_callback)
+
+    # Attend que l'utilisateur entre du texte
+    line = await future
+    print(f"Entrée utilisateur : {line}")
+
+    # Nettoie le callback
+    loop.remove_reader(sys.stdin.fileno())
+
+    return line
 
 
 async def handle_stdin():
@@ -236,12 +261,18 @@ async def handle_stdin():
 
     while True:
         try:
-            texxt = await read_file_code()
-            text = await ainput()
-            if text:
-                execute(text, verbose=False, verbose_error=True)
-            if texxt:
-                execute(texxt, verbose=False, verbose_error=True)
+
+            await asyncio.gather(
+                read_file_code(),
+                read_stdin_code(),
+            )
+
+            #texxt = await read_file_code()
+            #text = await read_stdin_code()
+            #if text:
+            #    execute(text, verbose=False, verbose_error=True)
+            #if texxt:
+            #    execute(texxt, verbose=False, verbose_error=True)
 
         except(EOFError, KeyboardInterrupt):
 
