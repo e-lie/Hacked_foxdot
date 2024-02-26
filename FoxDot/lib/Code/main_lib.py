@@ -1,14 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-import sys
 import re
 import os.path
 import time
+import threading
 from traceback import format_exc as error_stack
 from types import CodeType, FunctionType
-import asyncio
-from aioconsole import ainput
-import aiofiles
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 try:
 
@@ -210,47 +209,43 @@ def get_now(obj):
 def get_input():
     """ Similar to `input` but can handle multi-line input. Terminates on a final "\n" """
     line = " "; text = []
-    
     while len(line) > 0:
-        
         line = input("")
         text.append(line)
-
     return "\n".join(text)
 
-async def read_file_code():
-    text = ''
-    async with aiofiles.open('/tmp/foxdotcode.txt', 'r+') as input_file:
-        text = await input_file.read()
-        await input_file.seek(0)
-        await input_file.write('')
-        await input_file.truncate()
-        print(f"Contenu du fichier : {text}")
-    #return text
+class FileModificationHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        file_path ='/tmp/foxdotcode.txt'
+        with open(file_path, 'r+') as input_file:
+            if os.path.getsize(file_path) > 0:
+                foxdot_code_string = input_file.read()
+                input_file.seek(0)
+                input_file.write('')
+                input_file.truncate()
+                execute(foxdot_code_string, verbose=False, verbose_error=True)
+                #print(f"Code récupéré : {foxdot_code_string}")
 
+def monitor_file_changes(path_to_watch):
+    event_handler = FileModificationHandler()
+    observer = Observer()
+    observer.schedule(event_handler, path=path_to_watch, recursive=False)
+    observer.start()
+    try:
+        while True:
+            time.sleep(0.3)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
-async def read_stdin_code():
-    loop = asyncio.get_running_loop()
-
-    # Crée un futur pour attendre l'entrée de l'utilisateur
-    future = loop.create_future()
-
-    # Callback pour définir le résultat du futur lorsque l'entrée est disponible
-    def stdin_callback():
-        line = sys.stdin.readline()
-        future.set_result(line)
-
-    # Ajoute le callback au loop pour écouter l'entrée standard
-    loop.add_reader(sys.stdin.fileno(), stdin_callback)
-
-    # Attend que l'utilisateur entre du texte
-    line = await future
-    print(f"Entrée utilisateur : {line}")
-
-    # Nettoie le callback
-    loop.remove_reader(sys.stdin.fileno())
-
-    return line
+def listen_to_stdin():
+    try:
+        while True:
+            user_input = get_input()
+            execute(user_input, verbose=False, verbose_error=True)
+            #print(f"Entrée utilisateur reçue: {user_input}")
+    except KeyboardInterrupt:
+        print("Quit listening stdin.")
 
 
 async def handle_stdin():
@@ -259,24 +254,24 @@ async def handle_stdin():
 
     load_startup_file()
 
-    while True:
-        try:
+    # thread to continuously watch for modification of a code file
+    # and execute new foxdot code each time it changes
+    path_to_watch = "/tmp/foxdotcode.txt"
+    file_thread = None
+    if os.path.exists(path_to_watch):
+        file_thread = threading.Thread(target=monitor_file_changes, args=(path_to_watch,))
+        file_thread.daemon = True
+        file_thread.start()
 
-            await asyncio.gather(
-                read_file_code(),
-                read_stdin_code(),
-            )
+    # thread to listen to stdin (classic foxdot --pipe mode but non blocking)
+    stdin_thread = threading.Thread(target=listen_to_stdin)
+    stdin_thread.daemon = True
+    stdin_thread.start()
 
-            #texxt = await read_file_code()
-            #text = await read_stdin_code()
-            #if text:
-            #    execute(text, verbose=False, verbose_error=True)
-            #if texxt:
-            #    execute(texxt, verbose=False, verbose_error=True)
-
-        except(EOFError, KeyboardInterrupt):
-
-            sys.exit("Quitting")
+    stdin_thread.join()
+    if file_thread:
+        file_thread.join()
+    sys.exit("Quitting")
 
     return
 
