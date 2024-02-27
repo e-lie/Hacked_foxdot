@@ -54,7 +54,12 @@ class ReaFX(object):
         return {self.name + "_" + param.name : param.value for param in self.reaparams.values()}
 
     def get_param(self, name):
-        return self.reaparams[name].value
+        try:
+            return self.reaparams[name].value
+        except KeyError: # Sometimes the prefix of the param name is not stripped correctly
+            # do it as a workaround
+            name = '_'.join(name.split('_')[1:])
+            return self.reaparams[name].value
 
     def set_param(self, name, value):
         self.reaparams[name].value = value
